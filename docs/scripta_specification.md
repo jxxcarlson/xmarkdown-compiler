@@ -412,3 +412,26 @@ This specification was derived from analysis of the following source files in th
 
 **Documentation:**
 - `docs/pipeline.md` - Pipeline overview
+
+---
+
+## Summary
+
+1. **Inline Syntax** - Function calls `[name args]`, math `$...$` or `\(...\)`, code `` `...` ``
+2. **Block Syntax** - Pipe-prefixed blocks `| blockname`, section headers `#`/`*`, shorthand `-`, `.`, ``` ``` ```, `$$`
+3. **Ordinary vs Verbatim Blocks** - Ordinary blocks parse inline expressions; verbatim blocks preserve content literally
+4. **Properties & Arguments** - `| block arg1 key:value` syntax
+5. **Document Structure** - Indentation-based hierarchy, section nesting
+6. **Cross-References** - `label:name` properties with `[ref name]` references
+7. **Error Handling** - Parser recovery for bracket mismatches
+
+### Sources Used
+
+- `src/Scripta/Tokenizer.elm` - Tokenization logic
+- `src/Scripta/Expression.elm` - Expression parser
+- `src/Scripta/PrimitiveBlock.elm` - Block parsing
+- `src/Scripta/Match.elm` - Bracket matching
+- `src/Generic/Language.elm` - AST definitions
+- `tests/ToExpressionBlockTest.elm` - Example documents
+- `DemoSimple/src/Data/M.elm` - Sample documents
+- `docs/pipeline.md` - Pipeline documentation
