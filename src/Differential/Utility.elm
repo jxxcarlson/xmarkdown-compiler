@@ -131,13 +131,5 @@ parseTitle lang src =
                 Err _ ->
                     Nothing
 
-        MiniLaTeXLang ->
-            case Parser.run microLaTeXTitleParser src of
-                Ok title ->
-                    Just title
-
-                Err _ ->
-                    Nothing
-
         _ ->
             Nothing

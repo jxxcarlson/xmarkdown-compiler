@@ -158,7 +158,7 @@ viewTOC =
 settings : { filter : ScriptaV2.Types.Filter, lang : ScriptaV2.Language.Language, width : Int }
 settings =
     { filter = ScriptaV2.Types.NoFilter
-    , lang = ScriptaV2.Language.MiniLaTeXLang
+    , lang = ScriptaV2.Language.SMarkdownLang
     , width = 800
     }
 
