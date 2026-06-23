@@ -31,8 +31,6 @@ import Generic.Language exposing (ExpressionBlock, PrimitiveBlock)
 import Generic.Pipeline
 import Generic.PrimitiveBlock
 import Library.Tree
-import MiniLaTeX.Expression
-import MiniLaTeX.PrimitiveBlock
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -328,9 +326,6 @@ update shiftAndSetCounter_ editRecord text =
 chunker : Language -> String -> List PrimitiveBlock
 chunker lang str =
     case lang of
-        MiniLaTeXLang ->
-            MiniLaTeX.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
-
         ScriptaLang ->
             Scripta.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
 
@@ -342,9 +337,6 @@ chunker lang str =
 toExprBlock : Language -> PrimitiveBlock -> ExpressionBlock
 toExprBlock lang =
     case lang of
-        MiniLaTeXLang ->
-            Generic.Pipeline.toExpressionBlock MiniLaTeX.Expression.parse
-
         ScriptaLang ->
             Generic.Pipeline.toExpressionBlock Scripta.Expression.parse
 

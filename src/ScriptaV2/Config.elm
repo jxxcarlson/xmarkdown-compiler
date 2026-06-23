@@ -11,7 +11,7 @@ import ScriptaV2.Language exposing (Language(..))
 
 
 defaultLanguage =
-    MiniLaTeXLang
+    SMarkdownLang
 
 
 idPrefix =

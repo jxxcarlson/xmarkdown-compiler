@@ -1,6 +1,6 @@
 module ScriptaV2.Compiler exposing
     ( CompilerOutput, compile, parse, parseFromString, renderForest, view, viewTOC, px, viewBody
-    , filterForest2, header_, parseMiniLaTeX, parseSMarkdown, parseScripta, parseToForestWithAccumulator, pl, ps, viewBodyOnly
+    , filterForest2, header_, parseSMarkdown, parseScripta, parseToForestWithAccumulator, ps, viewBodyOnly
     )
 
 {-|
@@ -18,8 +18,6 @@ import Generic.Compiler
 import Generic.Forest exposing (Forest)
 import Generic.Language exposing (ExpressionBlock)
 import Generic.Vector
-import MiniLaTeX.Expression
-import MiniLaTeX.PrimitiveBlock
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -182,9 +180,6 @@ parse lang idPrefix outerCount lines =
         ScriptaLang ->
             parseScripta idPrefix outerCount lines
 
-        MiniLaTeXLang ->
-            parseMiniLaTeX idPrefix outerCount lines
-
         SMarkdownLang ->
             parseSMarkdown idPrefix outerCount lines
 
@@ -207,16 +202,6 @@ px str =
     parseSMarkdown "!!" 0 (String.lines str)
 
 
-{-|
-
-    > pl str = parseL "!!" (String.lines str) |> Result.map (F.map simplifyExpressionBlock)
-
--}
-parseMiniLaTeX : String -> Int -> List String -> Forest ExpressionBlock
-parseMiniLaTeX idPrefix outerCount lines =
-    Generic.Compiler.parse_ MiniLaTeX.PrimitiveBlock.parse MiniLaTeX.Expression.parse idPrefix outerCount lines
-
-
 
 -- M compiler
 
@@ -234,11 +219,6 @@ type alias CompilerOutput =
 ps : String -> Forest ExpressionBlock
 ps str =
     parseScripta Config.idPrefix 0 (String.lines str)
-
-
-pl : String -> Forest ExpressionBlock
-pl str =
-    parseMiniLaTeX Config.idPrefix 0 (String.lines str)
 
 
 {-| -}
@@ -268,9 +248,6 @@ parseToForestWithAccumulator params lines =
             case params.lang of
                 ScriptaLang ->
                     parseScripta
-
-                MiniLaTeXLang ->
-                    parseMiniLaTeX
 
                 SMarkdownLang ->
                     parseSMarkdown

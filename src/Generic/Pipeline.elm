@@ -180,9 +180,6 @@ fixTable block lang parse =
         t1 : List Expression
         t1 =
             case lang of
-                MiniLaTeXLang ->
-                    prepareTableLaTeX parse (String.join "\n" block.body)
-
                 ScriptaLang ->
                     prepareTableL0 parse (String.join "\n" block.body)
 

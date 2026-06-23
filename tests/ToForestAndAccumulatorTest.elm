@@ -16,59 +16,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "parseToForestWithAccumulator"
-        [ describe "MicroLaTeX parsing"
-            [ test "simple paragraph returns non-empty forest" <|
-                \_ ->
-                    let
-                        params =
-                            defaultParams MiniLaTeXLang
-
-                        lines =
-                            [ "This is a test paragraph." ]
-
-                        ( accumulator, forest ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator params lines
-                    in
-                    forest
-                        |> List.length
-                        |> Expect.greaterThan 0
-            , test "section creates accumulator with section count" <|
-                \_ ->
-                    let
-                        params =
-                            defaultParams MiniLaTeXLang
-
-                        lines =
-                            [ "\\section{Introduction}", "", "Some text here." ]
-
-                        ( accumulator, forest ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator params lines
-                    in
-                    Generic.Vector.level accumulator.headingIndex
-                        |> Expect.greaterThan 0
-            , test "multiple sections increment section index" <|
-                \_ ->
-                    let
-                        params =
-                            defaultParams MiniLaTeXLang
-
-                        lines =
-                            [ "\\section{First}"
-                            , ""
-                            , "Content here."
-                            , ""
-                            , "\\section{Second}"
-                            , ""
-                            , "More content."
-                            ]
-
-                        ( accumulator, forest ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator params lines
-                    in
-                    Generic.Vector.level accumulator.headingIndex
-                        |> Expect.atLeast 1
-            ]
-        , describe "SMarkdown parsing"
+        [ describe "SMarkdown parsing"
             [ test "simple paragraph returns non-empty forest" <|
                 \_ ->
                     let
@@ -129,51 +77,6 @@ suite =
                     in
                     Generic.Vector.level accumulator.headingIndex
                         |> Expect.greaterThan 0
-            ]
-        , describe "Filter behavior"
-            [ test "NoFilter preserves all blocks" <|
-                \_ ->
-                    let
-                        baseParams =
-                            defaultParams MiniLaTeXLang
-
-                        params =
-                            { baseParams | filter = NoFilter }
-
-                        lines =
-                            [ "\\begin{document}", "", "Content", "", "\\end{document}" ]
-
-                        ( _, forest ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator params lines
-                    in
-                    forest
-                        |> List.length
-                        |> Expect.greaterThan 0
-            , test "SuppressDocumentBlocks filters document blocks" <|
-                \_ ->
-                    let
-                        baseParams =
-                            defaultParams MiniLaTeXLang
-
-                        paramsNoFilter =
-                            { baseParams | filter = NoFilter }
-
-                        paramsWithFilter =
-                            { baseParams | filter = SuppressDocumentBlocks }
-
-                        lines =
-                            [ "\\begin{document}", "", "Content", "", "\\end{document}" ]
-
-                        ( _, forestNoFilter ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator paramsNoFilter lines
-
-                        ( _, forestWithFilter ) =
-                            ScriptaV2.Compiler.parseToForestWithAccumulator paramsWithFilter lines
-                    in
-                    -- With filter, we expect potentially fewer blocks
-                    -- This is a simple check that filtering has some effect
-                    List.length forestWithFilter
-                        |> Expect.atMost (List.length forestNoFilter)
             ]
         ]
 

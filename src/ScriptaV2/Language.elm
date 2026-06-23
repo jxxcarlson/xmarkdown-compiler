@@ -12,8 +12,7 @@ import Generic.Language
 
 {-| -}
 type Language
-    = MiniLaTeXLang
-    | ScriptaLang
+    = ScriptaLang
     | SMarkdownLang
 
 
@@ -26,9 +25,6 @@ type alias ExpressionBlock =
 toString : Language -> String
 toString lang =
     case lang of
-        MiniLaTeXLang ->
-            "MiniLaTeX"
-
         ScriptaLang ->
             "Scripta"
 

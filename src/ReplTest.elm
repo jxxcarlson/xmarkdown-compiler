@@ -3,7 +3,6 @@ module ReplTest exposing (..)
 import Generic.Forest
 import Generic.Language
 import Generic.Pipeline
-import MiniLaTeX.PrimitiveBlock
 import Render.Settings
 import Scripta.Expression
 import Scripta.PrimitiveBlock
@@ -16,19 +15,9 @@ p str =
     Scripta.PrimitiveBlock.parse "0" 0 (String.lines str)
 
 
-pL : String -> List Generic.Language.PrimitiveBlock
-pL str =
-    MiniLaTeX.PrimitiveBlock.parse "0" 0 (String.lines str)
-
-
 q : String -> List Generic.Language.ExpressionBlock
 q =
     p >> List.map expressionBlockFromPrimitiveBlock
-
-
-qL : String -> List Generic.Language.ExpressionBlock
-qL =
-    pL >> List.map expressionBlockFromPrimitiveBlock
 
 
 t : String -> Generic.Forest.Forest Generic.Language.ExpressionBlock
