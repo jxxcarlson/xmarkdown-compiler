@@ -1,12 +1,10 @@
 module Render.PUtility exposing
     ( getKeyedParagraph
     , getLeadingBlanks
-    , l0TitleParser
     , leadingBlanks
     , parseItem
     )
 
-import Generic.Language
 import Parser exposing ((|.), (|=), Parser)
 
 
@@ -68,16 +66,6 @@ getKeyedParagraph headline target =
 
         Ok data ->
             Just data
-
-
-l0TitleParser : Parser String
-l0TitleParser =
-    Parser.succeed (\start end src -> String.slice start end src |> String.dropLeft 8 |> String.trimRight)
-        |. Parser.chompUntil "| title "
-        |= Parser.getOffset
-        |. Parser.chompUntil "\n"
-        |= Parser.getOffset
-        |= Parser.getSource
 
 
 itemParser : String -> Parser String

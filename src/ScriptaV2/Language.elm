@@ -6,7 +6,6 @@ module ScriptaV2.Language exposing (Language(..), ExpressionBlock, toString)
 
 -}
 
-import Generic.Forest
 import Generic.Language
 
 

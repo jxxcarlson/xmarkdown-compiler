@@ -1,6 +1,5 @@
 module ToForestAndAccumulatorTest exposing (suite)
 
-import Element
 import Expect
 import Generic.Acc exposing (Accumulator)
 import Generic.Forest exposing (Forest)
