@@ -123,13 +123,5 @@ microLaTeXTitleParser =
 parseTitle : Language -> String -> Maybe String
 parseTitle lang src =
     case lang of
-        ScriptaLang ->
-            case Parser.run l0TitleParser src of
-                Ok title ->
-                    Just title
-
-                Err _ ->
-                    Nothing
-
         _ ->
             Nothing
