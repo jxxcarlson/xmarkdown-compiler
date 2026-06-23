@@ -1,9 +1,7 @@
 module Differential.Utility exposing
     ( getKeyedParagraph
     , getLeadingBlanks
-    , l0TitleParser
     , leadingBlanks
-    , microLaTeXTitleParser
     , parseItem
     , parseTitle
     )
@@ -72,15 +70,6 @@ getKeyedParagraph headline target =
             Just data
 
 
-l0TitleParser : Parser String
-l0TitleParser =
-    Parser.succeed (\start end src -> String.slice start end src |> String.dropLeft 8 |> String.trimRight)
-        |. Parser.chompUntil "| title "
-        |= Parser.getOffset
-        |. Parser.chompUntil "\n"
-        |= Parser.getOffset
-        |= Parser.getSource
-
 
 itemParser : String -> Parser String
 itemParser item =
@@ -109,15 +98,6 @@ parseItem item str =
         Err _ ->
             Nothing
 
-
-microLaTeXTitleParser : Parser String
-microLaTeXTitleParser =
-    Parser.succeed (\start end src -> String.slice start end src |> String.dropLeft 7)
-        |. Parser.chompUntil "\\title{"
-        |= Parser.getOffset
-        |. Parser.chompUntil "}"
-        |= Parser.getOffset
-        |= Parser.getSource
 
 
 parseTitle : Language -> String -> Maybe String

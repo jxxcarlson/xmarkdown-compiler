@@ -1,27 +1,65 @@
-The purpose of this package is to compile Scripta Markup
-into Elm Html.  Below is a typical example. We first define
-some Scripta source code as a string:
+# XMarkdown Compiler
 
+A standalone compiler for **XMarkdown** (Scientific Markdown / SMarkdown), which
+compiles XMarkdown source text into elm-ui HTML elements.
+
+## What is XMarkdown?
+
+XMarkdown is a scientific-flavored Markdown dialect. It supports:
+- Standard Markdown headings (`#`, `##`, ...) and emphasis (`**bold**`, `_italic_`)
+- Fenced code blocks (`` ``` ``)
+- Math blocks (`$$`) and inline math
+- Named blocks (`| theorem`, `| equation`, `| code`, ...)
+- Tables
+- `@[...]` inline syntax for cells, rows, and custom inline elements
+- Table of contents generation
+
+## Quick Start
+
+Add the package:
+
+```bash
+elm install jxxcarlson/xmarkdown-compiler
 ```
-input = """
-| title
-Test Document
 
-This is a [b very simple] test of the Scripta compiler.
+Compile source text:
+
+```elm
+import ScriptaV2.APISimple exposing (compile)
+import ScriptaV2.Language exposing (Language(..))
+import ScriptaV2.Types exposing (defaultCompilerParameters)
+import ScriptaV2.Msg exposing (MarkupMsg)
+import Element exposing (Element)
+
+source : String
+source = """
+# Introduction
+
+This is a **bold** introduction.
 
 | theorem
 There are infinitely many prime numbers.
 
-| equation
-int_0^1 x^n dx = tfrac(1,n+1)
+$$
+\\int_0^1 x^n dx = \\frac{1}{n+1}
+$$
 """
 
-Then we compile it into Elm Html:
-
+output : List (Element MarkupMsg)
+output = compile defaultCompilerParameters source
 ```
-import ScriptaV2.APISimple exposing (compile)
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types exposing (defaultCompilerParameters)
 
-output = compile defaultCompilerParameters input
-```
+## Public API
+
+| Module | Purpose |
+|---|---|
+| `ScriptaV2.APISimple` | High-level `compile` entry point |
+| `ScriptaV2.API` | Full compiler API |
+| `ScriptaV2.Types` | `CompilerParameters`, `defaultCompilerParameters`, `Filter` |
+| `ScriptaV2.Msg` | `MarkupMsg` type for elm-ui |
+| `ScriptaV2.Language` | `Language` type (`SMarkdownLang`) |
+| `Render.Theme` | Light/Dark theme |
+
+## License
+
+MIT

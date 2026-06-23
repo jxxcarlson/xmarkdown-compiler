@@ -253,7 +253,7 @@ markupDict =
         , ( "par", par )
         , ( "indent", indent )
 
-        -- MiniLaTeX stuff
+        -- inline text functions
         , ( "term", \g acc s attr exprList -> term g acc s attr exprList )
         , ( "term_", \_ _ _ _ _ -> Element.none )
         , ( "footnote", \_ acc s attr exprList -> footnote acc s exprList )

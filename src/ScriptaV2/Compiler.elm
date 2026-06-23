@@ -5,7 +5,7 @@ module ScriptaV2.Compiler exposing
 
 {-|
 
-@docs CompilerOutput, Filter, compile, parse, parseFromString, render, renderForest, view, viewTOC, filterForest, p, px, viewBody
+@docs CompilerOutput, compile, parse, parseFromString, renderForest, view, viewTOC, px, viewBody
 
 -}
 

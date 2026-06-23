@@ -174,15 +174,6 @@ fixTableProperties block =
         |> Dict.insert "id" block.meta.id
 
 
-fixTable : PrimitiveBlock -> Language -> (String -> List Expression) -> Either a (List Expression)
-fixTable block _ _ =
-    let
-        t1 : List Expression
-        t1 =
-            prepareTableL0 (Scripta.Expression.parse 0) (String.join "\n" block.body)
-    in
-    Right t1
-
 
 fixTable_ : List Expression -> List Expression
 fixTable_ exprs =
@@ -239,27 +230,6 @@ fixInnerLaTeX exprs =
         )
         exprs
 
-
-prepareTableLaTeX : (String -> List Expression) -> String -> List Expression
-prepareTableLaTeX parse str =
-    let
-        inner : String -> String
-        inner row =
-            String.split "&" row
-                |> List.filter (\s -> compress s /= "")
-                -- TODO: remove hack of extra spaces after \cell to force correct parsing of arguments
-                |> List.map (\cell -> "\\cell{  " ++ String.trim cell ++ "}")
-                |> String.join ""
-
-        cells : String
-        cells =
-            str
-                |> String.split "\\\\\n"
-                |> List.filter (\s -> compress s /= "")
-                |> List.map (\r -> "\\row{" ++ inner r ++ "}")
-                |> (\rows -> "\\table{" ++ String.join "" rows ++ "}")
-    in
-    parse cells
 
 
 prepareTableL0 : (String -> List Expression) -> String -> List Expression
