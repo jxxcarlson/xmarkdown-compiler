@@ -152,10 +152,8 @@ parseFromString lang str =
 
 -}
 parse : Language -> String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
-parse lang idPrefix outerCount lines =
-    case lang of
-        SMarkdownLang ->
-            parseSMarkdown idPrefix outerCount lines
+parse _ idPrefix outerCount lines =
+    parseSMarkdown idPrefix outerCount lines
 
 
 parseSMarkdown : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)

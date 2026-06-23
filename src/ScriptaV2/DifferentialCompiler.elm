@@ -314,15 +314,11 @@ update shiftAndSetCounter_ editRecord text =
 
 
 chunker : Language -> String -> List PrimitiveBlock
-chunker lang str =
-    case lang of
-        SMarkdownLang ->
-            XMarkdown.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
+chunker _ str =
+    XMarkdown.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
 
 
 toExprBlock : Language -> PrimitiveBlock -> ExpressionBlock
-toExprBlock lang =
-    case lang of
-        SMarkdownLang ->
-            Generic.Pipeline.toExpressionBlock XMarkdown.Expression.parse
+toExprBlock _ =
+    Generic.Pipeline.toExpressionBlock XMarkdown.Expression.parse
 

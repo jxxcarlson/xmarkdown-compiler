@@ -17,9 +17,7 @@ Your `Msg` type definition should read:
 The choice of language is made from
 
     type Language
-        = MicroLaTeXLang
-        | EnclosureLang
-        | SMarkdownLang
+        = SMarkdownLang
 
 in ScriptaV2.Language
 

@@ -5,9 +5,8 @@ module ScriptaV2.API exposing
     , viewBodyOnly, viewTOC
     )
 
-{-| ScriptaV2.API provides the core compilation interface for converting markup text
-into renderable elm-ui Elements. This module supports three markup languages:
-MicroLaTeX, SMarkdown/XMarkdown, and Enclosure/L0.
+{-| ScriptaV2.API provides the core compilation interface for converting XMarkdown
+(SMarkdown) source text into renderable elm-ui Elements.
 
 
 # Overview
@@ -42,7 +41,7 @@ navigation panels.
     -- Configure compiler
     params =
         { defaultCompilerParameters
-            | lang = MicroLaTeXLang
+            | lang = SMarkdownLang
             , docWidth = 600
             , editCount = 0
         }
@@ -50,10 +49,10 @@ navigation panels.
     -- Compile source text
     output =
         ScriptaV2.API.compileOutput params
-            [ "\\section{Introduction}"
-            , "This is a document with \\strong{bold} text."
+            [ "# Introduction"
+            , "This is a document with **bold** text."
             , ""
-            , "\\subsection{Details}"
+            , "## Details"
             , "More content here."
             ]
 
@@ -68,10 +67,7 @@ navigation panels.
 
 # Supported Languages
 
-  - **MicroLaTeXLang** - LaTeX-like syntax with mathematical expressions via KaTeX
-  - **SMarkdownLang** - Extended Markdown with scientific notation support
-  - **EnclosureLang** - L0 language with bracket-based syntax
-  - **MarkdownLang** - Standard Markdown (currently handled as SMarkdown)
+  - **SMarkdownLang** - XMarkdown: extended Markdown with scientific notation support
 
 
 # See Also
@@ -91,29 +87,22 @@ import ScriptaV2.Types
 
 {-| Compile source text into a CompilerOutput structure.
 
-This is the main compilation function that parses and processes markup text according
-to the language specified in `CompilerParameters`. The output contains the rendered
-body, optional banner, table of contents, and title, which can then be displayed
-using the view functions.
+This is the main compilation function that parses and processes XMarkdown source text.
+The output contains the rendered body, optional banner, table of contents, and title,
+which can then be displayed using the view functions.
 
     params =
         { defaultCompilerParameters
-            | lang = MicroLaTeXLang
+            | lang = SMarkdownLang
             , docWidth = 600
         }
 
     output =
         compileOutput params
-            [ "\\title{My Document}"
-            , "\\section{Introduction}"
+            [ "# My Document"
+            , "## Introduction"
             , "Content here."
             ]
-
-The language field in CompilerParameters determines which parser to use:
-
-  - MicroLaTeXLang → MicroLaTeX parser
-  - SMarkdownLang/MarkdownLang → XMarkdown parser
-  - EnclosureLang → L0/Enclosure parser
 
 -}
 compileOutput : ScriptaV2.Types.CompilerParameters -> List String -> ScriptaV2.Compiler.CompilerOutput
