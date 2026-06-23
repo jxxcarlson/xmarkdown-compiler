@@ -175,17 +175,11 @@ fixTableProperties block =
 
 
 fixTable : PrimitiveBlock -> Language -> (String -> List Expression) -> Either a (List Expression)
-fixTable block lang parse =
+fixTable block _ _ =
     let
         t1 : List Expression
         t1 =
-            case lang of
-                ScriptaLang ->
-                    prepareTableL0 parse (String.join "\n" block.body)
-
-                SMarkdownLang ->
-                    prepareTableL0 (Scripta.Expression.parse 0) (String.join "\n" block.body)
-
+            prepareTableL0 (Scripta.Expression.parse 0) (String.join "\n" block.body)
     in
     Right t1
 

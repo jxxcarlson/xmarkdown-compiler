@@ -1,6 +1,6 @@
 module ScriptaV2.Compiler exposing
     ( CompilerOutput, compile, parse, parseFromString, renderForest, view, viewTOC, px, viewBody
-    , filterForest2, header_, parseSMarkdown, parseScripta, parseToForestWithAccumulator, ps, viewBodyOnly
+    , filterForest2, header_, parseSMarkdown, parseToForestWithAccumulator, viewBodyOnly
     )
 
 {-|
@@ -23,8 +23,6 @@ import Render.Settings
 import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
-import Scripta.Expression
-import Scripta.PrimitiveBlock
 import ScriptaV2.Config as Config
 import ScriptaV2.Language exposing (Language(..))
 import ScriptaV2.Msg exposing (MarkupMsg(..))
@@ -141,27 +139,6 @@ compile params lines =
     render params (parseToForestWithAccumulator params lines)
 
 
-{-|
-
-    > cm "hello!\n\n  [b how are you?]\n\n  $x^2 = 7$\n\n"
-    Ok [ Tree { args = [], body = Right [Text "hello!" ()], firstLine = "hello!", heading = Paragraph
-           , indent = 0, meta = () , properties = Dict.fromList [] }
-         [ Tree { args = [], body = Right [Text ("   ") (),Fun "b" [Text (" how are you?") ()] ()]
-            , firstLine = "[b how are you?]", heading = Paragraph, indent = 2, meta = ()
-            , properties = Dict.fromList [] } []
-         , Tree { args = [], body = Right [Text ("   ") (),VFun "math" ("x^2 = 7") ()]
-           , firstLine = "$x^2 = 7$", heading = Paragraph, indent = 2, meta = ()
-           , properties = Dict.fromList [] } []]]
-
-    -- proof that the output is a one-tree forest
-    > cm "hello!\n\n  [b how are you?]\n\n  $x^2 = 7$\n\n" |> Result.map List.length
-    Ok 1
-
--}
-pm str =
-    parseScripta "!!" 0 (String.lines str) |> Generic.Forest.map Generic.Language.simplifyExpressionBlock
-
-
 {-| -}
 parseFromString : Language -> String -> Forest ExpressionBlock
 parseFromString lang str =
@@ -177,17 +154,8 @@ parseFromString lang str =
 parse : Language -> String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
 parse lang idPrefix outerCount lines =
     case lang of
-        ScriptaLang ->
-            parseScripta idPrefix outerCount lines
-
         SMarkdownLang ->
             parseSMarkdown idPrefix outerCount lines
-
-
-
-parseScripta : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
-parseScripta idPrefix outerCount lines =
-    Generic.Compiler.parse_ Scripta.PrimitiveBlock.parse Scripta.Expression.parse idPrefix outerCount lines
 
 
 parseSMarkdown : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
@@ -216,12 +184,6 @@ type alias CompilerOutput =
 
 
 {-| -}
-ps : String -> Forest ExpressionBlock
-ps str =
-    parseScripta Config.idPrefix 0 (String.lines str)
-
-
-{-| -}
 filterForest : Filter -> Forest ExpressionBlock -> Forest ExpressionBlock
 filterForest filter forest =
     case filter of
@@ -246,9 +208,6 @@ parseToForestWithAccumulator params lines =
     let
         parser =
             case params.lang of
-                ScriptaLang ->
-                    parseScripta
-
                 SMarkdownLang ->
                     parseSMarkdown
 

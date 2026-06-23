@@ -36,8 +36,6 @@ import Render.Settings
 import Render.TOCTree
 import Render.Theme
 import RoseTree.Tree as Tree exposing (Tree)
-import Scripta.Expression
-import Scripta.PrimitiveBlock
 import ScriptaV2.Compiler
 import ScriptaV2.Config
 import ScriptaV2.Language exposing (Language(..))
@@ -47,14 +45,6 @@ import ScriptaV2.Types
 import XMarkdown.Expression
 import XMarkdown.PrimitiveBlock
 
-
-
-{- For testing -}
-
-
-pp : String -> List ExpressionBlock
-pp str =
-    Scripta.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str) |> List.map (toExprBlock ScriptaV2.Language.ScriptaLang)
 
 
 {-| -}
@@ -326,20 +316,13 @@ update shiftAndSetCounter_ editRecord text =
 chunker : Language -> String -> List PrimitiveBlock
 chunker lang str =
     case lang of
-        ScriptaLang ->
-            Scripta.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
-
         SMarkdownLang ->
             XMarkdown.PrimitiveBlock.parse ScriptaV2.Config.idPrefix 0 (String.lines str)
-
 
 
 toExprBlock : Language -> PrimitiveBlock -> ExpressionBlock
 toExprBlock lang =
     case lang of
-        ScriptaLang ->
-            Generic.Pipeline.toExpressionBlock Scripta.Expression.parse
-
         SMarkdownLang ->
             Generic.Pipeline.toExpressionBlock XMarkdown.Expression.parse
 
