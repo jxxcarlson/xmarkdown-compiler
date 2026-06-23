@@ -15,7 +15,6 @@ type Language
     = MiniLaTeXLang
     | ScriptaLang
     | SMarkdownLang
-    | MarkdownLang
 
 
 {-| -}
@@ -36,5 +35,3 @@ toString lang =
         SMarkdownLang ->
             "SMarkdown"
 
-        MarkdownLang ->
-            "Markdown"

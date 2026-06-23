@@ -188,10 +188,6 @@ parse lang idPrefix outerCount lines =
         SMarkdownLang ->
             parseSMarkdown idPrefix outerCount lines
 
-        MarkdownLang ->
-            -- Markdown doesn't use the same tree-based parsing structure
-            -- For now, return an empty list since Markdown is handled differently
-            []
 
 
 parseScripta : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
@@ -278,13 +274,6 @@ parseToForestWithAccumulator params lines =
 
                 SMarkdownLang ->
                     parseSMarkdown
-
-                MarkdownLang ->
-                    neverUsedParser
-
-        neverUsedParser : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
-        neverUsedParser _ _ _ =
-            []
 
         -- NOTE: really bad idea!
         forest =
