@@ -156,7 +156,7 @@ class CodemirrorEditor extends HTMLElement {
             let to;
             if (h.lineCount > 0) {
                 from = lineStart;
-                const lastLine = Math.min(h.line + h.lineCount, doc.lines);
+                const lastLine = Math.min(h.line + h.lineCount - 1, doc.lines);
                 to = doc.line(lastLine).to;
             } else {
                 from = lineStart + h.colBegin;
