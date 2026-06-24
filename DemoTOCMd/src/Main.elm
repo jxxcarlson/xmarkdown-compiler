@@ -12,6 +12,7 @@ import ScriptaV2.Compiler
 import ScriptaV2.Editor
 import ScriptaV2.Language
 import ScriptaV2.Msg exposing (MarkupMsg)
+import ScriptaV2.Sync
 import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
@@ -39,6 +40,8 @@ type alias Model =
     , windowHeight : Int
     , selectId : String
     , idsOfOpenNodes : List String
+    , syncHighlight : Maybe ScriptaV2.Sync.SyncHighlight
+    , tick : Int
     }
 
 
@@ -62,6 +65,8 @@ init flags =
       , windowHeight = flags.window.windowHeight
       , selectId = "@InitID"
       , idsOfOpenNodes = []
+      , syncHighlight = Nothing
+      , tick = 0
       }
     , Cmd.none
     )
@@ -80,34 +85,36 @@ update msg model =
             ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
 
         Render msg_ ->
-            case msg_ of
-                ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
-                    let
-                        idsOfOpenNodes =
-                            if String.left 2 nodeId == "@-" then
-                                if List.member nodeId model.idsOfOpenNodes then
-                                    List.Extra.remove nodeId model.idsOfOpenNodes
+            case ScriptaV2.Sync.fromMsg (model.tick + 1) msg_ of
+                Just h ->
+                    ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
 
-                                else
-                                    nodeId :: model.idsOfOpenNodes
+                Nothing ->
+                    case msg_ of
+                        ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
+                            let
+                                idsOfOpenNodes =
+                                    if String.left 2 nodeId == "@-" then
+                                        if List.member nodeId model.idsOfOpenNodes then
+                                            List.Extra.remove nodeId model.idsOfOpenNodes
+
+                                        else
+                                            nodeId :: model.idsOfOpenNodes
+
+                                    else
+                                        model.idsOfOpenNodes
+                            in
+                            ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
+
+                        ScriptaV2.Msg.SelectId selId ->
+                            if selId == "title" then
+                                ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
 
                             else
-                                model.idsOfOpenNodes
-                    in
-                    ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
+                                ( { model | selectId = selId }, Cmd.none )
 
-                ScriptaV2.Msg.SelectId selId ->
-                    if selId == "title" then
-                        ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
-
-                    else
-                        ( { model | selectId = selId }, Cmd.none )
-
-                ScriptaV2.Msg.SendLineNumber _ ->
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+                        _ ->
+                            ( model, Cmd.none )
 
 
 
@@ -184,6 +191,7 @@ editorView model =
     ScriptaV2.Editor.view
         { source = model.initialText
         , onInput = InputText
+        , highlight = model.syncHighlight
         , attrs = []
         }
 

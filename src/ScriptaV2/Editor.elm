@@ -11,6 +11,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode as D
+import ScriptaV2.Sync
 
 
 {-| Configuration for [`view`](#view).
@@ -26,6 +27,7 @@ import Json.Decode as D
 type alias Config msg =
     { source : String
     , onInput : String -> msg
+    , highlight : Maybe ScriptaV2.Sync.SyncHighlight
     , attrs : List (Html.Attribute msg)
     }
 
@@ -36,7 +38,7 @@ view config =
     Html.node "codemirror-editor"
         (Html.Attributes.attribute "load" config.source
             :: Html.Events.on "text-change" (D.map config.onInput textChangeDecoder)
-            :: config.attrs
+            :: (ScriptaV2.Sync.highlightAttribute config.highlight ++ config.attrs)
         )
         []
 
