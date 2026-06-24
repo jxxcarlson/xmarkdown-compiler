@@ -31,14 +31,21 @@ extracted compiler supports.
 
 ```bash
 cd DemoTOCMd
-./run.sh        # kills elm-watch's port, starts `elm-watch hot`, opens index.html
+./run.sh        # starts `elm-watch hot` + a static HTTP server on :8200, opens http://localhost:8200/index.html
 ```
+
+`assets/editor.js` is an ES module (it imports CodeMirror from a CDN), and
+browsers **refuse to load ES modules over `file://`**. So the app must be served
+over HTTP — do **not** open `assets/index.html` as a file (you'll get a white
+screen and a "Module source URI is not allowed" / "CORS request not http"
+console error).
 
 Or manually:
 
 ```bash
-npx elm-watch hot          # serves assets/main.js with hot reload
-open assets/index.html     # in a browser
+npx elm-watch hot                              # writes assets/main.js with hot reload
+python3 -m http.server 8200 --directory assets # serve over HTTP (any port works)
+# then open http://localhost:8200/index.html
 ```
 
 The generated `assets/main.js` and `elm-stuff/` are git-ignored; the committed
