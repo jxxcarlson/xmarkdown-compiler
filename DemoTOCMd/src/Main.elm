@@ -5,8 +5,12 @@ import Browser.Dom
 import Browser.Events
 import Data.XMarkdown
 import Element
-import Html exposing (Html, div, text)
+import File exposing (File)
+import File.Download
+import File.Select
+import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
+import Html.Events
 import List.Extra
 import ScriptaV2.Compiler
 import ScriptaV2.Editor
@@ -42,6 +46,7 @@ type alias Model =
     , idsOfOpenNodes : List String
     , syncHighlight : Maybe ScriptaV2.Sync.SyncHighlight
     , tick : Int
+    , fileName : String
     }
 
 
@@ -50,6 +55,10 @@ type Msg
     | InputText String
     | Render MarkupMsg
     | GotNewWindowDimensions Int Int
+    | OpenFileRequested
+    | FileSelected File
+    | FileLoaded String
+    | SaveFileRequested
 
 
 type alias Flags =
@@ -67,6 +76,7 @@ init flags =
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , tick = 0
+      , fileName = "untitled.md"
       }
     , Cmd.none
     )
@@ -83,6 +93,27 @@ update msg model =
 
         InputText str ->
             ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
+
+        OpenFileRequested ->
+            ( model, File.Select.file [ "text/markdown", "text/plain", ".md" ] FileSelected )
+
+        FileSelected file ->
+            ( { model | fileName = File.name file }, Task.perform FileLoaded (File.toString file) )
+
+        FileLoaded content ->
+            -- Changing initialText re-pushes the editor's `load` attribute, so
+            -- editor.js replaces the document with the opened file's contents.
+            ( { model
+                | initialText = content
+                , sourceText = content
+                , count = model.count + 1
+                , syncHighlight = Nothing
+              }
+            , Cmd.none
+            )
+
+        SaveFileRequested ->
+            ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
 
         Render msg_ ->
             case ScriptaV2.Sync.fromMsg (model.tick + 1) msg_ of
@@ -170,7 +201,13 @@ view model =
             ScriptaV2.Compiler.compile params (String.lines model.sourceText)
     in
     div [ class "app" ]
-        [ div [ class "app-header" ] [ text "XMarkdown TOC Demo" ]
+        [ div [ class "app-header" ]
+            [ div [ class "toolbar" ]
+                [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
+                , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File" ]
+                ]
+            , div [ class "app-title" ] [ text "XMarkdown TOC Demo" ]
+            ]
         , div [ class "panels" ]
             [ div [ class "panel editor-panel", style "width" (px g.editorW) ]
                 [ editorView model ]

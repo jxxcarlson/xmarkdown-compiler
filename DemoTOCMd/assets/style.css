@@ -23,10 +23,42 @@ html, body {
 }
 
 .app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     color: #e6e6e6;
     font-weight: 700;
+    padding: 8px 16px;
+}
+
+.app-header .app-title {
+    flex: 1;
     text-align: center;
-    padding: 10px 0;
+}
+
+.toolbar {
+    display: flex;
+    gap: 8px;
+}
+
+.toolbar-button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #e6e6e6;
+    border: 1px solid #999;
+    border-radius: 4px;
+    padding: 5px 12px;
+    cursor: pointer;
+}
+
+.toolbar-button:hover {
+    background: #ffffff;
+}
+
+.toolbar-button:active {
+    background: #cfcfcf;
 }
 
 .panels {
