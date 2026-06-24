@@ -98,7 +98,7 @@ update msg model =
 
                 ScriptaV2.Msg.SelectId selId ->
                     if selId == "title" then
-                        ( { model | selectId = selId }, jumpToTopOf "rendered-text" )
+                        ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
 
                     else
                         ( { model | selectId = selId }, Cmd.none )
@@ -169,7 +169,7 @@ view model =
                 [ editorView model ]
             , div
                 [ class "panel rendered-panel"
-                , id "rendered-text"
+                , id ScriptaV2.Editor.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
                 [ Html.map Render (renderPanel compilerOutput.body) ]
