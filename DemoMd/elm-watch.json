@@ -1,7 +1,6 @@
 {
-    "port": 8020,
     "targets": {
-        "My target name": {
+        "XMarkdown File Demo": {
             "inputs": [
                 "src/Main.elm"
             ],
