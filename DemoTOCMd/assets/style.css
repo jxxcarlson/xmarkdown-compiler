@@ -1,0 +1,61 @@
+:root {
+    --cm-fg: #1a1a1a;
+    --cm-bg: #ffffff;
+    --cm-caret: rgba(255, 80, 0, 0.7);
+    --cm-selection-bg: #d7e6ff;
+    --cm-gutter-bg: #f4f4f4;
+    --cm-gutter-fg: #999999;
+    /* Reserved for Phase 2 RL sync */
+    --cm-sync-highlight-bg: #fff3b0;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #666666;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.app-header {
+    color: #e6e6e6;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.panels {
+    display: flex;
+    gap: 16px;
+    padding: 0 16px 16px;
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    background: #ffffff;
+    border-radius: 4px;
+    overflow: auto;
+    min-height: 0;
+}
+
+.editor-panel {
+    padding: 0;
+    overflow: hidden; /* CodeMirror manages its own scrolling */
+}
+
+.editor-panel codemirror-editor {
+    display: block;
+    height: 100%;
+}
+
+.rendered-panel,
+.toc-panel {
+    padding: 16px 24px;
+    font-size: 14px;
+}
