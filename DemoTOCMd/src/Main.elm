@@ -4,20 +4,19 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Data.XMarkdown
-import Element exposing (..)
-import Element.Background as Background
-import Element.Font as Font
-import Element.Input as Input
-import Html exposing (Html)
-import Html.Attributes
+import Element
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class, id, style)
 import List.Extra
 import ScriptaV2.Compiler
+import ScriptaV2.Editor
 import ScriptaV2.Language
 import ScriptaV2.Msg exposing (MarkupMsg)
 import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
 
+main : Program Flags Model Msg
 main =
     Browser.element
         { init = init
@@ -28,12 +27,13 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Browser.Events.onResize GotNewWindowDimensions
 
 
 type alias Model =
-    { sourceText : String
+    { initialText : String
+    , sourceText : String
     , count : Int
     , windowWidth : Int
     , windowHeight : Int
@@ -55,7 +55,8 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { sourceText = Data.XMarkdown.text
+    ( { initialText = Data.XMarkdown.text
+      , sourceText = Data.XMarkdown.text
       , count = 0
       , windowWidth = flags.window.windowWidth
       , windowHeight = flags.window.windowHeight
@@ -76,38 +77,33 @@ update msg model =
             ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
 
         InputText str ->
-            ( { model
-                | sourceText = str
-                , count = model.count + 1
-              }
-            , Cmd.none
-            )
+            ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
 
         Render msg_ ->
             case msg_ of
-                ScriptaV2.Msg.ToggleTOCNodeID id ->
+                ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
                     let
                         idsOfOpenNodes =
-                            if String.left 2 id == "@-" then
-                                if List.member id model.idsOfOpenNodes then
-                                    List.Extra.remove id model.idsOfOpenNodes
+                            if String.left 2 nodeId == "@-" then
+                                if List.member nodeId model.idsOfOpenNodes then
+                                    List.Extra.remove nodeId model.idsOfOpenNodes
 
                                 else
-                                    id :: model.idsOfOpenNodes
+                                    nodeId :: model.idsOfOpenNodes
 
                             else
                                 model.idsOfOpenNodes
                     in
                     ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
 
-                ScriptaV2.Msg.SelectId id ->
-                    if id == "title" then
-                        ( { model | selectId = id }, jumpToTopOf "rendered-text" )
+                ScriptaV2.Msg.SelectId selId ->
+                    if selId == "title" then
+                        ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
 
                     else
-                        ( { model | selectId = id }, Cmd.none )
+                        ( { model | selectId = selId }, Cmd.none )
 
-                ScriptaV2.Msg.SendLineNumber line ->
+                ScriptaV2.Msg.SendLineNumber _ ->
                     ( model, Cmd.none )
 
                 _ ->
@@ -115,25 +111,48 @@ update msg model =
 
 
 
---
+-- GEOMETRY
+
+
+type alias Geometry =
+    { editorW : Int, renderedW : Int, tocW : Int, docWidth : Int }
+
+
+geometry : Model -> Geometry
+geometry model =
+    let
+        tocW =
+            200
+
+        gap =
+            16
+
+        pad =
+            24
+
+        avail =
+            model.windowWidth - tocW - 4 * gap
+
+        half =
+            max 240 (avail // 2)
+    in
+    { editorW = half, renderedW = half, tocW = tocW, docWidth = half - 2 * pad }
+
+
+
 -- VIEW
---
 
 
 view : Model -> Html Msg
 view model =
-    layoutWith { options = [ Element.focusStyle noFocus ] }
-        [ bgGray 0.2 ]
-        (mainColumn model)
-
-
-mainColumn : Model -> Element Msg
-mainColumn model =
     let
+        g =
+            geometry model
+
         params =
             { defaultCompilerParameters
                 | lang = ScriptaV2.Language.SMarkdownLang
-                , docWidth = rhPanelWidth model - 3 * xPadding
+                , docWidth = g.docWidth
                 , editCount = model.count
                 , selectedId = "selectedId"
                 , idsOfOpenNodes = model.idsOfOpenNodes
@@ -143,154 +162,49 @@ mainColumn model =
         compilerOutput =
             ScriptaV2.Compiler.compile params (String.lines model.sourceText)
     in
-    column mainColumnStyle
-        [ column [ width (px <| appWidth model), height (px <| appHeight model), clipY ]
-            [ title "XMarkdown TOC Demo"
-            , row [ spacing margin.between, centerX, width (px <| model.windowWidth - 50 - margin.left - margin.right) ]
-                [ inputText model
-                , displayRenderedText model compilerOutput |> Element.map Render
-                , displayToc model compilerOutput |> Element.map Render
+    div [ class "app" ]
+        [ div [ class "app-header" ] [ text "XMarkdown TOC Demo" ]
+        , div [ class "panels" ]
+            [ div [ class "panel editor-panel", style "width" (px g.editorW) ]
+                [ editorView model ]
+            , div
+                [ class "panel rendered-panel"
+                , id ScriptaV2.Editor.renderedTextId
+                , style "width" (px g.renderedW)
                 ]
+                [ Html.map Render (renderPanel compilerOutput.body) ]
+            , div [ class "panel toc-panel", style "width" (px g.tocW) ]
+                [ Html.map Render (renderPanel compilerOutput.toc) ]
             ]
         ]
 
 
-noFocus : Element.FocusStyle
-noFocus =
-    { borderColor = Nothing
-    , backgroundColor = Nothing
-    , shadow = Nothing
-    }
-
-
-title : String -> Element msg
-title str =
-    row [ centerX, Font.bold, fontGray 0.9, paddingEach { left = 0, right = 0, top = 0, bottom = 12 } ] [ text str ]
-
-
-
--- VIEWS
-
-
-displayRenderedText model compilerOutput =
-    column [ spacing 8, Font.size 14 ]
-        [ el [ fontGray 0.9 ] (text "Rendered Text")
-        , column
-            [ spacing 12
-            , Background.color (Element.rgb 1.0 1.0 1.0)
-            , width (px <| panelWidth model)
-            , panelHeight model
-            , paddingXY 16 32
-            , htmlId "rendered-text"
-            , scrollbarY
-            ]
-            compilerOutput.body
-        ]
-
-
-displayToc model compilerOutput =
-    column [ spacing 8, Font.size 14 ]
-        [ el [ fontGray 0.9 ] (text "Table of Contents")
-        , column
-            [ spacing 4
-            , Background.color (Element.rgb 1.0 1.0 1.0)
-            , width (px <| tocWidth)
-            , panelHeight model
-            , paddingXY 16 32
-            , htmlId "toc"
-            , scrollbarY
-            ]
-            compilerOutput.toc
-        ]
-
-
-htmlId str =
-    Element.htmlAttribute (Html.Attributes.id str)
-
-
-inputText : Model -> Element Msg
-inputText model =
-    Input.multiline [ width (px <| lhPanelWidth model), panelHeight model, Font.size 14 ]
-        { onChange = InputText
-        , text = model.sourceText
-        , placeholder = Nothing
-        , label = Input.labelAbove [ fontGray 0.9 ] <| el [] (text "Source text")
-        , spellcheck = False
+editorView : Model -> Html Msg
+editorView model =
+    ScriptaV2.Editor.view
+        { source = model.initialText
+        , onInput = InputText
+        , attrs = []
         }
 
 
-
--- GEOMETRY
-
-
-appWidth : Model -> Int
-appWidth model =
-    model.windowWidth
-
-
-appHeight : Model -> Int
-appHeight model =
-    model.windowHeight - headerHeight
+{-| Bridge the compiler's still-elm-ui output into the html app. -}
+renderPanel : List (Element.Element MarkupMsg) -> Html MarkupMsg
+renderPanel elements =
+    Element.layout [ Element.width Element.fill ]
+        (Element.column
+            [ Element.spacing 12, Element.width Element.fill ]
+            elements
+        )
 
 
-panelWidth : Model -> Int
-panelWidth model =
-    (appWidth model - (margin.left + margin.right + margin.between)) // 2
-
-
-lhPanelWidth : Model -> Int
-lhPanelWidth model =
-    panelWidth model - tocWidth
-
-
-rhPanelWidth : Model -> Int
-rhPanelWidth model =
-    panelWidth model - 80
-
-
-tocWidth =
-    200
-
-
-panelHeight : Model -> Attribute msg
-panelHeight model =
-    height (px <| appHeight model - margin.bottom - margin.top)
-
-
-margin =
-    { left = 20, right = 20, top = 20, bottom = 60, between = 20 }
-
-
-xPadding =
-    16
-
-
-headerHeight =
-    40
-
-
-
--- Helpers and Constants
-
-
-fontGray g =
-    Font.color (Element.rgb g g g)
-
-
-bgGray g =
-    Background.color (Element.rgb g g g)
-
-
-mainColumnStyle =
-    [ centerX
-    , centerY
-    , bgGray 0.4
-    , paddingXY 20 20
-    ]
+px : Int -> String
+px n =
+    String.fromInt n ++ "px"
 
 
 jumpToTopOf : String -> Cmd Msg
-jumpToTopOf id =
-    Browser.Dom.getViewportOf id
-        |> Task.andThen (\info -> Browser.Dom.setViewportOf id 0 0)
+jumpToTopOf elementId =
+    Browser.Dom.getViewportOf elementId
+        |> Task.andThen (\_ -> Browser.Dom.setViewportOf elementId 0 0)
         |> Task.attempt (\_ -> NoOp)
