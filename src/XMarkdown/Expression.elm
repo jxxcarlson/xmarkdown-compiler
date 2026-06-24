@@ -207,6 +207,24 @@ push token state =
     { state | stack = token :: state.stack }
 
 
+{-| Build a meta whose begin/end span all tokens currently on the stack.
+The tokens already carry within-line column offsets (set in XMarkdown.Token),
+so this recovers the true source span of a reduced construct (bold, italic,
+link, image, math, …) instead of discarding it as { begin = 0, end = 0 }.
+-}
+stackSpan : State -> Meta.Meta
+stackSpan state =
+    let
+        metas =
+            List.map Token.getMeta state.stack
+    in
+    { begin = metas |> List.map .begin |> List.minimum |> Maybe.withDefault 0
+    , end = metas |> List.map .end |> List.maximum |> Maybe.withDefault 0
+    , index = state.tokenIndex
+    , id = makeId state.lineNumber state.tokenIndex
+    }
+
+
 
 -- REDUCE
 
@@ -305,7 +323,7 @@ handleLink state =
                     Fun "red" [ Text "[Link: no label or url]" meta ] meta
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
     in
     { state | committed = expr :: state.committed, stack = [] }
 
@@ -322,7 +340,7 @@ handleBracketedText state =
                     state.stack |> List.reverse |> Token.toString
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
 
         expr =
             Text str meta
@@ -345,7 +363,7 @@ handleImage state =
             Fun "image" [ Text (data.url ++ " " ++ data.label) meta ] meta |> Tools.forklogRed "EXPR" forkLogWidth identity
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
     in
     { state | committed = expr :: state.committed, stack = [] }
 
@@ -379,7 +397,7 @@ handleParens state =
                     state.stack |> List.reverse |> Token.toString
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
 
         expr =
             Text str meta
@@ -399,7 +417,7 @@ handleS state =
                     state.stack |> List.reverse |> Token.toString
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
 
         expr =
             Text str meta
@@ -412,7 +430,7 @@ handleItalicSymbol symbols state =
     if List.head symbols == Just SItalic && List.Extra.last symbols == Just SItalic then
         let
             meta =
-                { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+                (stackSpan state)
 
             innerExprs : List Expression
             innerExprs =
@@ -432,7 +450,7 @@ handleBoldSymbol symbols state =
     if List.head symbols == Just SBold && List.Extra.last symbols == Just SBold then
         let
             meta =
-                { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+                (stackSpan state)
 
             innerExprs : List Expression
             innerExprs =
@@ -460,7 +478,7 @@ handleBoldItalic state =
             parseTokens 0 inner
 
         meta =
-            { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+            (stackSpan state)
 
         expr =
             Fun "bold" [ Fun "italic" exprs meta ] meta
@@ -476,7 +494,7 @@ handleMathSymbol symbols state =
                 takeMiddleReversed state.stack |> Token.toString2
 
             expr =
-                VFun "math" content { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+                VFun "math" content (stackSpan state)
         in
         { state | stack = [], committed = expr :: state.committed }
 
@@ -492,7 +510,7 @@ handleCodeSymbol symbols state =
                 takeMiddleReversed state.stack |> Token.toString2
 
             expr =
-                VFun "code" content { begin = 0, end = 0, index = 0, id = makeId state.lineNumber state.tokenIndex }
+                VFun "code" content (stackSpan state)
         in
         { state | stack = [], committed = expr :: state.committed }
 
