@@ -2,7 +2,35 @@
 // Imports without ?bundle so esm.sh shares one @codemirror/state instance
 // (duplicate state instances cause "unrecognized extension" errors).
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
-import { EditorState } from "https://esm.sh/@codemirror/state@6";
+import { EditorState, StateField, StateEffect } from "https://esm.sh/@codemirror/state@6";
+import { Decoration, keymap } from "https://esm.sh/@codemirror/view@6";
+
+// RL sync: a background decoration over the source span the user clicked.
+const setSyncHighlight = StateEffect.define();
+const clearSyncHighlight = StateEffect.define();
+const syncMark = Decoration.mark({ class: "cm-sync-highlight" });
+
+const syncHighlightField = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(deco, tr) {
+        for (const e of tr.effects) {
+            if (e.is(setSyncHighlight)) {
+                return Decoration.set([syncMark.range(e.value.from, e.value.to)]);
+            }
+            if (e.is(clearSyncHighlight)) {
+                return Decoration.none;
+            }
+        }
+        // Clear the highlight on any document edit (user typing or programmatic).
+        if (tr.docChanged) {
+            return Decoration.none;
+        }
+        return deco.map(tr.changes);
+    },
+    provide: (f) => EditorView.decorations.from(f),
+});
 
 const lightTheme = EditorView.theme(
     {
@@ -28,6 +56,9 @@ const lightTheme = EditorView.theme(
             color: "var(--cm-gutter-fg, #999)",
             border: "none",
         },
+        ".cm-sync-highlight": {
+            backgroundColor: "var(--cm-sync-highlight-bg, #fff3b0)",
+        },
     },
     { dark: false }
 );
@@ -46,7 +77,7 @@ function sendText(editor) {
 
 class CodemirrorEditor extends HTMLElement {
     static get observedAttributes() {
-        return ["load"];
+        return ["load", "highlight"];
     }
 
     constructor() {
@@ -69,6 +100,16 @@ class CodemirrorEditor extends HTMLElement {
                         basicSetup,
                         lightTheme,
                         EditorView.lineWrapping,
+                        syncHighlightField,
+                        keymap.of([
+                            {
+                                key: "Escape",
+                                run: (view) => {
+                                    view.dispatch({ effects: clearSyncHighlight.of(null) });
+                                    return true;
+                                },
+                            },
+                        ]),
                         EditorView.updateListener.of((v) => {
                             if (!v.docChanged) return;
                             if (editor.isProgrammaticUpdate) {
@@ -97,6 +138,35 @@ class CodemirrorEditor extends HTMLElement {
             editor.isProgrammaticUpdate = true;
             editor.dispatch({
                 changes: { from: 0, to: editor.state.doc.length, insert: value },
+            });
+        }
+        if (attr === "highlight" && typeof value === "string") {
+            const editor = this.editor;
+            let h;
+            try {
+                h = JSON.parse(value);
+            } catch (e) {
+                return; // malformed payload: ignore
+            }
+            const doc = editor.state.doc;
+            if (!h || h.line < 1 || h.line > doc.lines) return; // out of range: ignore
+
+            const lineStart = doc.line(h.line).from;
+            let from;
+            let to;
+            if (h.lineCount > 0) {
+                from = lineStart;
+                const lastLine = Math.min(h.line + h.lineCount, doc.lines);
+                to = doc.line(lastLine).to;
+            } else {
+                from = lineStart + h.colBegin;
+                to = lineStart + h.colEnd + 1; // colEnd is inclusive
+            }
+            editor.dispatch({
+                effects: [
+                    setSyncHighlight.of({ from, to }),
+                    EditorView.scrollIntoView(from, { y: "center" }),
+                ],
             });
         }
     }
