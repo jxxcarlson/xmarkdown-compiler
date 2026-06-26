@@ -64,9 +64,6 @@ hasReducibleArgs symbols =
             else
                 False
 
-        BM :: rest ->
-            hasReducibleArgs rest
-
         ST :: rest ->
             hasReducibleArgs rest
 

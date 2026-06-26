@@ -1,6 +1,6 @@
 module Render.CSVTable exposing (..)
 
-import Dict exposing (Dict)
+import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
@@ -9,11 +9,11 @@ import Generic.Language exposing (ExpressionBlock)
 import List.Extra
 import Maybe.Extra
 import Render.Settings exposing (RenderSettings)
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-render count acc settings attrs block =
+render _ _ _ _ block =
     let
         data =
             prepareTable 15 block

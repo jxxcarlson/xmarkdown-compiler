@@ -6,7 +6,7 @@ module Render.Sync exposing
     , rightToLeftSyncHelper
     )
 
-import Element exposing (Element)
+import Element
 import Element.Background as Background
 import Element.Events as Events
 import Generic.Language

@@ -1,4 +1,4 @@
-module MicroScheme.Interpreter exposing (State, init, input, runProgram, step)
+module MicroScheme.Interpreter exposing (State, runProgram)
 
 import MicroScheme.Environment as Environment exposing (Environment)
 import MicroScheme.Eval as Eval
@@ -80,7 +80,7 @@ runProgram separator inputString =
 step : State -> State
 step state =
     case Parser.parse (Environment.root state.environment) state.input of
-        Err err ->
+        Err _ ->
             { state
                 | output = "Parse error"
             }
@@ -112,7 +112,7 @@ step state =
 
                 _ ->
                     case Eval.eval state.environment expr of
-                        Err error ->
+                        Err _ ->
                             { state | output = "error: XXX" }
 
                         Ok value ->
@@ -142,5 +142,5 @@ display expr =
         Sym s ->
             s
 
-        u ->
+        _ ->
             "Unprocessable expression"

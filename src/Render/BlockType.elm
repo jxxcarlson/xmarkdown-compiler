@@ -1,5 +1,5 @@
 module Render.BlockType exposing
-    ( BlockType(..), TextBlockType(..), ContainerBlockType(..), DocumentBlockType(..), InteractiveBlockType(..), ListBlockType(..)
+    ( BlockType(..), TextBlockType(..), ContainerBlockType(..), DocumentBlockType, InteractiveBlockType, ListBlockType(..)
     , fromString, toString
     )
 

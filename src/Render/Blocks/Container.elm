@@ -1,17 +1,12 @@
-module Render.Blocks.Container exposing
-    ( registerRenderers
-    , box, comment, collection, bibitem, env, env_
-    , itemList, numberedList
-    )
+module Render.Blocks.Container exposing (registerRenderers)
 
 {-| This module provides renderers for container blocks.
 
 @docs registerRenderers
-@docs box, comment, collection, bibitem, env, env_
 
 -}
 
-import Dict exposing (Dict)
+import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
@@ -21,14 +16,13 @@ import Generic.Language exposing (ExpressionBlock)
 import List.Extra
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Blocks.Stack as Stack
-import Render.Color as Color
 import Render.Constants
 import Render.Expression
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Render.Utility exposing (elementAttribute)
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Render.Utility
+import ScriptaV2.Msg exposing (MarkupMsg)
 import String.Extra
 
 
@@ -49,7 +43,7 @@ registerRenderers registry =
 
 
 itemList : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-itemList count acc settings attr block =
+itemList count acc settings _ block =
     let
         listOfExprList : List Generic.Language.Expression
         listOfExprList =
@@ -85,11 +79,8 @@ itemList count acc settings attr block =
 
 
 numberedList : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-numberedList count acc settings attr block =
+numberedList _ acc settings _ block =
     let
-        stack =
-            Stack.push 1 []
-
         indentation_ expr_ =
             case expr_ of
                 Generic.Language.ExprList n _ _ ->
@@ -249,32 +240,6 @@ box count acc settings attr block =
         ]
 
 
-{-| Render a comment block
--}
-comment1 : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-comment1 count acc settings attrs block =
-    let
-        author_ =
-            String.join " " block.args
-
-        author =
-            if author_ == "" then
-                ""
-
-            else
-                author_ ++ ":"
-    in
-    Element.column (Element.spacing 6 :: Render.Sync.attributes settings block)
-        [ Element.el [ Font.bold, Font.color Color.blue ] (Element.text author)
-        , Element.paragraph
-            ([ Render.Utility.idAttributeFromInt block.meta.lineNumber
-             ]
-                ++ Render.Sync.attributes settings block
-            )
-            (Render.Helper.renderWithDefault "| comment" count acc settings attrs (Generic.Language.getExpressionContent block))
-        ]
-
-
 comment : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 comment count acc settings attr block =
     let
@@ -357,13 +322,13 @@ env count acc settings attr block =
                     ]
                 , Element.paragraph
                     []
-                    (renderWithDefault2 ("??" ++ (Generic.Language.getNameFromHeading block.heading |> Maybe.withDefault "(name)")) count acc settings attr exprs)
+                    (renderWithDefault2 count acc settings attr exprs)
                 ]
 
 
 {-| Helper for rendering default content
 -}
-renderWithDefault2 _ count acc settings attr exprs =
+renderWithDefault2 count acc settings attr exprs =
     List.map (Render.Expression.render count acc settings attr) exprs
 
 

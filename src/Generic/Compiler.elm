@@ -5,7 +5,6 @@ import Generic.ForestTransform
 import Generic.Language exposing (ExpressionBlock)
 import Generic.Pipeline
 import RoseTree.Tree
-import ScriptaV2.Language exposing (Language)
 
 
 {-|

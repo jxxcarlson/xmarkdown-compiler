@@ -3,7 +3,7 @@ module MicroScheme.Eval exposing (eval)
 import MicroScheme.Environment as Environment exposing (Environment)
 import MicroScheme.Error exposing (EvalError(..))
 import MicroScheme.Expr exposing (Expr(..))
-import MicroScheme.Frame as Frame exposing (Frame)
+import MicroScheme.Frame as Frame
 import MicroScheme.Function as Function
 import Result.Extra
 
@@ -91,10 +91,10 @@ evalResult env resultExpr =
                                 _ ->
                                     Err (EvalError 4 "False, error evaluating predicate")
 
-                L ((Str name) :: rest) ->
+                L ((Str name) :: _) ->
                     Err <| EvalError 0 ("Unknown symbol: " ++ name)
 
-                L exprList_ ->
+                L _ ->
                     Err <| EvalError -1 <| "!!! "
 
                 _ ->

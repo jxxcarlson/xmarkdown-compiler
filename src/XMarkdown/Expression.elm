@@ -1,11 +1,6 @@
 module XMarkdown.Expression exposing
     ( State
-    , eval
-    , evalList
-    , extractMessages
-    , isReducible
     , parse
-    , parseToState
     )
 
 -- import L0.Parser.Expression
@@ -22,10 +17,6 @@ import XMarkdown.Symbol as Symbol exposing (Symbol(..))
 import XMarkdown.Token as Token exposing (Token(..), TokenType(..))
 
 
-forkLogWidth =
-    12
-
-
 
 -- TYPES
 
@@ -40,11 +31,6 @@ type alias State =
     , messages : List String
     , lineNumber : Int
     }
-
-
-extractMessages : State -> List String
-extractMessages state =
-    state.messages
 
 
 
@@ -72,29 +58,21 @@ parse : Int -> String -> List Expression
 parse lineNumber str =
     str
         |> Token.run
-        |> Tools.forklogCyan "TOKENS" forkLogWidth Token.toString2
+        |> Tools.forklogCyan
         |> initWithTokens lineNumber
         |> run
         |> .committed
-        |> Tools.forklogCyan "LENGTH" forkLogWidth List.length
+        |> Tools.forklogCyan
 
 
 parseTokens : Int -> List Token -> List Expression
 parseTokens lineNumber tokens =
     tokens
-        |> Tools.forklogCyan "TOKENS" forkLogWidth Token.toString2
+        |> Tools.forklogCyan
         |> initWithTokens lineNumber
         |> run
         |> .committed
-        |> Tools.forklogCyan "LENGTH" forkLogWidth List.length
-
-
-parseToState : Int -> String -> State
-parseToState lineNumber str =
-    str
-        |> Token.run
-        |> initWithTokens lineNumber
-        |> run
+        |> Tools.forklogCyan
 
 
 
@@ -116,13 +94,13 @@ nextStep state =
 
             else
                 -- the stack is not empty, so we need to handle the parse error
-                recoverFromError (state |> Tools.forklogBlue "RECOVER" 12 (.stack >> List.reverse >> Token.toString2))
+                recoverFromError (state |> Tools.forklogBlue)
 
         Just token ->
             state
                 |> advanceTokenIndex
                 |> pushToken token
-                |> Tools.forklogBlue "STACK" forkLogWidth (.stack >> Token.toString2)
+                |> Tools.forklogBlue
                 |> reduceState
                 |> (\st -> { st | step = st.step + 1 })
                 |> Loop
@@ -234,13 +212,13 @@ reduceState state =
     let
         -- peek : Maybe Token
         reducible1 =
-            isReducible state.stack |> Tools.forklogRed "SYMBOLS (!!)" forkLogWidth identity
+            isReducible state.stack |> Tools.forklogRed
     in
     -- if state.tokenIndex >= state.numberOfTokens || (reducible1 && not (isLBToken peek)) then
     if state.tokenIndex >= state.numberOfTokens || reducible1 then
         let
             symbols =
-                state.stack |> Symbol.convertTokens |> List.reverse |> Tools.forklogRed "SYMBOLS" forkLogWidth identity
+                state.stack |> Symbol.convertTokens |> List.reverse |> Tools.forklogRed
         in
         case List.head symbols of
             Just SAT ->
@@ -273,7 +251,7 @@ reduceState state =
                     handleLink state
 
                 else
-                    handleBracketedText state |> Tools.forklogRed "HANDLE[]" forkLogWidth identity
+                    handleBracketedText state |> Tools.forklogRed
 
             --else
             --    state
@@ -323,7 +301,7 @@ handleLink state =
                     Fun "red" [ Text "[Link: no label or url]" meta ] meta
 
         meta =
-            (stackSpan state)
+            stackSpan state
     in
     { state | committed = expr :: state.committed, stack = [] }
 
@@ -340,7 +318,7 @@ handleBracketedText state =
                     state.stack |> List.reverse |> Token.toString
 
         meta =
-            (stackSpan state)
+            stackSpan state
 
         expr =
             Text str meta
@@ -360,10 +338,10 @@ handleImage state =
                     { label = "no image label", url = "no image url" }
 
         expr =
-            Fun "image" [ Text (data.url ++ " " ++ data.label) meta ] meta |> Tools.forklogRed "EXPR" forkLogWidth identity
+            Fun "image" [ Text (data.url ++ " " ++ data.label) meta ] meta |> Tools.forklogRed
 
         meta =
-            (stackSpan state)
+            stackSpan state
     in
     { state | committed = expr :: state.committed, stack = [] }
 
@@ -376,7 +354,7 @@ handleAt state =
                 |> List.reverse
                 |> Token.toString
                 |> String.dropLeft 1
-                |> Tools.forklogRed "STACK (AT)" forkLogWidth identity
+                |> Tools.forklogRed
 
         expr : List Expression
         expr =
@@ -397,27 +375,7 @@ handleParens state =
                     state.stack |> List.reverse |> Token.toString
 
         meta =
-            (stackSpan state)
-
-        expr =
-            Text str meta
-    in
-    { state | committed = expr :: state.committed, stack = [] }
-
-
-handleS : State -> State
-handleS state =
-    let
-        str =
-            case state.stack of
-                [ S str_ _ ] ->
-                    str_
-
-                _ ->
-                    state.stack |> List.reverse |> Token.toString
-
-        meta =
-            (stackSpan state)
+            stackSpan state
 
         expr =
             Text str meta
@@ -430,7 +388,7 @@ handleItalicSymbol symbols state =
     if List.head symbols == Just SItalic && List.Extra.last symbols == Just SItalic then
         let
             meta =
-                (stackSpan state)
+                stackSpan state
 
             innerExprs : List Expression
             innerExprs =
@@ -450,7 +408,7 @@ handleBoldSymbol symbols state =
     if List.head symbols == Just SBold && List.Extra.last symbols == Just SBold then
         let
             meta =
-                (stackSpan state)
+                stackSpan state
 
             innerExprs : List Expression
             innerExprs =
@@ -478,7 +436,7 @@ handleBoldItalic state =
             parseTokens 0 inner
 
         meta =
-            (stackSpan state)
+            stackSpan state
 
         expr =
             Fun "bold" [ Fun "italic" exprs meta ] meta
@@ -587,13 +545,13 @@ isReducible : List Token -> Bool
 isReducible tokens =
     let
         preliminary =
-            tokens |> List.reverse |> Symbol.convertTokens |> List.filter (\sym -> sym /= O) |> Tools.forklogYellow "SYMBOLS" forkLogWidth identity
+            tokens |> List.reverse |> Symbol.convertTokens |> List.filter (\_ -> True) |> Tools.forklogYellow
     in
     if preliminary == [] then
         False
 
     else
-        preliminary |> M.reducible |> Tools.forklogYellow "REDUCIBLE ?" forkLogWidth identity
+        preliminary |> M.reducible |> Tools.forklogYellow
 
 
 
@@ -603,7 +561,7 @@ isReducible tokens =
 recoverFromError : State -> Step State State
 recoverFromError state =
     case List.reverse state.stack of
-        (S content meta) :: (Italic _) :: rest ->
+        (S content meta) :: (Italic _) :: _ ->
             Loop
                 { state
                     | tokens =
@@ -616,7 +574,7 @@ recoverFromError state =
                     , committed = Fun "pink" [ Text " *" dummyLocWithId ] dummyLocWithId :: state.committed
                 }
 
-        (S content meta) :: (Bold _) :: rest ->
+        (S content meta) :: (Bold _) :: _ ->
             Loop
                 { state
                     | tokens =
@@ -654,7 +612,7 @@ recoverFromError state =
                         , messages = [ "!!" ]
                     }
 
-        (Italic meta1) :: (S str meta2) :: [] ->
+        (Italic _) :: (S str meta2) :: [] ->
             Loop
                 { state
                     | stack = []
@@ -665,7 +623,7 @@ recoverFromError state =
                     , tokenIndex = meta2.index + 1
                 }
 
-        (Italic meta1) :: (S str meta2) :: (Bold meta3) :: [] ->
+        (Italic _) :: (S str _) :: (Bold meta3) :: [] ->
             Loop
                 { state
                     | stack = []
@@ -676,7 +634,7 @@ recoverFromError state =
                     , tokenIndex = meta3.index + 1
                 }
 
-        (Italic meta1) :: (S str meta2) :: (Bold meta3) :: rest ->
+        (Italic _) :: (S str _) :: (Bold meta3) :: _ ->
             if String.right 1 str == " " then
                 Loop
                     { state
@@ -699,7 +657,7 @@ recoverFromError state =
                         , tokenIndex = meta3.index + 1
                     }
 
-        (Italic meta1) :: (S str meta2) :: rest ->
+        (Italic _) :: (S str meta2) :: _ ->
             Loop
                 { state
                     | stack = []
@@ -772,7 +730,7 @@ recoverFromError state =
                     , messages = [ "!!" ]
                 }
 
-        (Bold meta1) :: (S str meta2) :: (Italic meta3) :: rest ->
+        (Bold _) :: (S str _) :: (Italic meta3) :: _ ->
             Loop
                 { state
                     | stack = []

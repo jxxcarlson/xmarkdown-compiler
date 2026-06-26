@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
 import Render.CSVTable
 import Render.ChartV2
@@ -20,9 +20,9 @@ import Render.Math
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Theme
-import Render.Utility exposing (elementAttribute)
+import Render.Utility
 import ScriptaV2.Msg exposing (MarkupMsg(..))
-import SyntaxHighlight exposing (gitHub, monokai, toBlockHtml, useTheme)
+import SyntaxHighlight exposing (toBlockHtml)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -95,16 +95,6 @@ verbatimDict =
         ]
 
 
-renderLoadData : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-renderLoadData _ _ _ _ block =
-    Element.none
-
-
-setup : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-setup _ _ _ _ block =
-    Element.none
-
-
 renderLoad : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 renderLoad _ _ _ _ block =
     case block.body of
@@ -131,7 +121,7 @@ renderLoad _ _ _ _ block =
 
 
 renderCode : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-renderCode count acc settings attr block =
+renderCode _ _ settings _ block =
     let
         language =
             case List.head block.args of
@@ -178,14 +168,6 @@ viewCodeWithHighlight settings language code =
             lightCSS2
     , viewCodeWithHighlight_ language code |> Element.html
     ]
-
-
-ghTheme =
-    ".elmsh {color: #24292e;background: #eeeeee;line-height: 1.5;}.elmsh-hl {background: #fffbdd;}.elmsh-add {background: #eaffea;}.elmsh-del {background: #ffecec;}.elmsh-comm {color: #969896;}.elmsh1 {color: #005cc5;}.elmsh2 {color: #df5000;}.elmsh3 {color: #d73a49;}.elmsh4 {color: #0086b3;}.elmsh5 {color: #63a35c;}.elmsh6 {color: #005cc5;}.elmsh7 {color: #795da3;}"
-
-
-ghTheme2 =
-    ".elmsh {color: #24292e;background: #EDF0FA;line-height: 1.5;}.elmsh-hl {background: #d6dbe8;}.elmsh-add {background: #d4f0d8;}.elmsh-del{background: #f5dde0;}.elmsh-comm {color: #6a737d;}.elmsh1 {color: #0051b8;}.elmsh2 {color: #d14800;}.elmsh3 {color: #cb2e42;}.elmsh4 {color:#0079a3;}.elmsh5 {color: #5a9553;}.elmsh6 {color: #0051b8;}.elmsh7 {color: #6f5397;}"
 
 
 ghTheme3 =
@@ -285,11 +267,11 @@ renderVerbatim _ _ settings attrs block =
             ++ attrs
             ++ Render.Sync.attributes settings block
         )
-        (List.map (renderVerbatimLine "none") (String.lines (String.trim (Render.Utility.getVerbatimContent block))))
+        (List.map renderVerbatimLine (String.lines (String.trim (Render.Utility.getVerbatimContent block))))
 
 
-renderVerbatimLine : String -> String -> Element msg
-renderVerbatimLine lang str =
+renderVerbatimLine : String -> Element msg
+renderVerbatimLine str =
     let
         spacer s =
             let
@@ -303,25 +285,6 @@ renderVerbatimLine lang str =
 
     else
         Element.row [ spacer str, Element.spacing 12 ] [ Element.el [ Element.height (Element.px 22), Font.size 13 ] (Element.text str) ]
-
-
-renderIndexedVerbatimLine : Int -> String -> String -> Element msg
-renderIndexedVerbatimLine k lang str_ =
-    let
-        str =
-            String.replace "\\bt" "`" str_
-
-        index k_ =
-            Element.el [ Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 } ] (Element.text <| String.fromInt (k_ + 1))
-    in
-    if String.trim str == "" then
-        Element.row [ Element.spacing 12 ] [ index k, Element.el [ Element.height (Element.px 11), Font.size 13 ] (Element.text "") ]
-
-    else if lang == "plain" then
-        Element.row [ Element.spacing 12 ] [ index k, Element.el [ Element.height (Element.px 22), Font.size 13 ] (Element.text str) ]
-
-    else
-        Element.row [ Element.spacing 12 ] [ index k, Element.paragraph [ Element.height (Element.px 22), Font.size 13 ] (renderedColoredLine lang str) ]
 
 
 renderVerse : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -353,18 +316,9 @@ renderVerse _ _ settings attrs block =
                 [ Element.paddingEach { left = 12, right = 0, top = 0, bottom = 0 } ]
                 ++ attrs
             )
-            (List.map (renderVerbatimLine "plain") lines)
+            (List.map renderVerbatimLine lines)
         , Render.Helper.noteFromPropertyKey "source" [ Render.Helper.leftPadding 12 ] block
         ]
-
-
-note block =
-    case Dict.get "note" block.properties of
-        Nothing ->
-            Element.none
-
-        Just note_ ->
-            Element.paragraph [] [ Element.text note_ ]
 
 
 verbatimBlockAttributes lineNumber numberOfLines attrs =
@@ -376,46 +330,3 @@ verbatimBlockAttributes lineNumber numberOfLines attrs =
 
 
 -- HELPERS
-
-
-renderedColoredLine lang str =
-    str
-        |> String.words
-        |> List.map (renderedColoredWord lang)
-
-
-renderedColoredWord lang word =
-    case lang of
-        "elm" ->
-            case Dict.get word elmDict of
-                Just color ->
-                    Element.el [ color ] (Element.text (word ++ " "))
-
-                Nothing ->
-                    Element.el [] (Element.text (word ++ " "))
-
-        _ ->
-            Element.el [] (Element.text (word ++ " "))
-
-
-orange =
-    Font.color (Element.rgb255 227 81 18)
-
-
-green =
-    Font.color (Element.rgb255 11 158 26)
-
-
-cyan =
-    Font.color (Element.rgb255 11 143 158)
-
-
-elmDict =
-    Dict.fromList
-        [ ( "type", orange )
-        , ( "LB", green )
-        , ( "RB", green )
-        , ( "S", green )
-        , ( "String", green )
-        , ( "Meta", cyan )
-        ]

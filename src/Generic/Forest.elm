@@ -61,39 +61,3 @@ map f forest =
 {-| -}
 type Error
     = EmptyBlocks
-
-
-{-| -}
-
-
-
--- fromBlocks : block -> (block -> Int) -> List block -> Result Error (Tree block)
---forestFromBlocks : (a -> Int) -> List a -> List (Tree a)
---forestFromBlocks indentation blocks =
---    Library.Forest.makeForest indentation blocks
---
--- HELPERS II
-
-
-repeatM : Int -> (block -> Maybe block) -> Maybe block -> Maybe block
-repeatM n f x =
-    if n == 0 then
-        x
-
-    else
-        repeatM (n - 1) f (Maybe.andThen f x)
-
-
-{-|
-
-    Apply f to x n times
-
--}
-repeat : Int -> (a -> Maybe a) -> a -> a
-repeat n f x =
-    case repeatM n f (Just x) of
-        Nothing ->
-            x
-
-        Just y ->
-            y

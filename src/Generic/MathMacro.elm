@@ -1,31 +1,16 @@
 module Generic.MathMacro exposing
-    ( Context(..)
+    ( Context
     , Deco(..)
-    , MacroBody(..)
     , MathExpr(..)
-    , MathMacroDict
-    , Problem(..)
-    , evalStr
-    , makeMacroDict
-    , makeMacroDictFromLines
-    , parse
-    , parseMany
-    , parseNewCommand
-    , print
-    , printList
-    , printNewCommand
+    , Problem
     )
 
-import Dict exposing (Dict)
-import Maybe.Extra
 import Parser.Advanced as PA
     exposing
         ( (|.)
         , (|=)
-        , DeadEnd
         , Step(..)
         , Token(..)
-        , backtrackable
         , chompIf
         , chompWhile
         , getOffset
@@ -34,47 +19,13 @@ import Parser.Advanced as PA
         , loop
         , map
         , oneOf
-        , run
         , succeed
         , symbol
         )
-import Result.Extra
 
 
 
 -- TYPES
-
-
-type NewCommand
-    = NewCommand MathExpr Int (List MathExpr)
-
-
-type MacroBody
-    = MacroBody Int (List MathExpr)
-
-
-evalStr : MathMacroDict -> String -> String
-evalStr dict str =
-    case parseMany (String.trim str) of
-        Ok result ->
-            List.map (expandMacroWithDict dict) result |> printList
-
-        Err _ ->
-            -- the intent of evalStr is to expand macros.  So if something
-            -- goes wrong with the process, just return the input string.
-            -- TODO: This solves the problem of false error reporting, but I don't like the solution.
-            str
-
-
-parseMany : String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
-parseMany str =
-    str
-        |> String.trim
-        |> String.lines
-        |> List.map String.trim
-        |> List.map parse
-        |> Result.Extra.combine
-        |> Result.map List.concat
 
 
 type MathExpr
@@ -104,131 +55,6 @@ type Deco
 -- RESUlT: [Macro "frac" [Arg [Macro "baar" [Arg [AlphaNum "X"]]],Arg [Macro "baar" [Arg [AlphaNum "Y"]]]]]
 
 
-expandMacroWithDict : MathMacroDict -> MathExpr -> MathExpr
-expandMacroWithDict dict expr =
-    case expr of
-        Macro macroName args ->
-            case Dict.get macroName dict of
-                Nothing ->
-                    Macro macroName (List.map (expandMacroWithDict dict) args)
-
-                Just (MacroBody k exprs) ->
-                    Expr (expandMacro_ (List.map (expandMacroWithDict dict) args) (MacroBody k (List.map (expandMacroWithDict dict) exprs)))
-
-        Arg exprs ->
-            Arg (List.map (expandMacroWithDict dict) exprs)
-
-        Sub decoExpr ->
-            case decoExpr of
-                DecoM decoMExpr ->
-                    Sub (DecoM (expandMacroWithDict dict decoMExpr))
-
-                DecoI m ->
-                    Sub (DecoI m)
-
-        Super decoExpr ->
-            case decoExpr of
-                DecoM decoMExpr ->
-                    Super (DecoM (expandMacroWithDict dict decoMExpr))
-
-                DecoI m ->
-                    Super (DecoI m)
-
-        _ ->
-            expr
-
-
-{-|
-
-    > args = [Exprs [AlphaNum "x"],Exprs [AlphaNum "y"]]
-    > macroDefBody = (MacroBody 2 [Macro "alpha" [],MathSymbols "(",Param 1,MathSymbols ",",Param 2,MathSymbols ")"])
-    > expandMacro_  args macroDefBody
-    [Macro "alpha" [],MathSymbols "(",Exprs [AlphaNum "x"],MathSymbols ",",Exprs [AlphaNum "y"],MathSymbols ")"]
-
--}
-expandMacro_ : List MathExpr -> MacroBody -> List MathExpr
-expandMacro_ args (MacroBody arity macroDefBody) =
-    replaceParams args macroDefBody
-
-
-type alias MathMacroDict =
-    Dict String MacroBody
-
-
-replaceParam_ : Int -> MathExpr -> MathExpr -> MathExpr
-replaceParam_ k expr target =
-    case target of
-        Arg exprs ->
-            Arg (List.map (replaceParam_ k expr) exprs)
-
-        Sub decoExpr ->
-            case decoExpr of
-                DecoM decoMExpr ->
-                    Sub (DecoM (replaceParam_ k expr decoMExpr))
-
-                DecoI m ->
-                    Sub (DecoI m)
-
-        Super decoExpr ->
-            case decoExpr of
-                DecoM decoMExpr ->
-                    Super (DecoM (replaceParam_ k expr decoMExpr))
-
-                DecoI m ->
-                    Super (DecoI m)
-
-        Param m ->
-            if m == k then
-                expr
-
-            else
-                Param m
-
-        Macro name exprs ->
-            Macro name (List.map (replaceParam_ k expr) exprs)
-
-        _ ->
-            target
-
-
-replaceParam : Int -> MathExpr -> List MathExpr -> List MathExpr
-replaceParam k expr exprs =
-    List.map (replaceParam_ k expr) exprs
-
-
-replaceParams : List MathExpr -> List MathExpr -> List MathExpr
-replaceParams replacementList target =
-    List.foldl (\( k, replacement ) acc -> replaceParam (k + 1) replacement acc) target (List.indexedMap (\k item -> ( k, item )) replacementList)
-
-
-makeMacroDict : String -> Dict String MacroBody
-makeMacroDict str =
-    str
-        |> String.trim
-        |> String.lines
-        |> List.map (parseNewCommand >> makeEntry)
-        |> Maybe.Extra.values
-        |> Dict.fromList
-
-
-makeMacroDictFromLines : List String -> Dict String MacroBody
-makeMacroDictFromLines lines =
-    lines
-        |> List.map (parseNewCommand >> makeEntry)
-        |> Maybe.Extra.values
-        |> Dict.fromList
-
-
-makeEntry : Result error NewCommand -> Maybe ( String, MacroBody )
-makeEntry newCommand_ =
-    case newCommand_ of
-        Ok (NewCommand (F0 name) arity [ Arg body ]) ->
-            Just ( name, MacroBody arity body )
-
-        _ ->
-            Nothing
-
-
 type Context
     = CArg String
 
@@ -241,9 +67,7 @@ type Problem
     | InvalidNumber
     | ExpectingMathSmallSpace
     | ExpectingMathMediumSpace
-    | ExpectingLeftBracket
     | ExpectingMathSpace
-    | ExpectingRightBracket
     | ExpectingLeftMathBrace
     | ExpectingRightMathBrace
     | ExpectingUnderscore
@@ -252,7 +76,6 @@ type Problem
     | ExpectingRightBrace
     | ExpectingHash
     | ExpectingBackslash
-    | ExpectingNewCommand
 
 
 type alias MathExprParser a =
@@ -261,11 +84,6 @@ type alias MathExprParser a =
 
 
 -- PARSER
-
-
-parse : String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
-parse str =
-    PA.run (many mathExprParser) str
 
 
 macroParser =
@@ -305,22 +123,6 @@ mathSymbolsParser =
         |> PA.map MathSymbols
 
 
-optionalParamParser =
-    succeed identity
-        |. symbol (Token "[" ExpectingLeftBracket)
-        |= PA.int ExpectingInt InvalidNumber
-        |. symbol (Token "]" ExpectingRightBracket)
-
-
-parseNewCommand : String -> Result (List (DeadEnd Context Problem)) NewCommand
-parseNewCommand str =
-    run newCommandParser str
-
-
-newCommandParser =
-    oneOf [ backtrackable newCommandParser1, newCommandParser2 ]
-
-
 mathSpaceParser : PA.Parser c Problem MathExpr
 mathSpaceParser =
     succeed MathSpace
@@ -349,26 +151,6 @@ rightBraceParser : PA.Parser c Problem MathExpr
 rightBraceParser =
     succeed RightMathBrace
         |. symbol (Token "\\}" ExpectingRightMathBrace)
-
-
-newCommandParser1 : PA.Parser Context Problem NewCommand
-newCommandParser1 =
-    succeed (\name arity body -> NewCommand name arity body)
-        |. symbol (Token "\\newcommand" ExpectingNewCommand)
-        |. symbol (Token "{" ExpectingLeftBrace)
-        |= f0Parser
-        |. symbol (Token "}" ExpectingRightBrace)
-        |= optionalParamParser
-        |= many mathExprParser
-
-
-newCommandParser2 =
-    succeed (\name body -> NewCommand name 0 body)
-        |. symbol (Token "\\newcommand" ExpectingNewCommand)
-        |. symbol (Token "{" ExpectingLeftBrace)
-        |= f0Parser
-        |. symbol (Token "}" ExpectingRightBrace)
-        |= many mathExprParser
 
 
 argParser : PA.Parser Context Problem MathExpr
@@ -440,14 +222,6 @@ numericDecoParser =
 
 
 -- PRINT
-
-
-printNewCommand (NewCommand mathExpr arity body) =
-    if arity == 0 then
-        "\\newcommand" ++ enclose (print mathExpr) ++ printList body
-
-    else
-        "\\newcommand" ++ enclose (print mathExpr) ++ "[" ++ String.fromInt arity ++ "]" ++ printList body
 
 
 printList : List MathExpr -> String

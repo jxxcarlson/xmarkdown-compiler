@@ -8,19 +8,16 @@ module Render.Math exposing
     , evalMath
     , mathText
     , textarray
-    , translateMathText
     )
 
-import Dict exposing (Dict)
+import Dict
 import ETeX.Transform
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock)
-import Generic.MathMacro
 import Generic.PTextMacro
-import Generic.TextMacro
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
@@ -29,8 +26,7 @@ import List.Extra
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.ThemeHelpers
-import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 type DisplayMode
@@ -55,9 +51,6 @@ chem count acc settings attrs_ block =
 displayedMath : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 displayedMath count acc settings attrs_ block =
     let
-        w =
-            String.fromInt settings.width ++ "px"
-
         attrs =
             Element.width (Element.px settings.width) :: attrs_
 
@@ -71,7 +64,7 @@ displayedMath count acc settings attrs_ block =
     in
     Element.column attrs
         [ Element.el (Render.Sync.highlighter block.args [ Element.centerX ])
-            (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count w block.meta.id DisplayMathMode (filteredLines |> String.join "\n"))
+            (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode (filteredLines |> String.join "\n"))
         ]
 
 
@@ -91,11 +84,11 @@ equation count acc settings attrs block =
         aligned count acc settings attrs block
 
     else
-        equation_ count acc settings attrs block
+        equation_ count acc settings block
 
 
-equation_ : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-equation_ count acc settings attrs block =
+equation_ : Int -> Accumulator -> RenderSettings -> ExpressionBlock -> Element MarkupMsg
+equation_ count acc settings block =
     let
         isNumbered =
             List.member "numbered" block.args
@@ -109,16 +102,6 @@ equation_ count acc settings attrs block =
 
         contentWidth =
             settings.width - labelWidth
-
-        evalMacro line =
-            if String.right 2 line == "\\\\" then
-                line
-                    |> String.dropRight 2
-                    |> ETeX.Transform.evalStr acc.mathMacroDict
-                    |> (\str -> str ++ "\\\\")
-
-            else
-                line |> ETeX.Transform.evalStr acc.mathMacroDict
 
         filteredLines =
             -- lines of math text to be rendered: filter stuff out
@@ -140,7 +123,7 @@ equation_ count acc settings attrs block =
     in
     Element.row []
         [ Element.el [ Element.width <| Element.px contentWidth ]
-            (Element.el [ Element.centerX, Element.moveRight (toFloat labelWidth / 2) ] (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count (String.fromInt contentWidth) block.meta.id DisplayMathMode content))
+            (Element.el [ Element.centerX, Element.moveRight (toFloat labelWidth / 2) ] (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode content))
         , Element.el [ Element.width <| Element.px labelWidth ]
             (Element.el [ Element.alignRight ] label)
         ]
@@ -165,25 +148,6 @@ equationLabel properties =
     in
     --showIf settings content label_
     label_
-
-
-showIf : Render.Settings.RenderSettings -> String -> Element msg -> Element msg
-showIf settings content element =
-    if Render.Utility.textWidth settings.display content > (toFloat settings.width - 140) then
-        Element.none
-
-    else
-        element
-
-
-getCounter : String -> Dict String Int -> String
-getCounter counterName dict =
-    Dict.get counterName dict |> Maybe.withDefault 0 |> String.fromInt
-
-
-getLabel : String -> Dict String String -> String
-getLabel label dict =
-    Dict.get label dict |> Maybe.withDefault "" |> String.trim
 
 
 aligned : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -226,9 +190,6 @@ aligned count acc settings attrs block =
 
         content =
             "\\begin{aligned}\n" ++ innerContent ++ "\n\\end{aligned}"
-
-        label =
-            equationLabel block.properties
     in
     Element.column ([ Element.width (Element.px settings.width) ] ++ attrs ++ Render.Sync.attributes settings block)
         [ Element.row
@@ -236,13 +197,9 @@ aligned count acc settings attrs block =
             [ Element.width (Element.px settings.width) ]
             [ Element.el
                 (Element.centerX :: highlightMath settings block)
-                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count str block.meta.id DisplayMathMode content)
+                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode content)
             ]
         ]
-
-
-deltaY lines =
-    12 * List.length lines |> toFloat
 
 
 array : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -294,16 +251,13 @@ array count acc settings attrs block =
 
         content =
             "\\begin{array}{" ++ format ++ "}\n" ++ innerContent ++ "\n\\end{array}"
-
-        label =
-            equationLabel block.properties
     in
     Element.column ([ Element.width (Element.px settings.width) ] ++ attrs)
         [ Element.row
             (Element.width (Element.px settings.width) :: Render.Sync.attributes settings block)
             [ Element.el
                 (Element.centerX :: Render.Sync.attributes settings block)
-                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count str block.meta.id DisplayMathMode content)
+                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode content)
             ]
         ]
 
@@ -387,13 +341,13 @@ textarray count acc settings attrs block =
             (Element.width (Element.px settings.width) :: Render.Sync.attributes settings block)
             [ Element.el
                 (Element.centerX :: Render.Sync.attributes settings block)
-                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count str block.meta.id DisplayMathMode content)
+                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode content)
             ]
         ]
 
 
-mathText : String -> Int -> String -> String -> DisplayMode -> String -> Element msg
-mathText theme generation width id displayMode content =
+mathText : String -> Int -> String -> DisplayMode -> String -> Element msg
+mathText theme generation id displayMode content =
     -- TODO Track this down at the source.
     Html.Keyed.node "span"
         [ HA.style "padding-top" "0px"
@@ -407,23 +361,6 @@ mathText theme generation width id displayMode content =
 
 eraseLabeMacro content =
     content |> String.lines |> List.map (Generic.PTextMacro.eraseLeadingMacro "label") |> String.join "\n"
-
-
-translateMathText : String -> String
-translateMathText content =
-    content
-        |> String.words
-        |> List.map translateWord
-        |> String.join " "
-
-
-translateWord : String -> String
-translateWord word =
-    if word == "pi" then
-        "\\pi"
-
-    else
-        word
 
 
 mathText_ : String -> DisplayMode -> String -> Html msg

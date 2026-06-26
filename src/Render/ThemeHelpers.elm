@@ -1,6 +1,6 @@
 module Render.ThemeHelpers exposing (..)
 
-import Render.Settings exposing (RenderSettings)
+import Render.Settings
 import Render.Theme exposing (Theme(..))
 
 

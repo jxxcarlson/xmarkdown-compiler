@@ -1,11 +1,11 @@
 module Render.Sync2 exposing (sync)
 
-import Element exposing (Element, paddingEach)
+import Element
 import Generic.Language
 import Render.Helper
 import Render.Settings
 import Render.Sync
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 sync : Generic.Language.ExpressionBlock -> Render.Settings.RenderSettings -> List (Element.Attribute MarkupMsg) -> List (Element.Attribute MarkupMsg)

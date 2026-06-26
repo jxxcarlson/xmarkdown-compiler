@@ -1,28 +1,10 @@
-module ETeX.Dictionary exposing (functionDict, symbolDict)
+module ETeX.Dictionary exposing (symbolDict)
 
 import Dict exposing (Dict)
-import Generic.MathMacro exposing (MacroBody, MathExpr)
 
 
 
 -- MacroBody Int (List MathExpr)
-
-
-functionDict : Dict String { name : String, arity : Int }
-functionDict =
-    Dict.fromList
-        [ ( "sin", { name = "\\sin", arity = 1 } )
-        , ( "cos", { name = "\\cos", arity = 1 } )
-        , ( "tan", { name = "\\tan", arity = 1 } )
-        , ( "cot", { name = "\\cot", arity = 1 } )
-        , ( "sec", { name = "\\sec", arity = 1 } )
-        , ( "csc", { name = "\\csc", arity = 1 } )
-        , ( "log", { name = "\\log", arity = 1 } )
-        , ( "ln", { name = "\\ln", arity = 1 } )
-        , ( "exp", { name = "\\exp", arity = 1 } )
-        , ( "argmax", { name = "\\argmax", arity = 2 } )
-        , ( "argmin", { name = "\\argmin", arity = 2 } )
-        ]
 
 
 symbolDict : Dict String String

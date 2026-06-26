@@ -10,7 +10,7 @@ import Generic.Language exposing (Expression, ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 import SvgParser
 import Tools.Utility as Utility
 
@@ -58,8 +58,8 @@ image settings attrs body =
         }
 
 
-inlineimage : Render.Settings.RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-inlineimage settings attrs body =
+inlineimage : Render.Settings.RenderSettings -> List Expression -> Element MarkupMsg
+inlineimage settings body =
     let
         params =
             body |> argumentsFromAST |> imageParameters settings
@@ -155,29 +155,9 @@ image2 _ _ settings attrs block =
 -- Property Helpers
 
 
-getFigureLabel : Dict String String -> String
-getFigureLabel dict =
-    Dict.get "figure" dict |> Maybe.withDefault ""
-
-
-getWidth : Dict String String -> Element.Length
-getWidth properties =
-    Dict.get "width" properties |> Maybe.andThen String.toInt |> Maybe.withDefault 400 |> Element.px
-
-
-getCaption : Dict String String -> String
-getCaption properties =
-    Dict.get "caption" properties |> Maybe.withDefault ""
-
-
 getDescription : Dict String String -> String
 getDescription properties =
     Dict.get "description" properties |> Maybe.withDefault ""
-
-
-getPlacement : Dict String String -> String
-getPlacement properties =
-    Dict.get "placement" properties |> Maybe.withDefault ""
 
 
 getVerbatimContent : ExpressionBlock -> String
@@ -191,7 +171,7 @@ getVerbatimContent { body } =
 
 
 svg : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-svg count acc settings attrs block =
+svg _ _ settings attrs block =
     case SvgParser.parse (getVerbatimContent block) of
         Ok html_ ->
             Element.column
@@ -211,7 +191,7 @@ svg count acc settings attrs block =
 {-| Create elements from HTML markup. On parsing error, output no elements.
 -}
 tikz : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-tikz count acc settings attrs block =
+tikz _ _ settings attrs block =
     let
         maybePair_ =
             case String.split "---" (getVerbatimContent block) of

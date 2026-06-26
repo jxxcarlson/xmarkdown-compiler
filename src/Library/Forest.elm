@@ -1,9 +1,4 @@
-module Library.Forest exposing
-    ( depths
-    , makeForest
-    , print
-    , toListList
-    )
+module Library.Forest exposing (makeForest)
 
 import Library.Tree
 import RoseTree.Tree exposing (Tree)
@@ -93,14 +88,6 @@ loop s f =
 
 
 -- PRINTING
-
-
-print : (a -> String) -> List (Tree a) -> String
-print toText list =
-    List.map (Library.Tree.print toText) list |> String.join "\n"
-
-
-
 -- INTERNALS
 
 
@@ -115,8 +102,3 @@ type alias State a =
 
 
 -- UTILITIES
-
-
-depths : List (Tree a) -> List Int
-depths =
-    List.map Library.Tree.depth

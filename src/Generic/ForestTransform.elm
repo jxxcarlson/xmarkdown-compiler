@@ -1,7 +1,4 @@
-module Generic.ForestTransform exposing
-    ( forestFromBlocks
-    , mapChildren
-    )
+module Generic.ForestTransform exposing (forestFromBlocks)
 
 {-| This module provides tools for building
 a tree from a string or a list of blocks. As noted
@@ -44,7 +41,7 @@ has the correct type. Here we use the representation of rose trees found in
 -}
 
 import Library.Forest
-import RoseTree.Tree as Tree exposing (Tree)
+import RoseTree.Tree exposing (Tree)
 
 
 {-|
@@ -56,20 +53,3 @@ import RoseTree.Tree as Tree exposing (Tree)
 forestFromBlocks : (b -> Int) -> List b -> List (Tree b)
 forestFromBlocks indentation blocks =
     Library.Forest.makeForest indentation blocks
-
-
-{-| TODO: Keep for now
--}
-mapChildren : (List (Tree a) -> List (Tree a)) -> Tree a -> Tree a
-mapChildren f tree =
-    let
-        ch =
-            Tree.children tree
-
-        newChildren =
-            f ch
-
-        root =
-            Tree.value tree
-    in
-    Tree.branch root newChildren

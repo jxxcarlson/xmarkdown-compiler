@@ -1,7 +1,7 @@
 module Render.IFrame exposing (render)
 
 import Bool.Extra
-import Dict exposing (Dict)
+import Dict
 import Element exposing (Element)
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock)
@@ -11,11 +11,11 @@ import Render.PUtility
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-render count acc settings attrs block =
+render _ _ settings attrs block =
     case parseIFrame (Render.Utility.getVerbatimContent block) of
         Nothing ->
             Element.el [] (Element.text "Error parsing iframe or unregistered src")

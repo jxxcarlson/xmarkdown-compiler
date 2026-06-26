@@ -1,8 +1,7 @@
-module Render.ChartV2 exposing (plot2D, render)
+module Render.ChartV2 exposing (render)
 
 import Chart
 import Chart.Attributes as CA
-import Chart.Svg exposing (Axis)
 import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
@@ -14,7 +13,7 @@ import Generic.Language exposing (ExpressionBlock)
 import List.Extra
 import Maybe.Extra
 import Render.Settings exposing (RenderSettings)
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 import Stat
 import Tools.KV
 
@@ -25,7 +24,7 @@ dWidth =
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-render count acc settings attr block =
+render _ _ settings _ block =
     case block.body of
         Right _ ->
             Element.text "Oops, Error!"
@@ -112,58 +111,6 @@ type alias Range =
     { lowest : Maybe Float, highest : Maybe Float }
 
 
-fontWidth =
-    10
-
-
-plot2D : String -> Dict.Dict String String -> List ( Float, Float ) -> Element msg
-plot2D kind properties_ xyData =
-    let
-        properties =
-            Dict.insert "kind" kind properties_
-
-        options : Options
-        options =
-            { direction = Dict.get "direction" properties
-            , columns = Dict.get "columns" properties |> Maybe.map (String.split "," >> List.map String.trim >> List.map String.toInt >> Maybe.Extra.values >> List.map (\x -> x - 1))
-            , rows = Dict.get "rows" properties |> Maybe.map (String.split "," >> List.map String.trim >> twoListToIntPair)
-            , separator = Dict.get "separator" properties
-            , reverse = Dict.get "reverse" properties |> toBool |> Maybe.withDefault False
-            , header = Dict.get "header" properties |> Maybe.andThen String.toInt
-            , filter = Dict.get "filter" properties
-            , lowest = Dict.get "lowest" properties |> Maybe.andThen String.toFloat
-            , caption = Dict.get "caption" properties
-            , label = Dict.get "figure" properties
-            , regression = Dict.get "regression" properties
-            , kind = Dict.get "kind" properties
-            , domain = Dict.get "domain" properties |> Maybe.andThen getRange
-            , range = Dict.get "range" properties |> Maybe.andThen getRange
-            , width = Dict.get "width" properties |> Maybe.andThen String.toInt |> Maybe.withDefault 300
-            , dark = Dict.get "dark" properties |> toBool |> Maybe.withDefault False
-            }
-
-        data : ChartData
-        data =
-            List.map (\( x, y ) -> { x = x, y = y }) xyData |> ChartData2D
-    in
-    Element.column [ Element.width (Element.px (options.width - deltaWidth)), Element.paddingEach { left = 48, right = 0, top = 36, bottom = 72 }, Element.spacing 24 ]
-        [ Element.el [ Element.width (Element.px (options.width - deltaWidth)) ]
-            (rawLineChart options (Just data))
-        , case ( options.label, options.caption ) of
-            ( Nothing, Nothing ) ->
-                Element.none
-
-            ( Just labelText, Nothing ) ->
-                Element.el [ Element.centerX, Font.size 14, Font.color (Element.rgb 0.5 0.5 0.7), Element.paddingEach { left = 0, right = 0, top = 24, bottom = 0 } ] (Element.text <| "Figure " ++ labelText)
-
-            ( Nothing, Just captionText ) ->
-                Element.el [ Element.centerX, Font.size 14, Font.color (Element.rgb 0.5 0.5 0.7), Element.paddingEach { left = 0, right = 0, top = 24, bottom = 0 } ] (Element.text <| captionText)
-
-            ( Just labelText, Just captionText ) ->
-                Element.el [ Element.centerX, Font.size 14, Font.color (Element.rgb 0.5 0.5 0.7), Element.paddingEach { left = 0, right = 0, top = 24, bottom = 0 } ] (Element.text <| "Figure " ++ labelText ++ ". " ++ captionText)
-        ]
-
-
 chart : String -> Dict.Dict String String -> String -> Element msg
 chart kind properties_ data_ =
     Element.Lazy.lazy3 chart_ kind properties_ data_
@@ -230,15 +177,9 @@ toBool maybeString =
             Nothing
 
 
-getArg : String -> List String -> Maybe String
-getArg name args =
-    List.filter (\item -> String.contains name item) args |> List.head
-
-
 type ChartData
     = ChartData2D (List { x : Float, y : Float })
     | ChartData3D (List { x : Float, y : Float, z : Float })
-    | ChartData4D (List { x : Float, y : Float, z : Float, w : Float })
 
 
 getRange : String -> Maybe Range
@@ -275,16 +216,6 @@ selectColumns columns data =
         List.map (select columns) data |> Maybe.Extra.combine
 
 
-dim : List (List a) -> ( Int, Int )
-dim data =
-    case data of
-        [] ->
-            ( 0, 0 )
-
-        first :: _ ->
-            ( List.length data, List.length first )
-
-
 makeTimeseries : List (List String) -> List (List String)
 makeTimeseries data =
     List.indexedMap (\i oneList -> String.fromInt i :: oneList) data
@@ -314,14 +245,6 @@ csvToChartData options inputLines_ =
             else
                 rows
 
-        reverse : Options -> List String -> List String
-        reverse options_ lines =
-            if options_.reverse then
-                List.reverse lines
-
-            else
-                lines
-
         takeRows : Maybe ( Int, Int ) -> List String -> List String
         takeRows maybeRowPair lines =
             case maybeRowPair of
@@ -339,7 +262,7 @@ csvToChartData options inputLines_ =
                         ( _, 0 ) ->
                             List.drop start lines
 
-                        ( _, _ ) ->
+                        _ ->
                             List.drop start lines |> List.take end
 
         stripHeader dropLines lines =
@@ -433,7 +356,7 @@ csvTo3DData data =
 listTo2DPoint : List String -> Maybe { x : Float, y : Float }
 listTo2DPoint list =
     case list of
-        x :: y :: rest ->
+        x :: y :: _ ->
             ( String.toFloat (String.trim x), String.toFloat (String.trim y) ) |> valueOfPair |> Maybe.map (\( u, v ) -> { x = u, y = v })
 
         _ ->
@@ -443,18 +366,8 @@ listTo2DPoint list =
 listTo3DPoint : List String -> Maybe { x : Float, y : Float, z : Float }
 listTo3DPoint list =
     case list of
-        x :: y :: z :: rest ->
+        x :: y :: z :: _ ->
             ( String.toFloat (String.trim x), String.toFloat (String.trim y), String.toFloat (String.trim z) ) |> valueOfTriple |> Maybe.map (\( u, v, w ) -> { x = u, y = v, z = w })
-
-        _ ->
-            Nothing
-
-
-listTo4DPoint : List String -> Maybe { x : Float, y : Float }
-listTo4DPoint list =
-    case list of
-        x :: y :: rest ->
-            ( String.toFloat (String.trim x), String.toFloat (String.trim y) ) |> valueOfPair |> Maybe.map (\( u, v ) -> { x = u, y = v })
 
         _ ->
             Nothing
@@ -491,9 +404,6 @@ rawLineChart options mChartData =
 
         Just (ChartData3D data) ->
             rawLineChart3D data
-
-        _ ->
-            Element.el [ Font.size 14, Font.color red ] (Element.text "Line chart: Error, can only handle 2D data")
 
 
 
@@ -586,7 +496,7 @@ rawLineChart2D options data =
                     Just f ->
                         let
                             regressionData =
-                                List.map (\{ x, y } -> { x = x, y = f x }) data
+                                List.map (\{ x } -> { x = x, y = f x }) data
                         in
                         Chart.series .x [ Chart.interpolated .y [ CA.color CA.blue ] [] ] regressionData
         , case options.kind of
@@ -634,16 +544,6 @@ applyFunctions fs a =
     List.foldl (\f acc -> f a :: acc) [] fs |> List.reverse
 
 
-liftToMaybe : (a -> b) -> Maybe a -> Maybe b
-liftToMaybe f maybe =
-    case maybe of
-        Just a ->
-            Just (f a)
-
-        Nothing ->
-            Nothing
-
-
 applyIf : Bool -> (a -> a) -> a -> a
 applyIf flag f x =
     if flag then
@@ -651,26 +551,6 @@ applyIf flag f x =
 
     else
         x
-
-
-maybeApply : Maybe a -> (b -> b) -> b -> b
-maybeApply maybe f x =
-    case maybe of
-        Just _ ->
-            f x
-
-        Nothing ->
-            x
-
-
-maybeChoose : Maybe a -> (b -> b) -> (b -> b) -> b -> b
-maybeChoose maybe f g x =
-    case maybe of
-        Just _ ->
-            f x
-
-        Nothing ->
-            g x
 
 
 twoListToIntPair : List String -> ( Int, Int )

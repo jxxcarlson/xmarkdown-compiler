@@ -1,12 +1,11 @@
-module Scripta.Symbol exposing (Symbol(..), balance, toString, toSymbols, value)
+module Scripta.Symbol exposing (Symbol(..), balance, toSymbols, value)
 
 import Scripta.Tokenizer exposing (Token, Token_(..))
 
 
 type Symbol
     = L -- LB, [
-    | R -- RB, ]
-    | BM -- bracketed math, e.g., \[x^2\]
+    | R -- bracketed math, e.g., \[x^2\]
     | LM -- left math, e.g., \(
     | RM -- right math, e.g., \)
     | ST -- S String (string)
@@ -40,9 +39,6 @@ value symbol =
         M ->
             0
 
-        BM ->
-            0
-
         C ->
             0
 
@@ -53,45 +49,6 @@ value symbol =
 balance : List Symbol -> Int
 balance symbols =
     symbols |> List.map value |> List.sum
-
-
-symbolToString : Symbol -> String
-symbolToString symbol =
-    case symbol of
-        L ->
-            "L"
-
-        R ->
-            "R"
-
-        LM ->
-            "LM"
-
-        RM ->
-            "RM"
-
-        ST ->
-            "S"
-
-        WS ->
-            "W"
-
-        M ->
-            "M"
-
-        BM ->
-            "BM"
-
-        C ->
-            "C"
-
-        E ->
-            "E"
-
-
-toString : List Symbol -> String
-toString symbols =
-    List.map symbolToString symbols |> String.join " "
 
 
 toSymbols : List Token -> List Symbol
@@ -122,9 +79,6 @@ toSymbol token =
 
         MathToken _ ->
             M
-
-        BracketedMath _ _ ->
-            BM
 
         CodeToken _ ->
             C

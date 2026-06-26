@@ -1,25 +1,12 @@
 module Generic.TextMacro exposing
     ( Macro
-    , applyMacro
-    , applyMacroS
-    , applyMacroS2
     , buildDictionary
     , expand
-    , exportTexMacros
-    , extract
-    , getTextMacroFunctionNames
-    , listSubst
-    , macroFromL0String
-    , macroFromString
-    , parseMicroLaTeX
-    , printMacro
-    , toString
     )
 
 import Dict exposing (Dict)
 import Generic.ASTTools as AT
 import Generic.Language exposing (Expr(..), Expression)
-import Generic.Print
 import Generic.TextMacroParser
 import List.Extra
 import Scripta.Expression
@@ -60,83 +47,12 @@ macroFromMicroLaTeXString macroS =
     Maybe.andThen extract2 (parseMicroLaTeX macroS |> List.head)
 
 
-printMacro : Macro -> String
-printMacro macro =
-    "Macro "
-        ++ macro.name
-        ++ ", vars: ["
-        ++ String.join ", " macro.vars
-        ++ "], expr:  "
-        ++ Generic.Print.toStringFromList macro.body
-
-
-printLaTeXMacro : Macro -> String
-printLaTeXMacro macro =
-    if List.length macro.vars == 0 then
-        "\\newcommand{\\"
-            ++ macro.name
-            ++ "}{"
-            ++ (List.map toLaTeXString macro.body |> String.join "")
-            ++ "}"
-
-    else
-        "\\newcommand{\\"
-            ++ macro.name
-            ++ "}"
-            ++ "["
-            ++ String.fromInt (List.length macro.vars)
-            ++ "]{"
-            ++ (List.map toLaTeXString macro.body |> String.join "")
-            ++ "}"
-
-
-toLaTeXString : Expression -> String
-toLaTeXString expr =
-    case expr of
-        Fun name expressions _ ->
-            let
-                body_ =
-                    List.map toLaTeXString expressions |> String.join ""
-
-                body =
-                    if body_ == "" then
-                        body_
-
-                    else if String.left 1 body_ == "[" then
-                        body_
-
-                    else if String.left 1 body_ == " " then
-                        body_
-
-                    else
-                        " " ++ body_
-            in
-            "\\" ++ name ++ "{" ++ body ++ "}"
-
-        Text str _ ->
-            str
-
-        VFun name str _ ->
-            case name of
-                "math" ->
-                    "$" ++ str ++ "$"
-
-                "code" ->
-                    "`" ++ str ++ "`"
-
-                _ ->
-                    "error: verbatim " ++ name ++ " not recognized"
-
-        ExprList _ _ _ ->
-            "[ExprList]"
-
-
 extract2 : Expression -> Maybe Macro
 extract2 expr =
     case expr of
-        Fun name body meta ->
+        Fun name body _ ->
             if name == "newcommand" then
-                extract2Aux body meta
+                extract2Aux body
 
             else
                 Nothing
@@ -173,10 +89,10 @@ getParam str =
             []
 
 
-extract2Aux body meta =
+extract2Aux body =
     case body of
         (Fun name _ _) :: rest ->
-            Just (extract3Aux name rest meta)
+            Just (extract3Aux name rest)
 
         _ ->
             Nothing
@@ -186,8 +102,8 @@ extract2Aux body meta =
 -- extract3Aux : String -> List String -> meta -> Lambda
 
 
-extract3Aux : String -> List Expression -> c -> { name : String, vars : List String, body : List Expression }
-extract3Aux name rest meta =
+extract3Aux : String -> List Expression -> { name : String, vars : List String, body : List Expression }
+extract3Aux name rest =
     { name = name, vars = getVars rest, body = rest }
 
 
@@ -221,52 +137,6 @@ insert data dict =
 buildDictionary : List String -> Dict String Macro
 buildDictionary lines =
     List.foldl (\line acc -> insert (macroFromString line) acc) Dict.empty lines
-
-
-getTextMacroFunctionNames : String -> List String
-getTextMacroFunctionNames str =
-    str
-        |> String.lines
-        |> buildDictionary
-        |> Dict.toList
-        |> List.map Tuple.second
-        |> List.map .body
-        |> List.map functionNames
-        |> List.concat
-        |> List.Extra.unique
-        |> List.sort
-
-
-functionNames : List Expression -> List String
-functionNames exprs =
-    List.map functionNames_ exprs |> List.concat
-
-
-functionNames_ : Expression -> List String
-functionNames_ expr =
-    case expr of
-        Fun name body _ ->
-            name :: (List.map functionNames_ body |> List.concat)
-
-        Text _ _ ->
-            []
-
-        VFun _ _ _ ->
-            []
-
-        ExprList _ _ _ ->
-            []
-
-
-exportTexMacros : String -> String
-exportTexMacros str =
-    str
-        |> String.lines
-        |> buildDictionary
-        |> Dict.toList
-        |> List.map Tuple.second
-        |> List.map printLaTeXMacro
-        |> String.join "\n"
 
 
 {-| Expand the given expression using the given dictionary of lambdas.
@@ -352,48 +222,8 @@ makeF a var =
     List.map (subst a var)
 
 
-toString : (Expression -> String) -> Macro -> String
-toString exprToString macro =
-    [ "\\newcommand{\\"
-    , macro.name
-    , "}["
-    , String.fromInt (List.length macro.vars)
-    , "]{"
-    , macro.body |> List.map exprToString |> String.join "" --|> mapArgs lambda.vars
-    , "}    "
-    ]
-        |> String.join ""
-
-
 
 -- FOR TESTING --
-
-
-parseExpr : String -> Maybe Expression
-parseExpr str =
-    Scripta.Expression.parse 0 str |> List.head
-
-
-parseMacro : String -> Maybe Macro
-parseMacro str =
-    str |> parseExpr |> Maybe.andThen extract
-
-
-applyMacro : Maybe Macro -> Maybe Expression -> Maybe Expression
-applyMacro macro_ expr_ =
-    Maybe.map2 expandWithMacro macro_ expr_
-
-
-applyMacroS : String -> String -> Maybe String
-applyMacroS macroS exprS =
-    applyMacro (parseMacro macroS) (parseExpr exprS) |> Maybe.map Generic.Print.toString
-
-
-applyMacroS2 : String -> String -> Maybe String
-applyMacroS2 macroS exprS =
-    applyMacro (Maybe.andThen extract2 (parseMicroLaTeX macroS |> List.head))
-        (parseMicroLaTeX exprS |> List.head)
-        |> Maybe.map Generic.Print.toString
 
 
 parseMicroLaTeX : String -> List Expression

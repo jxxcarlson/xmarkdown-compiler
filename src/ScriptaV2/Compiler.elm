@@ -1,15 +1,14 @@
 module ScriptaV2.Compiler exposing
-    ( CompilerOutput, compile, parse, parseFromString, renderForest, view, viewTOC, px, viewBody
-    , filterForest2, header_, parseSMarkdown, parseToForestWithAccumulator, viewBodyOnly
+    ( CompilerOutput, compile, parseFromString, view, viewTOC
+    , parseToForestWithAccumulator, viewBodyOnly
     )
 
 {-|
 
-@docs CompilerOutput, compile, parse, parseFromString, renderForest, view, viewTOC, px, viewBody
+@docs CompilerOutput, compile, parseFromString, view, viewTOC
 
 -}
 
-import Dict
 import Element exposing (Element)
 import Element.Font as Font
 import Generic.ASTTools
@@ -17,7 +16,6 @@ import Generic.Acc exposing (Accumulator)
 import Generic.Compiler
 import Generic.Forest exposing (Forest)
 import Generic.Language exposing (ExpressionBlock)
-import Generic.Vector
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -25,34 +23,10 @@ import Render.Tree
 import RoseTree.Tree
 import ScriptaV2.Config as Config
 import ScriptaV2.Language exposing (Language(..))
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 import ScriptaV2.Types exposing (CompilerParameters, Filter(..))
 import XMarkdown.Expression
 import XMarkdown.PrimitiveBlock
-
-
-{-| -}
-type alias CompilerParametersOLD =
-    { lang : Language
-    , docWidth : Int
-    , editCount : Int
-    , selectedId : String
-    , idsOfOpenNodes : List String
-    , filter : Filter
-    }
-
-
-type alias DisplaySettings =
-    { windowWidth : Int
-    , longEquationLimit : Float
-    , counter : Int
-    , selectedId : String
-    , selectedSlug : Maybe String
-    , scale : Float
-    , data : Dict.Dict String String
-    , idsOfOpenNodes : List String
-    , numberToLevel : Int
-    }
 
 
 {-| -}
@@ -64,34 +38,11 @@ view width_ compiled =
     ]
 
 
-{-| -}
-viewBody : Int -> CompilerOutput -> List (Element MarkupMsg)
-viewBody width_ compiled =
-    [ Element.column [ Element.width (Element.px (width_ - 60)) ]
-        (header_ compiled)
-    , body compiled
-    ]
-
-
 viewBodyOnly : Int -> CompilerOutput -> List (Element MarkupMsg)
 viewBodyOnly width_ compiled =
     [ Element.column [ Element.width (Element.px (width_ - 60)) ]
         [ body compiled ]
     ]
-
-
-header_ : CompilerOutput -> List (Element MarkupMsg)
-header_ compiled =
-    case compiled.banner of
-        Nothing ->
-            Element.el [] compiled.title
-                :: []
-
-        Just banner ->
-            Element.el [] banner
-                :: (Element.el [] compiled.title
-                        :: []
-                   )
 
 
 {-| -}
@@ -140,9 +91,9 @@ compile params lines =
 
 
 {-| -}
-parseFromString : Language -> String -> Forest ExpressionBlock
-parseFromString lang str =
-    parse lang Config.idPrefix 0 (String.lines str)
+parseFromString : String -> Forest ExpressionBlock
+parseFromString str =
+    parse Config.idPrefix 0 (String.lines str)
 
 
 {-|
@@ -151,21 +102,14 @@ parseFromString lang str =
     Used only in CurrentDocument.setInPhone
 
 -}
-parse : Language -> String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
-parse _ idPrefix outerCount lines =
+parse : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
+parse idPrefix outerCount lines =
     parseSMarkdown idPrefix outerCount lines
 
 
 parseSMarkdown : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
 parseSMarkdown idPrefix outerCount lines =
     Generic.Compiler.parse_ XMarkdown.PrimitiveBlock.parse XMarkdown.Expression.parse idPrefix outerCount lines
-
-
-{-| =
--}
-px : String -> List (RoseTree.Tree.Tree ExpressionBlock)
-px str =
-    parseSMarkdown "!!" 0 (String.lines str)
 
 
 
@@ -192,13 +136,6 @@ filterForest filter forest =
             forest
                 |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "document")
                 |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "title")
-
-
-filterForest2 : Forest ExpressionBlock -> Forest ExpressionBlock
-filterForest2 forest =
-    forest
-        |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "document")
-        |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "title")
 
 
 parseToForestWithAccumulator : CompilerParameters -> List String -> ( Accumulator, Forest ExpressionBlock )
@@ -246,10 +183,6 @@ render params ( accumulator_, forest_ ) =
                 |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [ Font.color (Element.rgb 1 0 0) ])
                 |> Maybe.map (Element.row [ Element.height (Element.px 40) ])
 
-        chapterNumber : Maybe Int
-        chapterNumber =
-            accumulator_.headingIndex |> .content >> List.head
-
         title : Element MarkupMsg
         title =
             Element.paragraph [] [ Element.text <| Generic.ASTTools.title forest_ ]
@@ -274,7 +207,7 @@ renderForest :
     -> List (RoseTree.Tree.Tree ExpressionBlock)
     -> List (Element MarkupMsg)
 renderForest params settings accumulator forest =
-    List.map (Render.Tree.renderTree params settings accumulator []) forest
+    List.map (Render.Tree.renderTree params settings accumulator) forest
 
 
 

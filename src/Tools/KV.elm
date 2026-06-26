@@ -1,4 +1,4 @@
-module Tools.KV exposing (argsAndProperties, cleanArgs, makeDict, prepareKVData, prepareList)
+module Tools.KV exposing (argsAndProperties, makeDict)
 
 import Dict exposing (Dict)
 import List.Extra

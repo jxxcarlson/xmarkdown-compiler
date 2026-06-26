@@ -1,35 +1,18 @@
 module Scripta.Tokenizer exposing
     ( Meta
-    , SimpleToken
     , Token
     , TokenType(..)
     , Token_(..)
     , changeTokenIndicesFrom
-    , idem
-    , idemTest
     , indexOf
-    , init
-    , leftMathBracketParser
-    , rightMathBracketParser
     , run
-    , simplify
     , toString
     , type_
     )
 
-import Parser.Advanced as Parser exposing ((|.), (|=), DeadEnd, Parser)
+import Parser.Advanced as Parser exposing (DeadEnd, Parser)
 import Tools.ParserHelpers exposing (Step(..), loop)
 import Tools.ParserTools as PT exposing (Context, Problem)
-
-
-idem : String -> String
-idem str =
-    str |> run |> List.reverse |> toString
-
-
-idemTest : String -> Bool
-idemTest str =
-    str == idem str
 
 
 
@@ -44,51 +27,12 @@ type Token_ meta
     | S String meta
     | W String meta
     | MathToken meta
-    | BracketedMath String meta
     | CodeToken meta
     | TokenError (List (DeadEnd Context Problem)) meta
 
 
 type alias Token =
     Token_ Meta
-
-
-type alias SimpleToken =
-    Token_ ()
-
-
-simplify : Token -> SimpleToken
-simplify token =
-    case token of
-        LB _ ->
-            LB ()
-
-        RB _ ->
-            RB ()
-
-        LMB _ ->
-            LMB ()
-
-        RMB _ ->
-            RMB ()
-
-        S str _ ->
-            S str ()
-
-        W str _ ->
-            W str ()
-
-        MathToken _ ->
-            MathToken ()
-
-        BracketedMath str _ ->
-            BracketedMath str ()
-
-        CodeToken _ ->
-            CodeToken ()
-
-        TokenError _ _ ->
-            TokenError [] ()
 
 
 changeTokenIndicesFrom : Int -> Int -> List Token -> List Token
@@ -133,9 +77,6 @@ indexOf token =
         MathToken meta ->
             meta.index
 
-        BracketedMath _ meta ->
-            meta.index
-
         CodeToken meta ->
             meta.index
 
@@ -166,9 +107,6 @@ setIndex k token =
 
         MathToken meta ->
             MathToken { meta | index = k }
-
-        BracketedMath str meta ->
-            BracketedMath str { meta | index = k }
 
         CodeToken meta ->
             CodeToken { meta | index = k }
@@ -206,7 +144,6 @@ type TokenType
     | TS
     | TW
     | TMath
-    | TBracketedMath
     | TCode
     | TTokenError
 
@@ -234,9 +171,6 @@ type_ token =
 
         MathToken _ ->
             TMath
-
-        BracketedMath _ _ ->
-            TBracketedMath
 
         CodeToken _ ->
             TCode
@@ -269,9 +203,6 @@ getMeta token =
         MathToken m ->
             m
 
-        BracketedMath _ m ->
-            m
-
         CodeToken m ->
             m
 
@@ -302,9 +233,6 @@ stringValue token =
 
         MathToken _ ->
             "$"
-
-        BracketedMath s _ ->
-            "\\(" ++ s ++ "\\)"
 
         CodeToken _ ->
             "`"
@@ -340,9 +268,6 @@ length token =
             meta.end - meta.begin
 
         CodeToken meta ->
-            meta.end - meta.begin
-
-        BracketedMath _ meta ->
             meta.end - meta.begin
 
         W _ meta ->
@@ -625,17 +550,6 @@ rightMathBracketParser_ : Int -> Int -> TokenParser
 rightMathBracketParser_ start index =
     PT.text (\c -> c == ')') (\_ -> False)
         |> Parser.map (\_ -> RMB { begin = start, end = start + 1, index = index })
-
-
-bracketedMathParser : Int -> Int -> TokenParser
-bracketedMathParser start index =
-    Parser.succeed (\a b content -> BracketedMath (String.slice a (b - 2) content) { begin = start, end = start + b - a + 1, index = index })
-        |. Parser.symbol (Parser.Token "\\(" (PT.ExpectingSymbol "\\)"))
-        |= Parser.getOffset
-        |. Parser.chompUntil (Parser.Token "\\)" (PT.ExpectingSymbol "\\)"))
-        |. Parser.symbol (Parser.Token "\\)" (PT.ExpectingSymbol "\\)"))
-        |= Parser.getOffset
-        |= Parser.getSource
 
 
 textParser start index =

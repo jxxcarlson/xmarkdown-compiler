@@ -1,4 +1,4 @@
-module MicroScheme.Numbers exposing (NumberError(..), coerce, roundTo)
+module MicroScheme.Numbers exposing (NumberError, coerce, roundTo)
 
 import Bool.Extra
 import Either exposing (Either(..))

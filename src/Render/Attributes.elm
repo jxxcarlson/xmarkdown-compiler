@@ -1,5 +1,5 @@
 module Render.Attributes exposing
-    ( getBlockAttributes, getItalicAttributes, getBoxAttributes, getContainerAttributes, getDocumentAttributes, getIndentAttributes, getQuotationAttributes
+    ( getBlockAttributes
     , italicBlockNames
     )
 
@@ -8,12 +8,12 @@ module Render.Attributes exposing
 Instead of having attribute logic scattered across multiple files, this module
 provides a unified approach to determining the attributes for any given block.
 
-@docs getBlockAttributes, getItalicAttributes, getBoxAttributes, getContainerAttributes, getDocumentAttributes, getIndentAttributes, getQuotationAttributes
+@docs getBlockAttributes
 @docs italicBlockNames
 
 -}
 
-import Element exposing (Element)
+import Element
 import Element.Background as Background
 import Element.Font as Font
 import Generic.BlockUtilities
@@ -100,20 +100,6 @@ getBoxAttributes theme =
     , Element.paddingXY standardLeftPadding standardLeftPadding
     , Background.color (Render.Color.boxBackground theme)
     ]
-
-
-{-| Get attributes for container blocks
--}
-getContainerAttributes : List (Element.Attribute msg)
-getContainerAttributes =
-    [ Element.spacing standardSpacing ]
-
-
-{-| Get attributes for document blocks
--}
-getDocumentAttributes : List (Element.Attribute msg)
-getDocumentAttributes =
-    []
 
 
 {-| Standard spacing value for consistent spacing

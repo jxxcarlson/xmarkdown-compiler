@@ -4,15 +4,15 @@ import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import Generic.Language
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync2
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> Generic.Language.ExpressionBlock -> Element MarkupMsg
-render count acc settings columnFormats block =
+render count acc settings _ block =
     case block.body of
         Right [ Generic.Language.Fun "table" rows _ ] ->
             let

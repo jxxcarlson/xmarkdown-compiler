@@ -1,18 +1,15 @@
 module MicroScheme.Environment exposing
     ( Environment
     , addSymbolToRoot
-    , current
-    , currentId
     , initial
     , resolve
     , root
-    , setFocus
     )
 
 import MicroScheme.Expr exposing (Expr)
 import MicroScheme.Frame as Frame exposing (Frame, FrameId)
 import MicroScheme.Init as Init
-import Tree exposing (Tree)
+import Tree
 import Tree.Zipper exposing (Zipper)
 
 
