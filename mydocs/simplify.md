@@ -66,12 +66,33 @@ npx elm-review --ignore-dirs src/Evergreen/ --report=json
   `CustomTypeConstructors`, `Parameters`, `Patterns`). The repo previously had no
   elm-review config. Run with `npx elm-review --ignore-dirs src/Evergreen/`.
 
-## Pending decision (before proceeding)
-How aggressive to be on #2:
-1. **Imports + local values only (189)** — safe, no cascade.
-2. **+ Unused exports (315)** — full #2; `--fix-all` iterates to a fixed point,
-   likely deleting many internal functions (cascade). Public API untouched.
-3. **Everything (700)** — also params/patterns/constructors; touches signatures,
-   needs closer review.
+## #2 COMPLETED (full sweep)
 
-User is investigating before deciding. Likely first look: `Render/NewColor.elm`.
+Applied the comprehensive `NoUnused.*` cascade (`--fix-all` iterated to a fixed
+point), commit `f581184` (sweep) + the module/type cleanups after it:
+
+- **~5,300 lines removed** across ~86 files (unused exports, imports, local
+  values, parameters, patterns, and auto-removable constructors).
+- **Module deleted:** `Generic.Print` (unused).
+- **3rd dependency removed:** `rtfeldman/console-print` (became unused).
+- **`Generic.Forest.Error` / `EmptyBlocks`** deleted (dead after the cascade;
+  also un-exposed).
+- One manual fix: redundant `case` arm in `Render/ChartV2.elm` left after a
+  constructor removal.
+
+**Not removed (intentional) — 7 `NoUnused.CustomTypeConstructors` findings:**
+`CArg` (ETeX/MathMacros, ETeX/Transform, Generic/MathMacro), `None` + `RGBA`
+(Generic/Language), `TextExpression` (Tools/ParserTools, XMarkdown/ParserTools).
+Each is the **sole constructor** of a still-used type (parser phantom `Context`
+types; `StyleColor`/`StyleAttr` record fields). Removing the lone constructor
+would empty the type and break it — they are flagged "never constructed" but are
+structurally required. Left in place.
+
+## Final tally (whole `simplify` branch vs `main`)
+
+- Modules: 124 → **95** (29 removed: 28 dead-module cascade + `Generic.Print`).
+- Dependencies removed: **3** (`elm/time`, `jinjor/elm-diff`, `rtfeldman/console-print`).
+- ~5.3k+ lines of dead code gone; public API (8 exposed modules) unchanged.
+- Verified green throughout: regression net, `elm-test` 18/18, `DemoTOCMd` +
+  `DemoMd` both build.
+- Tooling: `review/` elm-review config added (`NoUnused.*`).
