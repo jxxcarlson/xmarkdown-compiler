@@ -14,6 +14,8 @@ import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expr(..), Expression)
 import Html
 import Html.Attributes
+import Html.Events
+import Json.Decode
 import List.Extra
 import Maybe.Extra
 import MicroScheme.Interpreter
@@ -38,11 +40,12 @@ render generation acc settings attrs expr =
     in
     case expr of
         Text string meta ->
-            Element.el (background :: [ Events.onClick (SendMeta meta), htmlId meta.id ] ++ attrs) (Element.text (string ++ " "))
+            Element.el (background :: [ onClickStop (SendMeta meta), htmlId meta.id ] ++ attrs) (Element.text (string ++ " "))
 
         Fun name exprList meta ->
             if List.member name [ "chem", "math", "m", "code" ] then
-                renderVerbatim name generation acc settings meta (ASTTools.exprListToStringList exprList |> String.join " ")
+                Element.el [ onClickStop (SendMeta meta), htmlId meta.id ]
+                    (renderVerbatim name generation acc settings meta (ASTTools.exprListToStringList exprList |> String.join " "))
 
             else if name == "anchor" then
                 let
@@ -73,7 +76,7 @@ render generation acc settings attrs expr =
                         else
                             []
                 in
-                Element.el ([ Events.onClick (SendMeta meta), htmlId meta.id ] ++ highlightAttrs)
+                Element.el ([ onClickStop (SendMeta meta), htmlId meta.id ] ++ highlightAttrs)
                     (renderMarked name generation acc settings attrs exprList)
 
             else if name == "mark" then
@@ -93,16 +96,20 @@ render generation acc settings attrs expr =
                         else
                             []
                 in
-                Element.el ([ Events.onClick (SendMeta meta), htmlId meta.id ] ++ highlightAttrs)
+                Element.el ([ onClickStop (SendMeta meta), htmlId meta.id ] ++ highlightAttrs)
                     (renderMarked name generation acc settings attrs exprList)
 
             else
-                Element.el (background :: [ Events.onClick (SendMeta meta), htmlId meta.id ])
+                Element.el (background :: [ onClickStop (SendMeta meta), htmlId meta.id ])
                     (renderMarked name generation acc settings attrs exprList)
 
         VFun name str meta ->
-            -- TODO: Events.onClick (SendMeta meta)?
-            renderVerbatim name generation acc settings meta str
+            -- Verbatim inline (math `$...$`, code) needs its own RL-sync click
+            -- handler; without it a click falls through to the enclosing block
+            -- and highlights the whole paragraph. stopPropagation keeps the
+            -- click on the verbatim span.
+            Element.el [ onClickStop (SendMeta meta), htmlId meta.id ]
+                (renderVerbatim name generation acc settings meta str)
 
         ExprList indentation exprList meta ->
             Element.column []
@@ -1158,6 +1165,15 @@ f1 f exprList =
 
 verbatimElement settings formatList meta str =
     Element.el (Font.size 13 :: htmlId meta.id :: Element.height (Element.px 11) :: Background.color settings.codeBackground :: formatList) (Element.text str)
+
+
+{-| A click handler that does NOT bubble, so an inline expression click reports
+only itself and not the enclosing block's right-to-left line sync.
+-}
+onClickStop : MarkupMsg -> Element.Attribute MarkupMsg
+onClickStop msg =
+    Element.htmlAttribute
+        (Html.Events.stopPropagationOn "click" (Json.Decode.succeed ( msg, True )))
 
 
 htmlId str =

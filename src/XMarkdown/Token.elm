@@ -3,6 +3,7 @@ module XMarkdown.Token exposing
     , TokenType(..)
     , changeTokenContentAt
     , changeTokenIndicesFrom
+    , getMeta
     , idem
     , idemTest
     , imageParser

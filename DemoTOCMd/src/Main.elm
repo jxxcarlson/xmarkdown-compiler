@@ -5,13 +5,18 @@ import Browser.Dom
 import Browser.Events
 import Data.XMarkdown
 import Element
-import Html exposing (Html, div, text)
+import File exposing (File)
+import File.Download
+import File.Select
+import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
+import Html.Events
 import List.Extra
 import ScriptaV2.Compiler
 import ScriptaV2.Editor
 import ScriptaV2.Language
 import ScriptaV2.Msg exposing (MarkupMsg)
+import ScriptaV2.Sync
 import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
@@ -39,6 +44,9 @@ type alias Model =
     , windowHeight : Int
     , selectId : String
     , idsOfOpenNodes : List String
+    , syncHighlight : Maybe ScriptaV2.Sync.SyncHighlight
+    , tick : Int
+    , fileName : String
     }
 
 
@@ -47,6 +55,10 @@ type Msg
     | InputText String
     | Render MarkupMsg
     | GotNewWindowDimensions Int Int
+    | OpenFileRequested
+    | FileSelected File
+    | FileLoaded String
+    | SaveFileRequested
 
 
 type alias Flags =
@@ -62,6 +74,9 @@ init flags =
       , windowHeight = flags.window.windowHeight
       , selectId = "@InitID"
       , idsOfOpenNodes = []
+      , syncHighlight = Nothing
+      , tick = 0
+      , fileName = "untitled.md"
       }
     , Cmd.none
     )
@@ -79,35 +94,58 @@ update msg model =
         InputText str ->
             ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
 
-        Render msg_ ->
-            case msg_ of
-                ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
-                    let
-                        idsOfOpenNodes =
-                            if String.left 2 nodeId == "@-" then
-                                if List.member nodeId model.idsOfOpenNodes then
-                                    List.Extra.remove nodeId model.idsOfOpenNodes
+        OpenFileRequested ->
+            ( model, File.Select.file [ "text/markdown", "text/plain", ".md" ] FileSelected )
 
-                                else
-                                    nodeId :: model.idsOfOpenNodes
+        FileSelected file ->
+            ( { model | fileName = File.name file }, Task.perform FileLoaded (File.toString file) )
+
+        FileLoaded content ->
+            -- Changing initialText re-pushes the editor's `load` attribute, so
+            -- editor.js replaces the document with the opened file's contents.
+            ( { model
+                | initialText = content
+                , sourceText = content
+                , count = model.count + 1
+                , syncHighlight = Nothing
+              }
+            , Cmd.none
+            )
+
+        SaveFileRequested ->
+            ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
+
+        Render msg_ ->
+            case ScriptaV2.Sync.fromMsg (model.tick + 1) msg_ of
+                Just h ->
+                    ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
+
+                Nothing ->
+                    case msg_ of
+                        ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
+                            let
+                                idsOfOpenNodes =
+                                    if String.left 2 nodeId == "@-" then
+                                        if List.member nodeId model.idsOfOpenNodes then
+                                            List.Extra.remove nodeId model.idsOfOpenNodes
+
+                                        else
+                                            nodeId :: model.idsOfOpenNodes
+
+                                    else
+                                        model.idsOfOpenNodes
+                            in
+                            ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
+
+                        ScriptaV2.Msg.SelectId selId ->
+                            if selId == "title" then
+                                ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
 
                             else
-                                model.idsOfOpenNodes
-                    in
-                    ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
+                                ( { model | selectId = selId }, Cmd.none )
 
-                ScriptaV2.Msg.SelectId selId ->
-                    if selId == "title" then
-                        ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
-
-                    else
-                        ( { model | selectId = selId }, Cmd.none )
-
-                ScriptaV2.Msg.SendLineNumber _ ->
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+                        _ ->
+                            ( model, Cmd.none )
 
 
 
@@ -159,11 +197,18 @@ view model =
                 , filter = NoFilter
             }
 
+        compilerOutput : ScriptaV2.Compiler.CompilerOutput
         compilerOutput =
             ScriptaV2.Compiler.compile params (String.lines model.sourceText)
     in
     div [ class "app" ]
-        [ div [ class "app-header" ] [ text "XMarkdown TOC Demo" ]
+        [ div [ class "app-header" ]
+            [ div [ class "toolbar" ]
+                [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
+                , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File" ]
+                ]
+            , div [ class "app-title" ] [ text "XMarkdown TOC Demo" ]
+            ]
         , div [ class "panels" ]
             [ div [ class "panel editor-panel", style "width" (px g.editorW) ]
                 [ editorView model ]
@@ -184,11 +229,13 @@ editorView model =
     ScriptaV2.Editor.view
         { source = model.initialText
         , onInput = InputText
+        , highlight = model.syncHighlight
         , attrs = []
         }
 
 
-{-| Bridge the compiler's still-elm-ui output into the html app. -}
+{-| Bridge the compiler's still-elm-ui output into the html app.
+-}
 renderPanel : List (Element.Element MarkupMsg) -> Html MarkupMsg
 renderPanel elements =
     Element.layout [ Element.width Element.fill ]
