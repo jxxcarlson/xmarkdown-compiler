@@ -5,7 +5,6 @@ module Tools.Utility exposing
     , replaceLeadingDashSpace
     , replaceLeadingDotSpace
     , replaceLeadingGreaterThanSign
-    , truncateString
     )
 
 import Dict exposing (Dict)
@@ -53,38 +52,6 @@ replaceLeadingGreaterThanSign str =
             Regex.fromString "^> " |> Maybe.withDefault Regex.never
     in
     Regex.replace regex (\_ -> "") str
-
-
-truncateString : Int -> String -> String
-truncateString k str =
-    let
-        str2 =
-            truncateString_ k str
-    in
-    if str == str2 then
-        str
-
-    else
-        str2 ++ " ..."
-
-
-truncateString_ : Int -> String -> String
-truncateString_ k str =
-    if String.length str < k then
-        str
-
-    else
-        let
-            words =
-                String.words str
-
-            n =
-                List.length words
-        in
-        words
-            |> List.take (n - 1)
-            |> String.join " "
-            |> truncateString_ k
 
 
 keyValueDict : List String -> Dict String String

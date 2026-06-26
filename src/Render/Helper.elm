@@ -1,7 +1,6 @@
 module Render.Helper exposing
     ( blockAttributes
     , blockLabel
-    , fontColor
     , htmlId
     , leftPadding
     , noSuchVerbatimBlock
@@ -68,17 +67,6 @@ blockAttributes settings block attrs =
     ]
         ++ Render.Sync.attributes settings block
         ++ attrs
-
-
-fontColor selectedId selectedSlug docId =
-    if selectedId == docId then
-        Font.color (Element.rgb 0.8 0 0)
-
-    else if selectedSlug == Just docId then
-        Font.color (Element.rgb 0.8 0 0)
-
-    else
-        Font.color (Element.rgb 0 0 0.9)
 
 
 selectedColor id settings =
