@@ -139,7 +139,6 @@ class CodemirrorEditor extends HTMLElement {
             editor.dispatch({
                 changes: { from: 0, to: editor.state.doc.length, insert: value },
             });
-            console.log("[RL-DEBUG load] new doc length:", value.length, "lines:", editor.state.doc.lines);
         }
         if (attr === "highlight" && typeof value === "string") {
             const editor = this.editor;
@@ -147,7 +146,6 @@ class CodemirrorEditor extends HTMLElement {
             try {
                 h = JSON.parse(value);
             } catch (e) {
-                console.log("[RL-DEBUG highlight] JSON parse failed:", value);
                 return; // malformed payload: ignore
             }
             const doc = editor.state.doc;
@@ -165,12 +163,6 @@ class CodemirrorEditor extends HTMLElement {
                 from = Math.max(0, Math.min(h.start, doc.length));
                 to = Math.max(from, Math.min(h.end, doc.length));
             }
-            console.log(
-                "[RL-DEBUG highlight] payload:", h,
-                "| doc.lines:", doc.lines,
-                "| from:", from, "to:", to,
-                "| highlighted text:", JSON.stringify(editor.state.sliceDoc(from, to))
-            );
             editor.dispatch({
                 effects: [
                     setSyncHighlight.of({ from, to }),
