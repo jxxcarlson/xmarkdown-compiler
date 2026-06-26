@@ -1,7 +1,4 @@
-module Generic.Forest exposing
-    ( Error(..)
-    , Forest, map
-    )
+module Generic.Forest exposing (Forest, map)
 
 {-| This module provides tools for building
 a tree from a string or a list of blocks. As noted
@@ -39,7 +36,7 @@ Therefore
 has the correct type. Here we use the representation of rose trees found in
 [elm/rose-tree](https://package.elm-lang.org/packages/zwilias/elm-rosetree/latest/).
 
-@docs fromString, fromBlocks, forestFromString, forestFromBlocks, Error
+@docs Forest, map
 
 -}
 
@@ -56,8 +53,3 @@ type alias Forest a =
 map : (a -> b) -> List (Tree a) -> List (Tree b)
 map f forest =
     List.map (Tree.mapValues f) forest
-
-
-{-| -}
-type Error
-    = EmptyBlocks
