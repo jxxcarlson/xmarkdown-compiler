@@ -11,7 +11,6 @@ import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
 import Render.CSVTable
-import Render.ChartV2
 import Render.Constants as Constants
 import Render.Graphics
 import Render.Helper
@@ -83,7 +82,6 @@ verbatimDict =
         , ( "mathmacros", Render.Helper.renderNothing )
         , ( "textmacros", Render.Helper.renderNothing )
         , ( "csvtable", Render.CSVTable.render )
-        , ( "chart", Render.ChartV2.render )
         , ( "svg", Render.Graphics.svg )
         , ( "quiver", Render.Graphics.quiver )
         , ( "image", Render.Graphics.image2 )

@@ -31,8 +31,7 @@ functionData =
 
 isVerbatimLine : String -> Bool
 isVerbatimLine str =
-    (String.left 2 str == "||")
-        || (String.left 3 str == "```")
+    (String.left 3 str == "```")
         || (String.left 2 str == "$$")
 
 
@@ -79,14 +78,6 @@ getHeadingData line_ =
                                             , args = []
                                             , properties = Dict.singleton "firstLine" reducedLine
                                             }
-
-                                "||" ->
-                                    case args of
-                                        [] ->
-                                            Err <| HEMissingName
-
-                                        name :: args2 ->
-                                            Ok <| { heading = Verbatim name, args = args2, properties = properties }
 
                                 "|" ->
                                     case args of

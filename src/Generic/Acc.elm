@@ -257,9 +257,6 @@ transformBlock acc block =
         ( Ordinary "quiver", _ ) ->
             { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
 
-        ( Ordinary "chart", _ ) ->
-            { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
-
         ( Ordinary "image", _ ) ->
             { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
 
@@ -376,7 +373,7 @@ reduceName str =
     else if str == "code" then
         "listing"
 
-    else if List.member str [ "quiver", "image", "iframe", "chart", "table", "csvtable", "svg", "tikz", "iframe" ] then
+    else if List.member str [ "quiver", "image", "iframe", "table", "csvtable", "svg", "tikz", "iframe" ] then
         "figure"
 
     else
