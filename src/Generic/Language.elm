@@ -370,7 +370,36 @@ boost position meta =
 
 boostBlock : ExpressionBlock -> ExpressionBlock
 boostBlock block =
-    updateMetaInBlock (boost block.meta.position) block
+    let
+        updater =
+            boost block.meta.position
+    in
+    case block.body of
+        Left str ->
+            { block | body = Left str }
+
+        Right exprs ->
+            { block | body = Right (List.map (boostExpr updater) exprs) }
+
+
+{-| Apply an ExprMeta updater to an expression AND all of its nested
+sub-expressions. Used by boostBlock so the begin/end of nested inline content
+(inside Fun for bold/italic/links, inside ExprList for list items) become
+absolute source positions, not just the top-level expressions. (The non-recursive
+updateMetaInBlock is kept for callers — e.g. the TOC — that only want the
+top-level metas touched.)
+-}
+boostExpr : (ExprMeta -> ExprMeta) -> Expression -> Expression
+boostExpr updater expr =
+    case setMeta (updater (getMeta expr)) expr of
+        Fun name children meta ->
+            Fun name (List.map (boostExpr updater) children) meta
+
+        ExprList indent children meta ->
+            ExprList indent (List.map (boostExpr updater) children) meta
+
+        other ->
+            other
 
 
 updateMeta : (ExprMeta -> ExprMeta) -> Expression -> Expression
