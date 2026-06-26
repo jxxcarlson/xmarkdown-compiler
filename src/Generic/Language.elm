@@ -14,6 +14,7 @@ module Generic.Language exposing
     , StyleColor(..)
     , boostBlock
     , composeTextElement
+    , shiftExpressionPositions
     , emptyBlockMeta
     , emptyExprMeta
     , expressionBlockEmpty
@@ -400,6 +401,16 @@ boostExpr updater expr =
 
         other ->
             other
+
+
+{-| Shift the begin/end of an expression and all of its nested sub-expressions by
+`delta`. Used to relocate expressions parsed from a substring (e.g. a single list
+item) into the coordinate frame of the enclosing block, so that the block-level
+`boostBlock` pass then lands them at their absolute source positions.
+-}
+shiftExpressionPositions : Int -> Expression -> Expression
+shiftExpressionPositions delta expr =
+    boostExpr (boost delta) expr
 
 
 updateMeta : (ExprMeta -> ExprMeta) -> Expression -> Expression
