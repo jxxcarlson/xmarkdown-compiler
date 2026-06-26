@@ -3,8 +3,6 @@ module ScriptaV2.Config exposing
     , expressionIdPrefix
     , idPrefix
     , indentationQuantum
-    , largeTitleSize
-    , smallTitleSize
     )
 
 import ScriptaV2.Language exposing (Language(..))
@@ -24,11 +22,3 @@ expressionIdPrefix =
 
 indentationQuantum =
     2
-
-
-largeTitleSize =
-    24
-
-
-smallTitleSize =
-    18

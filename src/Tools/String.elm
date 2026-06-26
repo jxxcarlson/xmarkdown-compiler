@@ -13,11 +13,6 @@ alphanumOnly string =
     userReplace "[^a-z0-9 ]+" (\_ -> " ") string
 
 
-compressSpaces : String -> String
-compressSpaces string =
-    userReplace " +" (\_ -> " ") string
-
-
 makeSlug : String -> String
 makeSlug str =
     str |> String.toLower |> alphanumOnly |> compressWhitespace |> String.replace " " "-"

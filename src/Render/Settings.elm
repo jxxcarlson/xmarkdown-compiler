@@ -1,6 +1,6 @@
 module Render.Settings exposing
-    ( Display(..), makeSettings, RenderSettings, default
-    , DisplaySettings, RenderData, ThemedStyles, darkTheme, defaultDisplaySettings, defaultRenderData, defaultRenderSettings, getThemedColor, getThemedElementColor, lightTheme, toElementColor, unrollTheme
+    ( RenderSettings
+    , Display, ThemedStyles, darkTheme, defaultRenderSettings, getThemedElementColor, lightTheme, toElementColor, unrollTheme
     )
 
 {-| The Settings record holds information needed to render a
@@ -8,7 +8,7 @@ parsed document. For example, the renderer needs to
 know the width of the window in which the document
 is to be displayed. This is given by the `.width` field.
 
-@docs Display, defaultSettings, makeSettings, RenderSettings, default
+@docs RenderSettings, default
 
 -}
 
@@ -17,58 +17,13 @@ import Dict exposing (Dict)
 import Element
 import Element.Background as BackgroundColor
 import Element.Font as Font
-import Generic.Acc
 import Render.NewColor exposing (..)
 import Render.Theme
 import ScriptaV2.Types exposing (CompilerParameters)
 
 
-type alias RenderData =
-    { count : Int
-    , idPrefix : String
-    , settings : RenderSettings
-    , initialAccumulatorData : Generic.Acc.InitialAccumulatorData
-    }
-
-
 
 -- default selectedId width
-
-
-defaultRenderData : CompilerParameters -> Int -> Int -> String -> RenderData
-defaultRenderData params width outerCount selectedId =
-    { count = outerCount
-    , idPrefix = "!!"
-    , settings = default params selectedId width
-    , initialAccumulatorData = Generic.Acc.initialData
-    }
-
-
-defaultDisplaySettings : DisplaySettings
-defaultDisplaySettings =
-    { windowWidth = 800
-    , longEquationLimit = 800
-    , counter = 0
-    , selectedId = ""
-    , selectedSlug = Nothing
-    , scale = 1
-    , data = Dict.empty
-    , idsOfOpenNodes = []
-    , numberToLevel = 1
-    }
-
-
-type alias DisplaySettings =
-    { windowWidth : Int
-    , longEquationLimit : Float
-    , counter : Int
-    , selectedId : String
-    , selectedSlug : Maybe String
-    , scale : Float
-    , data : Dict String String
-    , idsOfOpenNodes : List String
-    , numberToLevel : Int
-    }
 
 
 {-| A record of information needed to render a document.
@@ -192,18 +147,11 @@ darkTheme =
 {-| -}
 type Display
     = DefaultDisplay
-    | PhoneDisplay
 
 
 {-| -}
 defaultRenderSettings : CompilerParameters -> RenderSettings
 defaultRenderSettings params =
-    makeSettings params
-
-
-{-| -}
-default : CompilerParameters -> String -> Int -> RenderSettings
-default params selectedId width =
     makeSettings params
 
 

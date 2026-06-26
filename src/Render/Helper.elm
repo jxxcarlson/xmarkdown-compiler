@@ -5,12 +5,8 @@ module Render.Helper exposing
     , fontColor
     , getLabel
     , htmlId
-    , labeledArgs
     , leftPadding
-    , noSuchOrdinaryBlock
     , noSuchVerbatimBlock
-    , nonExportableOrdinaryBlocks
-    , nonExportableVerbatimBlocks
     , noteFromPropertyKey
     , renderNothing
     , renderWithDefault
@@ -25,26 +21,18 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import Generic.Language exposing (Expression, ExpressionBlock)
 import Html.Attributes
 import Render.Constants
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 features settings block =
     let
-        author =
-            case Dict.get "author" block.properties of
-                Just a ->
-                    a
-
-                Nothing ->
-                    ""
-
         indentation =
             -- If the argument list is empty, use the default width from settings,
             -- otherwise try to parse the first argument as an integer for the width.
@@ -132,14 +120,6 @@ topPaddingForIndentedElements =
     10
 
 
-nonExportableVerbatimBlocks =
-    [ "hide", "svg", "chart", "include", "iframe" ]
-
-
-nonExportableOrdinaryBlocks =
-    [ "box", "set-key", "comment", "runninghead", "banner", "type", "setcounter", "q", "a" ]
-
-
 
 -- HELPERS
 -- oteFromPropertyKey : String -> ExpressionBlock -> Element MarkupMsg
@@ -187,11 +167,6 @@ getLabel dict =
     Dict.get "label" dict |> Maybe.withDefault ""
 
 
-labeledArgs : List String -> String
-labeledArgs args =
-    List.map (\s -> String.replace "label:" "" s) args |> String.join " "
-
-
 selectedColor id settings =
     if id == settings.selectedId then
         Background.color (Element.rgb 0.9 0.9 1.0)
@@ -227,16 +202,6 @@ noSuchVerbatimBlock functionName content =
     Element.column [ Element.spacing 4 ]
         [ Element.paragraph [ Font.color (Element.rgb255 180 0 0) ] [ Element.text <| "No such block (V): " ++ functionName ]
         , Element.column [ Element.spacing 4 ] (List.map (\t -> Element.el [] (Element.text t)) (String.lines content))
-        ]
-
-
-noSuchOrdinaryBlock : Int -> Accumulator -> RenderSettings -> ExpressionBlock -> Element MarkupMsg
-noSuchOrdinaryBlock count acc settings block =
-    Element.column [ Element.spacing 4 ]
-        [ Element.paragraph [ Font.color (Element.rgb255 180 0 0) ] [ Element.text <| "No such block (O):" ++ (block.args |> String.join " ") ]
-
-        -- TODO fix this
-        --, Element.paragraph [] (List.map (Render.Expression.render count acc settings) (Generic.Language.getExpressionContent block))
         ]
 
 

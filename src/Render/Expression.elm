@@ -1,9 +1,9 @@
-module Render.Expression exposing (hd, nonstandardElements, render)
+module Render.Expression exposing (render)
 
 import Dict exposing (Dict)
 import ETeX.MathMacros
 import ETeX.Transform
-import Element exposing (Element, column, el, newTabLink, spacing)
+import Element exposing (Element, el, newTabLink, spacing)
 import Element.Background as Background
 import Element.Border
 import Element.Events as Events
@@ -111,7 +111,7 @@ render generation acc settings attrs expr =
             Element.el [ onClickStop (SendMeta meta), htmlId meta.id ]
                 (renderVerbatim name generation acc settings meta str)
 
-        ExprList indentation exprList meta ->
+        ExprList _ exprList _ ->
             Element.column []
                 [ Element.paragraph (background :: [ Element.paddingEach { left = 2, right = 0, top = 0, bottom = 0 } ]) (List.map (render generation acc settings attrs) exprList)
                 ]
@@ -161,13 +161,13 @@ markupDict :
         )
 markupDict =
     Dict.fromList
-        [ ( "bibitem", \_ _ _ attr exprList -> bibitem exprList )
+        [ ( "bibitem", \_ _ _ _ exprList -> bibitem exprList )
 
         -- STYLE
-        , ( "scheme", \g acc s attr exprList -> renderScheme g acc s attr exprList )
-        , ( "compute", \g acc s attr exprList -> renderComputation g acc s attr exprList )
-        , ( "data", \g acc s attr exprList -> renderDataTools g acc s attr exprList )
-        , ( "button", \g acc s attr exprList -> renderButton g acc s attr exprList )
+        , ( "scheme", \_ _ _ _ exprList -> renderScheme exprList )
+        , ( "compute", \g _ _ _ exprList -> renderComputation g exprList )
+        , ( "data", \_ _ s _ exprList -> renderDataTools s exprList )
+        , ( "button", \_ _ _ attr exprList -> renderButton attr exprList )
         , ( "strong", \g acc s attr exprList -> strong g acc s attr exprList )
         , ( "bold", \g acc s attr exprList -> strong g acc s attr exprList )
         , ( "textbf", \g acc s attr exprList -> strong g acc s attr exprList )
@@ -179,16 +179,16 @@ markupDict =
         , ( "var", \g acc s attr exprList -> var g acc s attr exprList )
         , ( "marked", \g acc s attr exprList -> marked g acc s attr exprList )
         , ( "italic", \g acc s attr exprList -> italic g acc s attr exprList )
-        , ( "qed", \g acc s attr exprList -> qed g acc s attr exprList )
+        , ( "qed", \_ _ _ _ _ -> qed )
         , ( "textit", \g acc s attr exprList -> italic g acc s attr exprList )
         , ( "bi", \g acc s attr exprList -> boldItalic g acc s attr exprList )
         , ( "i", \g acc s attr exprList -> italic g acc s attr exprList )
         , ( "boldItalic", \g acc s attr exprList -> boldItalic g acc s attr exprList )
         , ( "strike", \g acc s attr exprList -> strike g acc s attr exprList )
-        , ( "underscore", \g acc s attr exprList -> underscore g acc s attr exprList )
-        , ( "ref", \_ acc settings attr exprList -> ref acc settings exprList )
-        , ( "reflink", \_ acc s attr exprList -> reflink s acc exprList )
-        , ( "eqref", \_ acc s attr exprList -> eqref acc s exprList )
+        , ( "underscore", \_ _ _ _ _ -> underscore )
+        , ( "ref", \_ acc settings _ exprList -> ref acc settings exprList )
+        , ( "reflink", \_ acc s _ exprList -> reflink s acc exprList )
+        , ( "eqref", \_ acc s _ exprList -> eqref acc s exprList )
         , ( "underline", \g acc s attr exprList -> underline g acc s attr exprList )
         , ( "u", \g acc s attr exprList -> underline g acc s attr exprList )
         , ( "hide", \_ _ _ _ _ -> Element.none )
@@ -229,12 +229,12 @@ markupDict =
 
         --
         --, ( "skip", \_ _ _ exprList -> skip exprList )
-        , ( "link", \g acc s attr exprList -> link g acc s attr exprList )
-        , ( "href", \g acc s attr exprList -> href g acc s attr exprList )
-        , ( "ilink", \g acc s attr exprList -> ilink g acc s attr exprList )
-        , ( "ulink", \g acc s attr exprList -> ulink g acc s attr exprList )
-        , ( "newPost", \g acc s attr exprList -> newPost g acc s attr exprList )
-        , ( "cslink", \g acc s attr exprList -> cslink g acc s attr exprList )
+        , ( "link", \_ _ s _ exprList -> link s exprList )
+        , ( "href", \_ _ _ _ exprList -> href exprList )
+        , ( "ilink", \_ _ s attr exprList -> ilink s attr exprList )
+        , ( "ulink", \_ _ s attr exprList -> ulink s attr exprList )
+        , ( "newPost", \_ _ s attr exprList -> newPost s attr exprList )
+        , ( "cslink", \_ _ s attr exprList -> cslink s attr exprList )
         , ( "abstract", \g acc s attr exprList -> abstract g acc s attr exprList )
         , ( "large", \g acc s attr exprList -> large g acc s attr exprList )
         , ( "mdash", \_ _ _ _ _ -> Element.el [] (Element.text "—") )
@@ -249,7 +249,7 @@ markupDict =
         , ( "cite", \_ acc _ attr exprList -> cite acc attr exprList )
         , ( "table", \g acc s attr exprList -> table g acc s attr exprList )
         , ( "image", \_ _ s attr exprList -> Render.Graphics.image s attr exprList )
-        , ( "inlineimage", \_ _ s attr exprList -> Render.Graphics.inlineimage s attr exprList )
+        , ( "inlineimage", \_ _ s _ exprList -> Render.Graphics.inlineimage s exprList )
         , ( "tags", \_ _ _ _ _ -> Element.none )
         , ( "quote", quote )
         , ( "anchor", anchor )
@@ -263,7 +263,7 @@ markupDict =
         -- inline text functions
         , ( "term", \g acc s attr exprList -> term g acc s attr exprList )
         , ( "term_", \_ _ _ _ _ -> Element.none )
-        , ( "footnote", \_ acc s attr exprList -> footnote acc s exprList )
+        , ( "footnote", \_ acc s _ exprList -> footnote acc s exprList )
         , ( "emph", \g acc s attr exprList -> emph g acc s attr exprList )
 
         -- , ( "group", \g acc s attr  exprList -> identityFunction g acc s attr exprList )
@@ -285,24 +285,16 @@ markupDict =
 verbatimDict =
     Dict.fromList
         [ ( "$", \g a s m str -> math g a s m str )
-        , ( "`", \g a s m str -> code g a s m str )
-        , ( "code", \g a s m str -> code g a s m str )
+        , ( "`", \_ _ s m str -> code s m str )
+        , ( "code", \_ _ s m str -> code s m str )
         , ( "math", \g a s m str -> math g a s m str )
         , ( "m", \g a s m str -> math g a s m str )
         , ( "chem", \g a s m str -> chem g a s m str )
         ]
 
 
-nonstandardElements =
-    [ "button" ]
-
-
 
 -- FUNCTIONS
-
-
-identityFunction g acc s attrs exprList =
-    Element.paragraph [] (List.map (render g acc s attrs) exprList)
 
 
 abstract g acc s attr exprList =
@@ -330,8 +322,8 @@ smallsubheading g acc s attr exprList =
         ]
 
 
-link : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-link _ _ settings attr exprList =
+link : RenderSettings -> List Expression -> Element MarkupMsg
+link settings exprList =
     case List.head <| ASTTools.exprListToStringList exprList of
         Nothing ->
             errorText_ "Please provide label and url"
@@ -374,8 +366,8 @@ link _ _ settings attr exprList =
                     }
 
 
-href : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-href _ _ _ attr exprList =
+href : List Expression -> Element MarkupMsg
+href exprList =
     let
         url =
             List.Extra.getAt 0 exprList |> Maybe.andThen ASTTools.getText |> Maybe.withDefault ""
@@ -389,31 +381,6 @@ href _ _ _ attr exprList =
         }
 
 
-addPost _ _ settings attr exprList =
-    case List.head <| ASTTools.exprListToStringList exprList of
-        Nothing ->
-            errorText_ "Please provide label and url"
-
-        Just argString ->
-            let
-                args =
-                    String.words argString
-
-                n =
-                    List.length args
-
-                slug =
-                    List.Extra.last args |> Maybe.withDefault "((nothing))"
-
-                label =
-                    List.take (n - 1) args |> String.join " "
-            in
-            Input.button attr
-                { onPress = Just (GetDocumentWithSlug ScriptaV2.Msg.MHStandard slug)
-                , label = Element.el [ Element.centerX, Element.centerY, Font.underline, Font.size 14, Font.color settings.linkColor ] (Element.text label)
-                }
-
-
 {-|
 
     An ilink element ("internal link") links to another scripta document.
@@ -423,7 +390,7 @@ addPost _ _ settings attr exprList =
     Example: [ilink Read more about it here. jxxcarlson:smart-folders]
 
 -}
-ilink _ _ settings attr exprList =
+ilink settings attr exprList =
     case List.head <| ASTTools.exprListToStringList exprList of
         Nothing ->
             errorText_ "Please provide label and url"
@@ -479,7 +446,7 @@ ilink _ _ settings attr exprList =
                 }
 
 
-ulink _ _ settings attr exprList =
+ulink settings attr exprList =
     case List.head <| ASTTools.exprListToStringList exprList of
         Nothing ->
             errorText_ "Please provide label and url"
@@ -507,16 +474,12 @@ ulink _ _ settings attr exprList =
                 }
 
 
-newPost _ _ settings attr exprList =
+newPost settings attr exprList =
     case List.head <| ASTTools.exprListToStringList exprList of
         Nothing ->
             errorText_ "Please provide post title"
 
-        Just argString ->
-            let
-                args =
-                    String.words argString
-            in
+        Just _ ->
             Input.button attr
                 { -- onPress = Just (NewPost (String.join " " args))
                   onPress = Just (NewPost "Add new post")
@@ -524,7 +487,7 @@ newPost _ _ settings attr exprList =
                 }
 
 
-cslink _ _ settings attr exprList =
+cslink settings attr exprList =
     case List.head <| ASTTools.exprListToStringList exprList of
         Nothing ->
             errorText_ "Please: id or slug"
@@ -580,8 +543,8 @@ cite acc attr str =
         [ Element.text (tag |> (\s -> "[" ++ s ++ "]")) ]
 
 
-code : Int -> b -> RenderSettings -> { d | id : String } -> String -> Element msg
-code g a s m str =
+code : RenderSettings -> { d | id : String } -> String -> Element msg
+code s m str =
     verbatimElement s (codeStyle s) m str
 
 
@@ -624,19 +587,6 @@ tableItem g acc s attr expr =
             Element.none
 
 
-skip exprList =
-    let
-        numVal : String -> Int
-        numVal str =
-            String.toInt str |> Maybe.withDefault 0
-
-        f : String -> Element MarkupMsg
-        f str =
-            column [ Element.spacingXY 0 (numVal str) ] [ Element.text "" ]
-    in
-    f1 f exprList
-
-
 vspace _ _ _ _ exprList =
     let
         h =
@@ -658,8 +608,8 @@ strong g acc s attr exprList =
     simpleElement [ Font.bold ] g acc s attr exprList
 
 
-renderScheme : a -> b -> c -> d -> List Expression -> Element msg
-renderScheme g acc s attr exprList =
+renderScheme : List Expression -> Element msg
+renderScheme exprList =
     let
         inputText : String
         inputText =
@@ -670,12 +620,9 @@ renderScheme g acc s attr exprList =
 
 renderComputation :
     Int
-    -> Accumulator
-    -> RenderSettings
-    -> List (Element.Attribute MarkupMsg)
     -> List Expression
     -> Element MarkupMsg
-renderComputation g acc s attr exprList =
+renderComputation g exprList =
     let
         inputText : String
         inputText =
@@ -686,8 +633,8 @@ renderComputation g acc s attr exprList =
     Render.Math.evalMath g { id = "foo" } inputText
 
 
-renderDataTools : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-renderDataTools g acc s attr exprList =
+renderDataTools : RenderSettings -> List Expression -> Element MarkupMsg
+renderDataTools s exprList =
     let
         args =
             ASTTools.exprListToStringList exprList
@@ -696,36 +643,6 @@ renderDataTools g acc s attr exprList =
                 |> List.map (\item -> String.trim item)
     in
     renderDTValue (eval s.data args)
-
-
-hd =
-    """
-S.Mag,0.032,170
-L.Mag,0.034,290
-NGC.6822,0.214,-130
-NGC.598,0.263,-70
-NGC.221,0.275,-185
-NGC.224,0.275,-220
-NGC.5457,0.45,200
-NGC.4736,0.5,290
-NGC.5194,0.5,270
-NGC.4449,0.63,200
-NGC.4214,0.8,300
-NGC.3031,0.9,-30
-NGC.3627,0.9,650
-NGC.4826,0.9,150
-NGC.5236,0.9,500
-NGC.1068,1.0,920
-NGC.5055,1.1,450
-NGC.7331,1.1,500
-NGC.4258,1.4,500
-NGC.4151,1.7,960
-NGC.4382,2.0,500
-NGC.4472,2.0,850
-NGC.4486,2.0,800
-NGC.4649,2.0,1090
-NGC.3115,2.2,1000
-"""
 
 
 eval : Dict String String -> List String -> DTValue
@@ -743,9 +660,6 @@ eval dict args_ =
 renderDTValue : DTValue -> Element msg
 renderDTValue dtValue =
     case dtValue of
-        DTString str ->
-            Element.text str
-
         DTStringList strList ->
             Element.column [ Element.spacing 8 ] (List.map (\str -> Element.text str) strList)
 
@@ -800,13 +714,12 @@ evalAuxDT dict src args =
 
 
 type DTValue
-    = DTString String
-    | DTStringList (List String)
+    = DTStringList (List String)
     | DTInt Int
     | DTError String
 
 
-renderButton _ _ _ attr exprList =
+renderButton attr exprList =
     let
         arguments : List String
         arguments =
@@ -919,7 +832,7 @@ mark1 g acc s attr exprList =
             Element.text "Parse error in element mark?"
 
 
-qed _ _ _ _ _ =
+qed =
     Element.el [ Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] (Element.text "Q.E.D.")
 
 
@@ -1129,7 +1042,7 @@ strike g acc s attr exprList =
     simpleElement [ Font.strike ] g acc s attr exprList
 
 
-underscore _ _ _ _ _ =
+underscore =
     Element.el [] (Element.text "_")
 
 
@@ -1148,19 +1061,6 @@ errorHighlight g acc s attr exprList =
 simpleElement : List (Element.Attribute MarkupMsg) -> Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
 simpleElement formatList g acc s attr exprList =
     Element.paragraph formatList (List.map (render g acc s attr) exprList)
-
-
-{-| For one-element functions
--}
-f1 : (String -> Element MarkupMsg) -> List Expression -> Element MarkupMsg
-f1 f exprList =
-    case ASTTools.exprListToStringList exprList of
-        -- TODO: temporary fix: parse is producing the args in reverse order
-        arg1 :: _ ->
-            f arg1
-
-        _ ->
-            el [ Font.color errorColor ] (Element.text "Invalid arguments")
 
 
 verbatimElement settings formatList meta str =
@@ -1189,7 +1089,7 @@ errorText_ str =
 
 
 mathElement generation acc s meta str =
-    Render.Math.mathText (Render.ThemeHelpers.themeAsStringFromSettings s) generation "width" meta.id Render.Math.InlineMathMode (ETeX.Transform.evalStr acc.mathMacroDict str)
+    Render.Math.mathText (Render.ThemeHelpers.themeAsStringFromSettings s) generation meta.id Render.Math.InlineMathMode (ETeX.Transform.evalStr acc.mathMacroDict str)
 
 
 
@@ -1207,10 +1107,6 @@ codeStyle settings =
     , Background.color settings.codeBackground
     , Element.paddingEach { left = 2, right = 2, top = 0, bottom = 0 }
     ]
-
-
-errorColor =
-    Element.rgb 0.8 0 0
 
 
 linkColor =

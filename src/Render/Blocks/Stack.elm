@@ -1,4 +1,4 @@
-module Render.Blocks.Stack exposing (Stack, newStack, push, top)
+module Render.Blocks.Stack exposing (Stack, newStack, top)
 
 {-| Stack for tracking nested list numbering.
 

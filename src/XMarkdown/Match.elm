@@ -1,4 +1,4 @@
-module XMarkdown.Match exposing (deleteAt, match, reducible, splitAt)
+module XMarkdown.Match exposing (match, reducible, splitAt)
 
 import List.Extra
 import Tools.Loop exposing (Step(..), loop)
@@ -74,18 +74,6 @@ reducibleF symbols =
         == [ LBracket, RBracket, LParen, RParen ]
         || symbols
         == [ LParen, RParen ]
-
-
-{-|
-
-> deleteAt 1 [0, 1, 2]
-
-     [0,2] : List number
-
--}
-deleteAt : Int -> List a -> List a
-deleteAt k list =
-    List.take k list ++ List.drop (k + 1) list
 
 
 {-|

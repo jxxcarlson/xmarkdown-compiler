@@ -1,29 +1,21 @@
-module Render.Blocks.Text exposing
-    ( registerRenderers
-    , centered, indented, compact, identity, red, red2, blue, quotation
-    )
+module Render.Blocks.Text exposing (registerRenderers)
 
 {-| This module provides renderers for text-related blocks.
 
 @docs registerRenderers
-@docs centered, indented, compact, identity, red, red2, blue, quotation
 
 -}
 
-import Dict
 import Element exposing (Element)
 import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock)
-import Render.Attributes exposing (getIndentAttributes)
 import Render.BlockRegistry exposing (BlockRegistry)
-import Render.Constants
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Sync2
-import Render.Utility exposing (elementAttribute)
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 {-| Register all text block renderers to the registry

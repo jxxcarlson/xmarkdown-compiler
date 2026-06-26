@@ -1,17 +1,13 @@
-module Render.Blocks.Document exposing
-    ( registerRenderers
-    , document, section, subheading, visibleBanner
-    , unnumberedSection
-    )
+module Render.Blocks.Document exposing (registerRenderers)
 
 {-| This module provides renderers for document structure blocks.
 
 @docs registerRenderers
-@docs document, section, subheading, title, visibleBanner
+@docs title
 
 -}
 
-import Dict exposing (Dict)
+import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
@@ -66,7 +62,7 @@ registerRenderers registry =
 {-| Render a document reference block
 -}
 document : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-document _ _ settings attrs block =
+document _ _ settings _ block =
     let
         docId =
             -- In the example above, docId = "jxxcarlson:wave-packets-schroedinger"

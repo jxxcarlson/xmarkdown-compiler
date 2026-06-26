@@ -1,14 +1,11 @@
 module ToForestAndAccumulatorTest exposing (suite)
 
 import Expect
-import Generic.Acc exposing (Accumulator)
-import Generic.Forest exposing (Forest)
-import Generic.Language exposing (ExpressionBlock)
 import Generic.Vector
 import ScriptaV2.APISimple
 import ScriptaV2.Compiler
 import ScriptaV2.Language exposing (Language(..))
-import ScriptaV2.Types exposing (CompilerParameters, Filter(..), defaultCompilerParameters)
+import ScriptaV2.Types exposing (CompilerParameters, defaultCompilerParameters)
 import Test exposing (..)
 
 
@@ -25,7 +22,7 @@ suite =
                         lines =
                             [ "This is a test paragraph." ]
 
-                        ( accumulator, forest ) =
+                        ( _, forest ) =
                             ScriptaV2.Compiler.parseToForestWithAccumulator params lines
                     in
                     forest
@@ -40,7 +37,7 @@ suite =
                         lines =
                             [ "# Introduction", "", "Some text here." ]
 
-                        ( accumulator, forest ) =
+                        ( accumulator, _ ) =
                             ScriptaV2.Compiler.parseToForestWithAccumulator params lines
                     in
                     Generic.Vector.level accumulator.headingIndex

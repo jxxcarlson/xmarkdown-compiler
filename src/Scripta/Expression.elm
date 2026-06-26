@@ -1,13 +1,7 @@
 module Scripta.Expression exposing
     ( State
-    , extractMessages
-    , fixup
-    , foo
     , parse
-    , parseToState
     , parseWithMessages
-    , reduceTokens
-    , t1
     )
 
 import Generic.Language exposing (Expr(..), ExprMeta, Expression)
@@ -18,20 +12,6 @@ import Scripta.Tokenizer as Token exposing (Token, TokenType(..), Token_(..))
 import ScriptaV2.Config as Config
 import Tools.Loop exposing (Step(..), loop)
 import Tools.ParserHelpers as Helpers
-
-
-t1 =
-    """
- The notion of entropy stems from the observation that
- early steam engines were grossly inefficient: a large
- input of heat energy resulted in a small output of
- mechanical energy. The efficiency of the Newcomen engine,
- discussed in section [ref heat-engines] below was estimated
- to be only $0.02\\%$! [anchor The first
- forward step in understanding
- the cause] of this poor result came from Sadi Carnot
- in 1824.  He defined efficiency of a heat engine as
- """
 
 
 
@@ -90,10 +70,6 @@ fixup input =
 -- no fixup needed for other types, like
 
 
-foo =
-    [ Fun "quote" [ Text " abc def " { begin = 6, end = 14, id = "e-0.2", index = 2 }, Fun "i" [ Text " xyz" { begin = 17, end = 20, id = "e-0.5", index = 5 } ] { begin = 16, end = 16, id = "e-77.4", index = 4 } ] { begin = 1, end = 5, id = "e-77.1", index = 1 } ]
-
-
 parseWithMessages : Int -> String -> ( List Expression, List String )
 parseWithMessages lineNumber str =
     let
@@ -101,11 +77,6 @@ parseWithMessages lineNumber str =
             parseToState lineNumber str
     in
     ( state.committed, state.messages )
-
-
-extractMessages : State -> List String
-extractMessages state =
-    state.messages
 
 
 parseToState : Int -> String -> State
@@ -209,9 +180,6 @@ pushOrCommit token state =
         MathToken _ ->
             pushOnStack_ token state
 
-        BracketedMath _ _ ->
-            pushOrCommit_ token state
-
         CodeToken _ ->
             pushOnStack_ token state
 
@@ -268,9 +236,6 @@ stringTokenToExpr lineNumber token =
 
         W str loc ->
             Just (Text str (boostMeta lineNumber (Token.indexOf token) loc))
-
-        BracketedMath str loc ->
-            Just (VFun "math" str (boostMeta lineNumber (Token.indexOf token) loc))
 
         _ ->
             Nothing
@@ -368,7 +333,7 @@ reduceRestOfTokens lineNumber tokens =
         (LB _) :: _ ->
             case splitTokens tokens of
                 Nothing ->
-                    [ errorMessageInvisible "Error on match", Text "error on match" dummyLocWithId ]
+                    [ errorMessageInvisible, Text "error on match" dummyLocWithId ]
 
                 Just ( a, b ) ->
                     reduceTokens lineNumber a ++ reduceRestOfTokens lineNumber b
@@ -376,7 +341,7 @@ reduceRestOfTokens lineNumber tokens =
         (LMB _) :: _ ->
             case splitTokens tokens of
                 Nothing ->
-                    [ errorMessageInvisible "Error on match", Text "error on match" dummyLocWithId ]
+                    [ errorMessageInvisible, Text "error on match" dummyLocWithId ]
 
                 Just ( a, b ) ->
                     reduceTokens lineNumber a ++ reduceRestOfTokens lineNumber b
@@ -444,7 +409,7 @@ recoverFromError state =
                     , messages = Helpers.prependMessage state.lineNumber "Consecutive left brackets" state.messages
                 }
 
-        (LMB meta1) :: rest ->
+        (LMB meta1) :: _ ->
             let
                 k =
                     meta1.index
@@ -632,8 +597,8 @@ recoverFromUnknownError state =
 -- ERROR MESSAGES
 
 
-errorMessageInvisible : String -> Expression
-errorMessageInvisible _ =
+errorMessageInvisible : Expression
+errorMessageInvisible =
     Fun "invisible" [ Text "foo" dummyLocWithId ] dummyLocWithId
 
 

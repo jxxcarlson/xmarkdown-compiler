@@ -4,12 +4,7 @@ module XMarkdown.Token exposing
     , changeTokenContentAt
     , changeTokenIndicesFrom
     , getMeta
-    , idem
-    , idemTest
-    , imageParser
-    , init
     , run
-    , toSimpleToken
     , toString
     , toString2
     , type_
@@ -24,16 +19,6 @@ import XMarkdown.ParserTools as PT exposing (Context, Problem)
 
 fakeDebugLog =
     \_ -> identity
-
-
-idem : String -> String
-idem str =
-    str |> run |> List.reverse |> toString2
-
-
-idemTest : String -> Bool
-idemTest str =
-    str == idem str
 
 
 
@@ -54,65 +39,6 @@ type Token
     | MathToken Meta
     | CodeToken Meta
     | TokenError (List (DeadEnd Context Problem)) Meta
-
-
-type SimpleToken
-    = LB_
-    | RB_
-    | LP_
-    | RP_
-    | Image_
-    | AT_
-    | Bold_
-    | Italic_
-    | S_ String
-    | W_ String
-    | MathToken_
-    | CodeToken_
-    | TokenError_ (List (DeadEnd Context Problem))
-
-
-toSimpleToken : Token -> SimpleToken
-toSimpleToken token =
-    case token of
-        LB _ ->
-            LB_
-
-        RB _ ->
-            RB_
-
-        LP _ ->
-            LP_
-
-        RP _ ->
-            RP_
-
-        Image _ ->
-            Image_
-
-        AT _ ->
-            AT_
-
-        Bold _ ->
-            Bold_
-
-        Italic _ ->
-            Italic_
-
-        S str _ ->
-            S_ str
-
-        W str _ ->
-            W_ str
-
-        MathToken _ ->
-            MathToken_
-
-        CodeToken _ ->
-            CodeToken_
-
-        TokenError list _ ->
-            TokenError_ list
 
 
 setIndex : Int -> Token -> Token

@@ -3,13 +3,12 @@ module Generic.Line exposing
     , HeadingError(..)
     , Line
     , classify
-    , errorToString
     , isEmpty
     , isNonEmptyBlank
     )
 
 import Dict exposing (Dict)
-import Generic.Language exposing (Heading(..))
+import Generic.Language
 import Parser exposing ((|.), (|=), Parser)
 
 
@@ -27,26 +26,12 @@ type alias Line =
 
 
 type HeadingError
-    = HEMissingPrefix
-    | HEMissingName
+    = HEMissingName
     | HENoContent
 
 
 type alias HeadingData =
     { heading : Generic.Language.Heading, args : List String, properties : Dict String String }
-
-
-errorToString : HeadingError -> String
-errorToString error =
-    case error of
-        HEMissingPrefix ->
-            "Missing prefix"
-
-        HEMissingName ->
-            "Missing name"
-
-        HENoContent ->
-            "No content"
 
 
 isEmpty : Line -> Bool
@@ -78,7 +63,7 @@ classify position lineNumber str =
 prefixParser : Int -> Int -> Parser Line
 prefixParser position lineNumber =
     Parser.succeed
-        (\prefixStart prefixEnd lineEnd content ->
+        (\prefixStart prefixEnd _ content ->
             { indent = prefixEnd - prefixStart
             , prefix = String.slice 0 prefixEnd content
             , content = content

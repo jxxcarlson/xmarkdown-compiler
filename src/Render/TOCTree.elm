@@ -1,12 +1,10 @@
 module Render.TOCTree exposing
     ( TOCNodeValue
     , ViewParameters
-    , nodeLevel
     , view
     )
 
-import Array
-import Dict exposing (Dict)
+import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background
@@ -15,7 +13,7 @@ import Element.Font as Font
 import Generic.ASTTools
 import Generic.Acc exposing (Accumulator)
 import Generic.Forest exposing (Forest)
-import Generic.Language exposing (Expr(..), ExpressionBlock, Heading(..))
+import Generic.Language exposing (ExpressionBlock)
 import Library.Forest
 import Library.Tree
 import Render.Expression
@@ -46,14 +44,14 @@ view theme viewParameters acc documentAst =
 
         nodes : List TOCNodeValue
         nodes =
-            List.map (makeNodeValue viewParameters.idsOfOpenNodes) tocAST
+            List.map makeNodeValue tocAST
 
         forest : List (Tree TOCNodeValue)
         forest =
             Library.Forest.makeForest Library.Tree.lev nodes
 
         vee t =
-            { length = t |> RoseTree.Tree.children >> List.length, view = viewTOCTree theme viewParameters acc 4 0 Nothing t }
+            { length = t |> RoseTree.Tree.children >> List.length, view = viewTOCTree theme viewParameters acc 4 t }
 
         vee2 t =
             let
@@ -90,8 +88,8 @@ style_ theme_ =
             ]
 
 
-viewTOCTree : Render.Theme.Theme -> ViewParameters -> Accumulator -> Int -> Int -> Maybe (List String) -> Tree TOCNodeValue -> Element MarkupMsg
-viewTOCTree theme viewParameters acc depth indentation maybeFoundIds tocTree =
+viewTOCTree : Render.Theme.Theme -> ViewParameters -> Accumulator -> Int -> Tree TOCNodeValue -> Element MarkupMsg
+viewTOCTree theme viewParameters acc depth tocTree =
     let
         val : TOCNodeValue
         val =
@@ -117,48 +115,28 @@ viewTOCTree theme viewParameters acc depth indentation maybeFoundIds tocTree =
         Element.none
 
     else if List.isEmpty children then
-        viewNodeWithChildren theme viewParameters acc indentation val hasChildren
+        viewNodeWithChildren theme viewParameters acc val hasChildren
 
     else
         Element.column [ Element.spacing 8 ]
-            (viewNodeWithChildren theme viewParameters acc indentation val hasChildren
-                :: List.map (viewTOCTree theme viewParameters acc (depth - 1) (indentation + 1) maybeFoundIds)
+            (viewNodeWithChildren theme viewParameters acc val hasChildren
+                :: List.map (viewTOCTree theme viewParameters acc (depth - 1))
                     children
             )
 
 
-viewNode : Render.Theme.Theme -> ViewParameters -> Accumulator -> Int -> TOCNodeValue -> Element MarkupMsg
-viewNode theme viewParameters acc indentation node =
-    viewTocItem_ theme indentation viewParameters acc False node.block
-
-
-viewNodeWithChildren : Render.Theme.Theme -> ViewParameters -> Accumulator -> Int -> TOCNodeValue -> Bool -> Element MarkupMsg
-viewNodeWithChildren theme viewParameters acc indentation node hasChildren =
-    viewTocItem_ theme indentation viewParameters acc hasChildren node.block
-
-
-tocForest : List String -> Forest ExpressionBlock -> List (Tree TOCNodeValue)
-tocForest idsOfOpenNodes ast =
-    Generic.ASTTools.tableOfContents ast
-        |> List.map (makeNodeValue idsOfOpenNodes)
-        |> Library.Forest.makeForest nodeLevel
+viewNodeWithChildren : Render.Theme.Theme -> ViewParameters -> Accumulator -> TOCNodeValue -> Bool -> Element MarkupMsg
+viewNodeWithChildren theme viewParameters acc node hasChildren =
+    viewTocItem_ theme viewParameters acc hasChildren node.block
 
 
 type alias TOCNodeValue =
     { block : ExpressionBlock, visible : Bool }
 
 
-makeNodeValue : List String -> ExpressionBlock -> TOCNodeValue
-makeNodeValue idsOfOpenNodes block =
+makeNodeValue : ExpressionBlock -> TOCNodeValue
+makeNodeValue block =
     let
-        level : Int
-        level =
-            tocLevel block
-
-        visible =
-            (level <= 1)
-                || List.member block.meta.id idsOfOpenNodes
-
         newBlock =
             -- The "xy" line below is needed because we also have the possibility of
             -- the TOC in the sidebar. We do not want click on a TOC item in the sidebar
@@ -168,8 +146,8 @@ makeNodeValue idsOfOpenNodes block =
     { block = newBlock, visible = True }
 
 
-viewTocItem_ : Render.Theme.Theme -> Int -> ViewParameters -> Accumulator -> Bool -> ExpressionBlock -> Element MarkupMsg
-viewTocItem_ theme indentation viewParameters acc hasChildren ({ args, body, properties } as block) =
+viewTocItem_ : Render.Theme.Theme -> ViewParameters -> Accumulator -> Bool -> ExpressionBlock -> Element MarkupMsg
+viewTocItem_ theme viewParameters acc hasChildren ({ body, properties } as block) =
     case body of
         Left _ ->
             Element.none
@@ -222,13 +200,6 @@ viewTocItem_ theme indentation viewParameters acc hasChildren ({ args, body, pro
                 content =
                     Element.row ([ Element.width (Element.px 240), Element.spacing 8 ] ++ style_ theme) (sectionNumber :: List.map (Render.Expression.render viewParameters.counter acc viewParameters.settings viewParameters.attr) exprs2)
 
-                color =
-                    if id == viewParameters.selectedId then
-                        Render.Settings.getThemedElementColor .text theme
-
-                    else
-                        Element.rgb 0 0 0.8
-
                 -- Click handlers based on whether the item has children
                 clickHandlers =
                     if hasChildren then
@@ -242,36 +213,3 @@ viewTocItem_ theme indentation viewParameters acc hasChildren ({ args, body, pro
                 , Element.el (clickHandlers ++ style_ theme)
                     (Element.link [ Font.color (Element.rgb 1 0 0) ] { url = Render.Utility.internalLink id, label = content })
                 ]
-
-
-blockLabel : Dict String String -> String
-blockLabel properties =
-    Dict.get "label" properties |> Maybe.withDefault "??"
-
-
-tocIndent args =
-    Element.paddingEach { left = tocIndentAux args, right = 0, top = 0, bottom = 0 }
-
-
-tocIndentAux args =
-    case List.head args of
-        Nothing ->
-            0
-
-        Just str ->
-            String.toInt str |> Maybe.withDefault 0 |> (\x -> 12 * (x - 1))
-
-
-tocLevel : ExpressionBlock -> Int
-tocLevel block =
-    case Dict.get "level" block.properties of
-        Just level ->
-            String.toInt level |> Maybe.withDefault 0
-
-        Nothing ->
-            0
-
-
-nodeLevel : TOCNodeValue -> Int
-nodeLevel =
-    \node -> Dict.get "level" node.block.properties |> Maybe.andThen String.toInt |> Maybe.withDefault 1 |> (\x -> x - 1)

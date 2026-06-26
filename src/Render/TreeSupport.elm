@@ -17,10 +17,9 @@ import Render.Indentation
 import Render.OrdinaryBlock
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Render.Theme
 import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 import ScriptaV2.Types
 
 
@@ -52,8 +51,8 @@ syncAttributes settings block =
 
 {-| Simplified version of Block.renderBody
 -}
-renderBody : ScriptaV2.Types.CompilerParameters -> RenderSettings -> Accumulator -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> List (Element MarkupMsg)
-renderBody params settings acc _ block =
+renderBody : ScriptaV2.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
+renderBody params settings acc block =
     case block.heading of
         Paragraph ->
             [ Element.column (Render.Sync.attributes settings block) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]

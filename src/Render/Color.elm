@@ -1,8 +1,8 @@
-module Render.Color exposing (blue, lightBlue, paleBlue, paleGreen, pink, boxBackground, redText, white, black)
+module Render.Color exposing (blue, boxBackground, redText)
 
 {-| This module provides color constants for use in the rendering system.
 
-@docs blue, lightBlue, paleBlue, paleGreen, pink, boxBackground, redText, white, black
+@docs blue, boxBackground, redText
 
 -}
 
@@ -18,34 +18,6 @@ blue =
     E.rgb 0 0 0.8
 
 
-{-| Light blue color for backgrounds
--}
-lightBlue : E.Color
-lightBlue =
-    E.rgb 0.9 0.9 1.0
-
-
-{-| Pink color for backgrounds
--}
-pink : E.Color
-pink =
-    E.rgb 1.0 0.9 0.9
-
-
-{-| Pale blue color for backgrounds
--}
-paleBlue : E.Color
-paleBlue =
-    E.rgb 0.9 0.9 1.0
-
-
-{-| Pale green color for backgrounds
--}
-paleGreen : E.Color
-paleGreen =
-    E.rgb 0.9 1.0 0.9
-
-
 {-| Background color for box elements - light warm gray
 -}
 boxBackground : Render.Theme.Theme -> E.Color
@@ -58,17 +30,3 @@ boxBackground theme =
 redText : E.Color
 redText =
     E.rgb 0.8 0 0
-
-
-{-| White color
--}
-white : E.Color
-white =
-    E.rgb 1 1 1
-
-
-{-| Black color
--}
-black : E.Color
-black =
-    E.rgb 0 0 0

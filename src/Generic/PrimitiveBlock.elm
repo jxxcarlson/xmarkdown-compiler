@@ -1,6 +1,6 @@
 module Generic.PrimitiveBlock exposing
     ( parse
-    , ParserFunctions, eq, listLength
+    , ParserFunctions
     )
 
 {-| The main function is
@@ -13,7 +13,7 @@ module Generic.PrimitiveBlock exposing
 
 import Dict exposing (Dict)
 import Generic.BlockUtilities
-import Generic.Language exposing (BlockMeta, Heading(..), PrimitiveBlock, emptyBlockMeta)
+import Generic.Language exposing (Heading(..), PrimitiveBlock, emptyBlockMeta)
 import Generic.Line as Line exposing (HeadingData, HeadingError, Line)
 import List.Extra
 import Tools.Loop exposing (Step(..), loop)
@@ -166,19 +166,19 @@ init parserFunctions initialId outerCount lines =
 
 
 inspectHeading : ParserFunctions -> Line -> Maybe Generic.Language.Heading
-inspectHeading parserFunctions { indent, lineNumber, position, prefix, content } =
+inspectHeading parserFunctions { content } =
     case parserFunctions.getHeadingData content of
-        Err err ->
+        Err _ ->
             Nothing
 
-        Ok { heading, args, properties } ->
+        Ok { heading } ->
             Just heading
 
 
 blockFromLine : ParserFunctions -> Line -> Result Line.HeadingError PrimitiveBlock
 blockFromLine parserFunctions ({ indent, lineNumber, position, prefix, content } as line) =
     case parserFunctions.getHeadingData content of
-        Err err ->
+        Err _ ->
             Ok (bogusBlockFromLine "<= something missing" line)
 
         Ok { heading, args, properties } ->
@@ -204,7 +204,7 @@ blockFromLine parserFunctions ({ indent, lineNumber, position, prefix, content }
 
 
 bogusBlockFromLine : String -> Line -> PrimitiveBlock
-bogusBlockFromLine message_ { indent, lineNumber, position, prefix, content } =
+bogusBlockFromLine message_ { indent, lineNumber, position, content } =
     let
         message =
             "[b [red " ++ content ++ "]] [blue [i " ++ message_ ++ "]]"
@@ -397,15 +397,15 @@ commitBlock state currentLine =
                                 Just "markdown" ->
                                     { block_ | body = block_.body |> Generic.BlockUtilities.dropLast }
                                         |> finalize
-                                        |> transformBlock state.parserFunctions.findSectionPrefix
+                                        |> transformBlock
                                         |> fixMarkdownTitleBlock state.parserFunctions.findSectionPrefix
 
                                 _ ->
                                     { block_ | body = block_.body |> Generic.BlockUtilities.dropLast }
                                         |> finalize
-                                        |> transformBlock state.parserFunctions.findSectionPrefix
+                                        |> transformBlock
 
-                        Verbatim str ->
+                        Verbatim _ ->
                             if List.head block_.body == Just "```" then
                                 { block_ | body = List.filter (\l -> l /= "```") block_.body }
                                     |> finalize
@@ -423,11 +423,6 @@ commitBlock state currentLine =
                 , inVerbatim = state.parserFunctions.isVerbatimBlock currentLine.content
                 , currentBlock = Nothing
             }
-
-
-raiseBlockLevelsIfNeeded__ : PrimitiveBlock -> List PrimitiveBlock -> List PrimitiveBlock
-raiseBlockLevelsIfNeeded__ lastBlock blocks =
-    blocks
 
 
 raiseBlockLevelsIfNeeded_ : PrimitiveBlock -> List PrimitiveBlock -> List PrimitiveBlock
@@ -514,8 +509,8 @@ fixMarkdownTitleBlock findTitlePrefix block =
         - write "| subsection" instead of "| section\n2"
 
 -}
-transformBlock : (String -> Maybe String) -> PrimitiveBlock -> PrimitiveBlock
-transformBlock findTitlePrefix block =
+transformBlock : PrimitiveBlock -> PrimitiveBlock
+transformBlock block =
     case Generic.BlockUtilities.getPrimitiveBlockName block of
         Just "section" ->
             case List.head block.args of
@@ -588,7 +583,7 @@ createBlock state currentLine =
             blockFromLine state.parserFunctions currentLine
     in
     case rNewBlock of
-        Err err ->
+        Err _ ->
             { state
                 | lines = List.drop 1 state.lines
                 , lineNumber = state.lineNumber + 1
@@ -615,35 +610,3 @@ createBlock state currentLine =
 
 
 --HELPERS
-
-
-length : PrimitiveBlock -> Int
-length block =
-    List.length block.body
-
-
-listLength : List PrimitiveBlock -> Int
-listLength blocks =
-    case List.Extra.unconsLast blocks of
-        Nothing ->
-            0
-
-        Just ( lastBlock, _ ) ->
-            lastBlock.meta.lineNumber + length lastBlock - 1
-
-
-eq : PrimitiveBlock -> PrimitiveBlock -> Bool
-eq b1 b2 =
-    if b1.meta.sourceText /= b2.meta.sourceText then
-        False
-
-    else if b1.heading /= b2.heading then
-        False
-
-    else
-        True
-
-
-empty : PrimitiveBlock
-empty =
-    Generic.Language.primitiveBlockEmpty

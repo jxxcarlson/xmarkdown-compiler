@@ -1,16 +1,12 @@
-module Render.Blocks.Interactive exposing
-    ( registerRenderers
-    , question, answer, reveal
-    )
+module Render.Blocks.Interactive exposing (registerRenderers)
 
 {-| This module provides renderers for interactive blocks (questions, answers, etc.)
 
 @docs registerRenderers
-@docs question, answer, reveal
 
 -}
 
-import Dict exposing (Dict)
+import Dict
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Events as Events
@@ -23,7 +19,7 @@ import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Sync2
-import Render.Utility exposing (elementAttribute)
+import Render.Utility
 import ScriptaV2.Msg exposing (MarkupMsg(..))
 
 

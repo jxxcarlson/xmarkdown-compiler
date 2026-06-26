@@ -1,11 +1,6 @@
-module Generic.PTextMacro exposing (MyMacro(..), eraseLeadingMacro, get, toString)
+module Generic.PTextMacro exposing (MyMacro(..), eraseLeadingMacro)
 
 import Parser exposing ((|.), (|=), Parser)
-import Set
-
-
-foo =
-    1
 
 
 type MyMacro
@@ -25,17 +20,6 @@ eraseLeadingMacro name str =
 
         Err _ ->
             str
-
-
-get : String -> Result (List Parser.DeadEnd) MyMacro
-get str =
-    Parser.run macro str
-
-
-macro =
-    Parser.succeed MyMacro
-        |= macroName
-        |= itemList arg
 
 
 argsOfNamedMacro : String -> Parser (List String)
@@ -97,13 +81,3 @@ itemListHelper itemParser revItems =
         , Parser.succeed ()
             |> Parser.map (\_ -> Parser.Done (List.reverse revItems))
         ]
-
-
-macroName : Parser String
-macroName =
-    Parser.variable
-        { start = \c -> c == '\\'
-        , inner = \c -> Char.isAlphaNum c
-        , reserved = Set.fromList []
-        }
-        |> Parser.map (String.dropLeft 1)

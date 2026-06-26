@@ -1,9 +1,9 @@
 module XMarkdown.PrimitiveBlock exposing (parse)
 
-import Dict exposing (Dict)
+import Dict
 import Generic.Language exposing (Heading(..), PrimitiveBlock)
-import Generic.Line exposing (HeadingData, HeadingError(..), Line)
-import Generic.PrimitiveBlock exposing (ParserFunctions)
+import Generic.Line exposing (HeadingData, HeadingError(..))
+import Generic.PrimitiveBlock
 import Regex
 import Tools.KV as KV
 import Tools.Utility

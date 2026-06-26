@@ -1,19 +1,17 @@
-module Render.OrdinaryBlock exposing (getAttributes, getAttributesForBlock, render, initRegistry)
+module Render.OrdinaryBlock exposing (getAttributes, render)
 
 {-| This module provides a new implementation of OrdinaryBlock using the registry pattern
 
-@docs getAttributes, getAttributesForBlock, render, initRegistry
+@docs getAttributes, render
 
 -}
 
-import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
-import Generic.BlockUtilities
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Render.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.BlockType exposing (BlockType(..), ContainerBlockType(..), ListBlockType(..))
@@ -28,7 +26,7 @@ import Render.List
 import Render.Settings exposing (RenderSettings)
 import Render.Table
 import Render.Theme
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 {-| Get attributes for a specific block type by name
@@ -49,18 +47,6 @@ getAttributes theme name =
 
             else
                 []
-
-
-{-| Get attributes for a block
--}
-getAttributesForBlock : Render.Theme.Theme -> ExpressionBlock -> List (Element.Attribute MarkupMsg)
-getAttributesForBlock theme block =
-    case Generic.BlockUtilities.getExpressionBlockName block of
-        Nothing ->
-            []
-
-        Just name ->
-            getAttributes theme name
 
 
 {-| Initialize the registry with all renderers

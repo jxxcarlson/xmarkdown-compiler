@@ -1,8 +1,7 @@
 module ScriptaV2.API exposing
     ( compileOutput
-    , compileString
-    , compileStringWithTitle
     , viewBodyOnly, viewTOC
+    , compileString, compileStringWithTitle
     )
 
 {-| ScriptaV2.API provides the core compilation interface for converting XMarkdown
@@ -80,7 +79,6 @@ see `ScriptaV2.APISimple`.
 import Element exposing (Element)
 import Element.Font
 import ScriptaV2.Compiler
-import ScriptaV2.Language exposing (Language(..))
 import ScriptaV2.Msg
 import ScriptaV2.Types
 
@@ -142,20 +140,6 @@ respects the document hierarchy.
 viewTOC : ScriptaV2.Compiler.CompilerOutput -> List (Element ScriptaV2.Msg.MarkupMsg)
 viewTOC =
     ScriptaV2.Compiler.viewTOC
-
-
-settings : { filter : ScriptaV2.Types.Filter, lang : ScriptaV2.Language.Language, width : Int }
-settings =
-    { filter = ScriptaV2.Types.NoFilter
-    , lang = ScriptaV2.Language.SMarkdownLang
-    , width = 800
-    }
-
-
-{-| -}
-compile : ScriptaV2.Types.CompilerParameters -> List String -> List (Element ScriptaV2.Msg.MarkupMsg)
-compile params lines =
-    ScriptaV2.Compiler.compile params lines |> ScriptaV2.Compiler.view params.docWidth
 
 
 {-| -}

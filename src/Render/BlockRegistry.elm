@@ -1,11 +1,6 @@
 module Render.BlockRegistry exposing
-    ( BlockRegistry
-    , BlockRenderer
-    , empty
-    , register
-    , registerBatch
-    , lookup
-    , render
+    ( BlockRegistry, BlockRenderer
+    , empty, registerBatch, lookup
     )
 
 {-| This module provides a registry for block renderers.
@@ -14,15 +9,14 @@ Instead of having a single monolithic dictionary of renderers, this module
 allows renderers to be registered from various modules and looked up by name.
 
 @docs BlockRegistry, BlockRenderer
-@docs empty, register, registerBatch, lookup, render
+@docs empty, registerBatch, lookup
 
 -}
 
 import Dict exposing (Dict)
 import Element exposing (Element)
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
-import Render.BlockType as BlockType
+import Generic.Language exposing (ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import ScriptaV2.Msg exposing (MarkupMsg)
 
@@ -65,17 +59,3 @@ registerBatch renderers registry =
 lookup : String -> BlockRegistry -> Maybe BlockRenderer
 lookup =
     Dict.get
-
-
-{-| Render a block using the registry
-Returns Nothing if no renderer is found for the block type
--}
-render : BlockRegistry -> Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Maybe (Element MarkupMsg)
-render registry count acc settings attrs block =
-    case block.heading of
-        Ordinary name ->
-            lookup name registry
-                |> Maybe.map (\renderer -> renderer count acc settings attrs block)
-
-        _ ->
-            Nothing

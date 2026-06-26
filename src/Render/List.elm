@@ -1,6 +1,6 @@
 module Render.List exposing (desc, item, numbered)
 
-import Dict exposing (Dict)
+import Dict
 import Element exposing (Element)
 import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
@@ -10,7 +10,7 @@ import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 
@@ -24,9 +24,6 @@ indentationScale =
 item : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 item count acc settings attr block =
     let
-        id =
-            String.fromInt block.meta.lineNumber
-
         level_ =
             block.indent // 2
 

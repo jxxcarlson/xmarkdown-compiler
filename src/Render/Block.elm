@@ -1,46 +1,15 @@
-module Render.Block exposing (renderAttributes, renderBody, standardAttributes)
+module Render.Block exposing (renderBody)
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Element.Background
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Render.Expression
 import Render.Helper
 import Render.OrdinaryBlock
 import Render.Settings exposing (RenderSettings)
-import Render.Sync
-import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock
-import ScriptaV2.Msg exposing (MarkupMsg(..))
-
-
-focusedAttribute : Element.Attribute msg
-focusedAttribute =
-    Element.focused []
-
-
-renderAttributes : RenderSettings -> ExpressionBlock -> List (Element.Attribute MarkupMsg)
-renderAttributes settings block =
-    case block.heading of
-        Paragraph ->
-            focusedAttribute :: standardAttributes settings block
-
-        Ordinary name ->
-            standardAttributes settings block
-                ++ focusedAttribute
-                :: Render.OrdinaryBlock.getAttributes settings.theme
-                    name
-
-        Verbatim _ ->
-            focusedAttribute :: standardAttributes settings block
-
-
-standardAttributes settings block =
-    [ Render.Utility.idAttributeFromInt block.meta.lineNumber
-    , Render.Sync.rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
-    ]
-        ++ Render.Sync.highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
+import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 renderBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> List (Element MarkupMsg)
@@ -74,26 +43,3 @@ renderParagraphBody count acc settings attrs block =
 
 
 ---- SUBSIDIARY RENDERERS
-
-
-clickableParagraph : Int -> Int -> Element.Attribute MarkupMsg -> List (Element MarkupMsg) -> Element MarkupMsg
-clickableParagraph lineNumber numberOfLines color elements =
-    let
-        id =
-            String.fromInt lineNumber
-    in
-    Element.paragraph
-        [ color
-        , Render.Sync.rightToLeftSyncHelper lineNumber numberOfLines
-        , Render.Helper.htmlId id
-        ]
-        elements
-
-
-indentParagraph : number -> Element msg -> Element msg
-indentParagraph indent x =
-    if indent > 0 then
-        Element.el [ Element.paddingEach { top = Render.Helper.topPaddingForIndentedElements, bottom = 0, left = 0, right = 0 } ] x
-
-    else
-        x

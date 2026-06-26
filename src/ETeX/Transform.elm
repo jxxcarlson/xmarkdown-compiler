@@ -1,9 +1,6 @@
 module ETeX.Transform exposing
     ( evalStr
-    , greekSymbolParser
     , makeMacroDict
-    , toLaTeXNewCommands
-    , transformETeX
     )
 
 import Dict exposing (Dict)
@@ -11,7 +8,6 @@ import ETeX.Dictionary
 import ETeX.KaTeX exposing (isKaTeX)
 import ETeX.MathMacros exposing (MacroBody(..), MathMacroDict, NewCommand(..))
 import Generic.MathMacro
-import Maybe.Extra
 import Parser.Advanced as PA
     exposing
         ( (|.)
@@ -59,7 +55,6 @@ type MathExpr
     | RightParen
     | Comma
     | MathSymbols String
-    | GreekSymbol String
     | Macro String (List MathExpr)
     | FCall String (List MathExpr)
     | Expr (List MathExpr)
@@ -75,30 +70,9 @@ type Deco
 -- OTHER --
 
 
-transformETeX : MathMacroDict -> String -> String
-transformETeX userdefinedMacroDict src =
-    case transformETeX_ userdefinedMacroDict src of
-        Ok result ->
-            List.map print result |> String.join ""
-
-        Err _ ->
-            src
-
-
 isUserDefinedMacro : MathMacroDict -> String -> Bool
 isUserDefinedMacro dict name =
     Dict.member name dict
-
-
-transformETeX_ userdefinedMacroDict src =
-    src
-        |> parseMany userdefinedMacroDict
-        |> Result.map resolveSymbolNames
-
-
-resolveSymbolNames : List MathExpr -> List MathExpr
-resolveSymbolNames exprs =
-    List.map resolveSymbolName exprs
 
 
 {-|
@@ -180,9 +154,6 @@ resolveSymbolName expr =
         Text str ->
             Text str
 
-        GreekSymbol str ->
-            Text ("\\" ++ str)
-
 
 
 -- Helper function to resolve symbol names in Deco
@@ -209,11 +180,6 @@ evalStr userDefinedMacroDict str =
             -- goes wrong with the process, just return the input string.
             -- TODO: This solves the problem of false error reporting, but I don't like the solution.
             str
-
-
-parseMany : MathMacroDict -> String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
-parseMany userDefinedMacroDict str =
-    parseManyWithDict userDefinedMacroDict str
 
 
 parseManyWithDict : MathMacroDict -> String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
@@ -364,9 +330,6 @@ expandMacroWithDict dict expr =
         MathSymbols str ->
             MathSymbols str
 
-        GreekSymbol str ->
-            GreekSymbol str
-
 
 {-|
 
@@ -377,7 +340,7 @@ expandMacroWithDict dict expr =
 
 -}
 expandMacro_ : List MathExpr -> MacroBody -> List MathExpr
-expandMacro_ args (MacroBody arity macroDefBody) =
+expandMacro_ args (MacroBody _ macroDefBody) =
     -- Convert ETeX.MathMacros.MathExpr to local MathExpr
     let
         localMacroDefBody =
@@ -469,9 +432,6 @@ replaceParam_ k expr target =
 
         MathSymbols str ->
             MathSymbols str
-
-        GreekSymbol str ->
-            GreekSymbol str
 
 
 replaceParam : Int -> MathExpr -> List MathExpr -> List MathExpr
@@ -568,14 +528,6 @@ parseSimpleMacroWithContext knownMacros line =
 
 
 -- Process the body of a simple macro to handle various shortcuts
-
-
-processSimpleMacroBody : String -> String
-processSimpleMacroBody body =
-    processSimpleMacroBodyWithContext [] body
-
-
-
 -- Process with knowledge of existing macros
 
 
@@ -886,64 +838,9 @@ tokenToString token =
 
 
 -- Convert simple macro syntax to LaTeX newcommands
-
-
-toLaTeXNewCommands : String -> String
-toLaTeXNewCommands input =
-    input
-        |> String.trim
-        |> String.lines
-        |> List.map String.trim
-        |> List.filter (not << String.isEmpty)
-        |> List.map simpleMacroToLaTeX
-        |> List.filter ((/=) "")
-        |> String.join "\n"
-
-
-
 -- Convert a single simple macro line to LaTeX newcommand
-
-
-simpleMacroToLaTeX : String -> String
-simpleMacroToLaTeX line =
-    if String.contains ":" line then
-        case parseSimpleMacroWithContext [] line of
-            Just ( name, MacroBody arity _ ) ->
-                let
-                    processedBody =
-                        processSimpleMacroBody (String.split ":" line |> List.drop 1 |> String.join ":" |> String.trim)
-
-                    arityStr =
-                        if arity > 0 then
-                            "[" ++ String.fromInt arity ++ "]"
-
-                        else
-                            ""
-                in
-                "\\newcommand{\\" ++ name ++ "}" ++ arityStr ++ "{" ++ processedBody ++ "}"
-
-            Nothing ->
-                ""
-
-    else
-        ""
-
-
-
 -- CONVERSIONS
 -- Convert local MacroBody to Generic.MathMacro.MacroBody
-
-
-convertToGenericMacroBody : MacroBody -> Generic.MathMacro.MacroBody
-convertToGenericMacroBody (MacroBody arity exprs) =
-    let
-        localExprs =
-            List.map convertFromETeXMathExpr exprs
-    in
-    Generic.MathMacro.MacroBody arity (List.map convertToGenericMathExpr localExprs)
-
-
-
 -- Convert local MathExpr to Generic.MathMacro.MathExpr
 
 
@@ -1022,10 +919,6 @@ convertToGenericMathExpr expr =
         Text str ->
             -- Generic.MathMacro doesn't have Text, so convert to MathSymbols
             Generic.MathMacro.MathSymbols str
-
-        GreekSymbol str ->
-            -- Convert GreekSymbol to AlphaNum with backslash
-            Generic.MathMacro.AlphaNum ("\\" ++ str)
 
 
 
@@ -1117,9 +1010,6 @@ convertToETeXMathExpr expr =
         Text str ->
             ETeX.MathMacros.MathSymbols str
 
-        GreekSymbol str ->
-            ETeX.MathMacros.AlphaNum ("\\" ++ str)
-
 
 
 -- Convert local Deco to ETeX.MathMacros.Deco
@@ -1146,9 +1036,6 @@ convertFromETeXMathExpr expr =
             AlphaNum str
 
         ETeX.MathMacros.MacroName str ->
-            F0 str
-
-        ETeX.MathMacros.FunctionName str ->
             F0 str
 
         ETeX.MathMacros.Param n ->
@@ -1246,43 +1133,6 @@ findMaxParamInMathMacros exprs =
 
         _ :: rest ->
             findMaxParamInMathMacros rest
-
-
-findMaxParam : List MathExpr -> Int
-findMaxParam exprs =
-    case exprs of
-        [] ->
-            0
-
-        (Param n) :: rest ->
-            max n (findMaxParam rest)
-
-        (Arg innerExprs) :: rest ->
-            max (findMaxParam innerExprs) (findMaxParam rest)
-
-        (PArg innerExprs) :: rest ->
-            max (findMaxParam innerExprs) (findMaxParam rest)
-
-        (ParenthExpr innerExprs) :: rest ->
-            max (findMaxParam innerExprs) (findMaxParam rest)
-
-        (Macro _ args) :: rest ->
-            max (findMaxParam args) (findMaxParam rest)
-
-        (FCall _ args) :: rest ->
-            max (findMaxParam args) (findMaxParam rest)
-
-        (Expr innerExprs) :: rest ->
-            max (findMaxParam innerExprs) (findMaxParam rest)
-
-        (Sub (DecoM expr)) :: rest ->
-            max (findMaxParam [ expr ]) (findMaxParam rest)
-
-        (Super (DecoM expr)) :: rest ->
-            max (findMaxParam [ expr ]) (findMaxParam rest)
-
-        _ :: rest ->
-            findMaxParam rest
 
 
 makeEntry : Result error ETeX.MathMacros.NewCommand -> Maybe ( String, MacroBody )
@@ -1401,14 +1251,6 @@ functionArgListParser userMacroDict =
 
 
 -- Parse alpha numeric without lookahead (to avoid recursion)
-
-
-alphaNumWithoutLookaheadParser : PA.Parser c Problem MathExpr
-alphaNumWithoutLookaheadParser =
-    alphaNumParser_ |> PA.map AlphaNum
-
-
-
 -- Parse alpha numeric and check if it's a macro (no lookahead for parentheses)
 
 
@@ -1735,21 +1577,6 @@ numericDecoParser =
 -- PRINT
 
 
-printNewCommand (NewCommand mathExpr arity body) =
-    let
-        localMathExpr =
-            convertFromETeXMathExpr mathExpr
-
-        localBody =
-            List.map convertFromETeXMathExpr body
-    in
-    if arity == 0 then
-        "\\newcommand" ++ encloseB (print localMathExpr) ++ printList localBody
-
-    else
-        "\\newcommand" ++ encloseB (print localMathExpr) ++ "[" ++ String.fromInt arity ++ "]" ++ printList localBody
-
-
 printList : List MathExpr -> String
 printList exprs =
     List.map print exprs |> String.join ""
@@ -1843,9 +1670,6 @@ print expr =
 
         Text str ->
             "\\text{" ++ str ++ "}"
-
-        GreekSymbol str ->
-            "\\" ++ str
 
 
 printDeco : Deco -> String

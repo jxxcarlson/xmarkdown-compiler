@@ -25,21 +25,10 @@ in ScriptaV2.Language
 
 -}
 
-import Dict
 import Element exposing (Element)
-import Render.Settings
-import Render.Theme
 import ScriptaV2.Compiler
-import ScriptaV2.Language exposing (Language)
 import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types exposing (CompilerParameters, Filter)
-
-
-type alias Input =
-    { lang : Language
-    , docWidth : Int
-    , editCount : Int
-    }
+import ScriptaV2.Types exposing (CompilerParameters)
 
 
 {-| Compile source text to elm-ui HTML. The width of the rendered text in pixels is
@@ -50,17 +39,3 @@ This ensures that the rendered text is properly updated.
 compile : CompilerParameters -> String -> List (Element MarkupMsg)
 compile params sourceText =
     ScriptaV2.Compiler.compile params (String.lines sourceText) |> ScriptaV2.Compiler.view params.docWidth
-
-
-displaySettings : CompilerParameters -> Render.Settings.DisplaySettings
-displaySettings params =
-    { windowWidth = params.docWidth
-    , longEquationLimit = toFloat params.docWidth - 100.0
-    , counter = params.editCount
-    , selectedId = params.selectedId
-    , selectedSlug = Nothing
-    , scale = 1.0
-    , data = Dict.empty
-    , idsOfOpenNodes = params.idsOfOpenNodes
-    , numberToLevel = 3
-    }

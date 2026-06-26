@@ -1,7 +1,7 @@
 module XMarkdownSpanTest exposing (suite)
 
 import Expect
-import Generic.Language exposing (Expr(..))
+import Generic.Language
 import Test exposing (Test, describe, test)
 import XMarkdown.Expression
 

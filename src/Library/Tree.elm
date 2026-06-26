@@ -1,4 +1,4 @@
-module Library.Tree exposing (depth, flatten, lev, makeTree, print)
+module Library.Tree exposing (flatten, lev, makeTree)
 
 import Dict
 import RoseTree.Tree exposing (Tree)
@@ -32,39 +32,8 @@ flatten =
     RoseTree.Tree.foldr (\n acc -> RoseTree.Tree.value n :: acc) []
 
 
-depth : Tree a -> Int
-depth tree =
-    case RoseTree.Tree.children tree of
-        [] ->
-            1
-
-        children ->
-            (List.maximum (List.map depth children) |> Maybe.withDefault 0) + 1
-
-
 
 -- PRINTING
-
-
-print : (a -> String) -> Tree a -> String
-print f tree =
-    print_ 0 f tree
-
-
-print_ : Int -> (a -> String) -> Tree a -> String
-print_ level f tree =
-    let
-        eol =
-            "\n"
-
-        g : Int -> a -> String
-        g level_ x =
-            eol ++ String.repeat level_ "  " ++ f x
-    in
-    g level (RoseTree.Tree.value tree) ++ (List.map (print_ (level + 1) f) (RoseTree.Tree.children tree) |> String.join "")
-
-
-
 -- INTERNALS
 
 
