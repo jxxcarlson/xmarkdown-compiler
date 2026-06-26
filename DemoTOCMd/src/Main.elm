@@ -220,7 +220,29 @@ view model =
             , div [ class "panel toc-panel", style "width" (px g.tocW) ]
                 [ Html.map Render (renderPanel compilerOutput.toc) ]
             ]
+        , debugFooter model
         ]
+
+
+debugFooter : Model -> Html Msg
+debugFooter model =
+    let
+        info =
+            case model.syncHighlight of
+                Nothing ->
+                    "no click yet"
+
+                Just h ->
+                    "tick="
+                        ++ String.fromInt h.tick
+                        ++ "  mode="
+                        ++ h.mode
+                        ++ "  start="
+                        ++ String.fromInt h.start
+                        ++ "  end="
+                        ++ String.fromInt h.end
+    in
+    div [ class "debug-footer" ] [ text ("RL-SYNC ▸ " ++ info) ]
 
 
 editorView : Model -> Html Msg
