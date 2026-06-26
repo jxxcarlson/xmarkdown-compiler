@@ -44,7 +44,8 @@ render generation acc settings attrs expr =
 
         Fun name exprList meta ->
             if List.member name [ "chem", "math", "m", "code" ] then
-                renderVerbatim name generation acc settings meta (ASTTools.exprListToStringList exprList |> String.join " ")
+                Element.el [ onClickStop (SendMeta meta), htmlId meta.id ]
+                    (renderVerbatim name generation acc settings meta (ASTTools.exprListToStringList exprList |> String.join " "))
 
             else if name == "anchor" then
                 let
@@ -103,8 +104,12 @@ render generation acc settings attrs expr =
                     (renderMarked name generation acc settings attrs exprList)
 
         VFun name str meta ->
-            -- TODO: Events.onClick (SendMeta meta)?
-            renderVerbatim name generation acc settings meta str
+            -- Verbatim inline (math `$...$`, code) needs its own RL-sync click
+            -- handler; without it a click falls through to the enclosing block
+            -- and highlights the whole paragraph. stopPropagation keeps the
+            -- click on the verbatim span.
+            Element.el [ onClickStop (SendMeta meta), htmlId meta.id ]
+                (renderVerbatim name generation acc settings meta str)
 
         ExprList indentation exprList meta ->
             Element.column []

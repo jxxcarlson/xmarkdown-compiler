@@ -197,6 +197,7 @@ view model =
                 , filter = NoFilter
             }
 
+        compilerOutput : ScriptaV2.Compiler.CompilerOutput
         compilerOutput =
             ScriptaV2.Compiler.compile params (String.lines model.sourceText)
     in
@@ -255,7 +256,8 @@ editorView model =
         }
 
 
-{-| Bridge the compiler's still-elm-ui output into the html app. -}
+{-| Bridge the compiler's still-elm-ui output into the html app.
+-}
 renderPanel : List (Element.Element MarkupMsg) -> Html MarkupMsg
 renderPanel elements =
     Element.layout [ Element.width Element.fill ]
