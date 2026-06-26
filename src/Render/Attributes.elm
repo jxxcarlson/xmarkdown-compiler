@@ -45,12 +45,6 @@ getTypeSpecificAttributes blockType =
                 BlockType.Quotation ->
                     getQuotationAttributes
 
-                _ ->
-                    []
-
-        ContainerBlock _ ->
-            []
-
         _ ->
             []
 
