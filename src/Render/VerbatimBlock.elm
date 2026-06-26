@@ -10,11 +10,9 @@ import Element.Input
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
-import Render.CSVTable
 import Render.Constants as Constants
 import Render.Graphics
 import Render.Helper
-import Render.IFrame
 import Render.Math
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
@@ -81,7 +79,6 @@ verbatimDict =
         , ( "docinfo", Render.Helper.renderNothing )
         , ( "mathmacros", Render.Helper.renderNothing )
         , ( "textmacros", Render.Helper.renderNothing )
-        , ( "csvtable", Render.CSVTable.render )
         , ( "svg", Render.Graphics.svg )
         , ( "quiver", Render.Graphics.quiver )
         , ( "image", Render.Graphics.image2 )
@@ -89,7 +86,6 @@ verbatimDict =
         , ( "load-files", Render.Helper.renderNothing )
         , ( "include", Render.Helper.renderNothing )
         , ( "setup", Render.Helper.renderNothing )
-        , ( "iframe", Render.IFrame.render )
         ]
 
 

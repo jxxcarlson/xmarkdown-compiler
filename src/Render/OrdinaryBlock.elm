@@ -15,7 +15,6 @@ import Render.BlockType
 import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
 import Render.Blocks.Text as TextBlocks
-import Render.Footnote
 import Render.Indentation
 import Render.List
 import Render.Settings exposing (RenderSettings)
@@ -49,8 +48,6 @@ initRegistry =
             , ( "item", Render.List.item )
             , ( "desc", Render.List.desc )
             , ( "numbered", Render.List.numbered )
-            , ( "index", Render.Footnote.index )
-            , ( "endnotes", Render.Footnote.endnotes )
             ]
 
 
