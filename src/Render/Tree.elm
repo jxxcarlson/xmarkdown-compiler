@@ -130,7 +130,7 @@ renderLeafNode :
     -> ExpressionBlock
     -> Element MarkupMsg
 renderLeafNode params settings accumulator root =
-    Element.column (Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root settings ++ Render.Settings.unrollTheme params.theme)
+    Element.column (Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root ++ Render.Settings.unrollTheme params.theme)
         (Render.TreeSupport.renderBody params settings accumulator root)
 
 
@@ -167,7 +167,7 @@ renderBoxBranch params settings accumulator root children =
             { settings | width = settings.width - 100, backgroundColor = Render.Settings.getThemedElementColor .offsetBackground params.theme }
     in
     Element.column [ Element.paddingEach { left = 18, right = 18, top = 0, bottom = 0 } ]
-        [ Element.column (Render.TreeSupport.renderAttributes settings_ root ++ getBlockAttributes root settings)
+        [ Element.column (Render.TreeSupport.renderAttributes settings_ root ++ getBlockAttributes root)
             (Render.TreeSupport.renderBody params settings_ accumulator root
                 ++ List.map (renderTree_ params settings_ accumulator) children
             )
@@ -191,7 +191,7 @@ renderStandardBranch :
     -> List (Tree ExpressionBlock)
     -> Element MarkupMsg
 renderStandardBranch params settings accumulator root children =
-    Element.column (Element.spacing 12 :: getBlockAttributes root settings)
+    Element.column (Element.spacing 12 :: getBlockAttributes root)
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )
@@ -211,6 +211,6 @@ getBlockType block =
 
 {-| Get attributes for a block using the consolidated Attributes module
 -}
-getBlockAttributes : ExpressionBlock -> RenderSettings -> List (Element.Attribute MarkupMsg)
-getBlockAttributes block settings =
-    Render.Attributes.getBlockAttributes block settings
+getBlockAttributes : ExpressionBlock -> List (Element.Attribute MarkupMsg)
+getBlockAttributes block =
+    Render.Attributes.getBlockAttributes block

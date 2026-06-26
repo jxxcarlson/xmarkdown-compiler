@@ -1,6 +1,6 @@
 module Render.BlockType exposing
     ( BlockType(..), TextBlockType(..), ContainerBlockType(..), DocumentBlockType, InteractiveBlockType, ListBlockType(..)
-    , fromString, toString
+    , fromString
     )
 
 {-| This module defines a type system for block types in the renderer.
@@ -9,7 +9,7 @@ Instead of using string comparisons to determine block types, we use proper
 typed representations for better safety and maintainability.
 
 @docs BlockType, TextBlockType, ContainerBlockType, DocumentBlockType, InteractiveBlockType, ListBlockType
-@docs fromString, toString
+@docs fromString
 
 -}
 
@@ -198,117 +198,3 @@ fromString str =
         -- Default case for anything else
         _ ->
             MiscBlock str
-
-
-{-| Convert a BlockType to its string representation
--}
-toString : BlockType -> String
-toString blockType =
-    case blockType of
-        -- Text blocks
-        TextBlock Indent ->
-            "indent"
-
-        TextBlock Center ->
-            "center"
-
-        TextBlock Quotation ->
-            "quotation"
-
-        TextBlock Identity ->
-            "identity"
-
-        TextBlock Compact ->
-            "compact"
-
-        TextBlock Red ->
-            "red"
-
-        TextBlock Red2 ->
-            "red2"
-
-        TextBlock Blue ->
-            "blue"
-
-        -- Container blocks
-        ContainerBlock Box ->
-            "box"
-
-        ContainerBlock Env ->
-            "env"
-
-        ContainerBlock Comment ->
-            "comment"
-
-        ContainerBlock Collection ->
-            "collection"
-
-        ContainerBlock Bibitem ->
-            "bibitem"
-
-        -- Document blocks
-        DocumentBlock Title ->
-            "title"
-
-        DocumentBlock Subtitle ->
-            "subtitle"
-
-        DocumentBlock Author ->
-            "author"
-
-        DocumentBlock Date ->
-            "date"
-
-        DocumentBlock Section ->
-            "section"
-
-        DocumentBlock UnnumberedSection ->
-            "section*"
-
-        DocumentBlock Subheading ->
-            "subheading"
-
-        DocumentBlock Contents ->
-            "contents"
-
-        DocumentBlock Banner ->
-            "banner"
-
-        DocumentBlock VisibleBanner ->
-            "visibleBanner"
-
-        DocumentBlock RunningHead ->
-            "runninghead_"
-
-        DocumentBlock Document ->
-            "document"
-
-        DocumentBlock Tags ->
-            "tags"
-
-        DocumentBlock Type ->
-            "type"
-
-        -- Interactive blocks
-        InteractiveBlock Question ->
-            "q"
-
-        InteractiveBlock Answer ->
-            "a"
-
-        InteractiveBlock Reveal ->
-            "reveal"
-
-        -- List blocks
-        ListBlock Item ->
-            "item"
-
-        ListBlock Numbered ->
-            "numbered"
-
-        ListBlock Description ->
-            "desc"
-
-        -- Misc blocks
-        MiscBlock str ->
-            str

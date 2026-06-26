@@ -9,15 +9,12 @@ module Render.OrdinaryBlock exposing (getAttributes, render)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
-import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock, Heading(..))
-import Render.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.BlockType exposing (BlockType(..), ContainerBlockType(..), ListBlockType(..))
 import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
-import Render.Blocks.Interactive as InteractiveBlocks
 import Render.Blocks.Text as TextBlocks
 import Render.Color
 import Render.Footnote
@@ -42,11 +39,7 @@ getAttributes theme name =
             [ Background.color (Render.Color.boxBackground theme) ]
 
         _ ->
-            if List.member name Render.Attributes.italicBlockNames then
-                [ Font.italic ]
-
-            else
-                []
+            []
 
 
 {-| Initialize the registry with all renderers
@@ -57,7 +50,6 @@ initRegistry =
         |> TextBlocks.registerRenderers
         |> ContainerBlocks.registerRenderers
         |> DocumentBlocks.registerRenderers
-        |> InteractiveBlocks.registerRenderers
         |> Render.BlockRegistry.registerBatch
             [ ( "table", Render.Table.render )
             , ( "item", Render.List.item )
