@@ -1,7 +1,7 @@
-module XMarkdown.Symbol exposing (Symbol(..), convertTokens, value)
+module XMarkdown.Inline.Symbol exposing (Symbol(..), convertTokens, value)
 
 import Maybe.Extra
-import XMarkdown.Token exposing (Token(..))
+import XMarkdown.Inline.Token exposing (Token(..))
 
 
 type Symbol

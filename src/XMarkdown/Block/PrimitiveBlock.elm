@@ -1,4 +1,4 @@
-module XMarkdown.PrimitiveBlock exposing (parse)
+module XMarkdown.Block.PrimitiveBlock exposing (parse)
 
 {-| The main function is
 

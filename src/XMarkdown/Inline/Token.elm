@@ -1,4 +1,4 @@
-module XMarkdown.Token exposing
+module XMarkdown.Inline.Token exposing
     ( Token(..)
     , TokenType(..)
     , changeTokenContentAt
@@ -13,8 +13,8 @@ module XMarkdown.Token exposing
 import List.Extra
 import Parser.Advanced as Parser exposing (DeadEnd, Parser)
 import Tools.Loop exposing (Step(..), loop)
-import XMarkdown.Meta exposing (Meta)
-import XMarkdown.ParserTools as PT exposing (Problem)
+import XMarkdown.Inline.Meta exposing (Meta)
+import XMarkdown.Inline.ParserTools as PT exposing (Problem)
 
 
 fakeDebugLog =

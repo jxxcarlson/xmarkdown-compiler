@@ -1,4 +1,4 @@
-module XMarkdown.ForkLog exposing
+module XMarkdown.Inline.ForkLog exposing
     ( forklogBlue
     , forklogCyan
     , forklogRed

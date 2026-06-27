@@ -25,8 +25,8 @@ import RoseTree.Tree
 import Scripta.Config as Config
 import Scripta.Msg exposing (MarkupMsg)
 import Scripta.Types exposing (CompilerParameters, Filter(..))
-import XMarkdown.Expression
-import XMarkdown.PrimitiveBlock
+import XMarkdown.Inline.Expression
+import XMarkdown.Block.PrimitiveBlock
 
 
 {-| -}
@@ -98,9 +98,9 @@ indentation-based tree → expression blocks (with inline expressions parsed).
 parse : String -> Int -> List String -> Forest ExpressionBlock
 parse idPrefix outerCount lines =
     lines
-        |> XMarkdown.PrimitiveBlock.parse idPrefix outerCount
+        |> XMarkdown.Block.PrimitiveBlock.parse idPrefix outerCount
         |> Generic.ForestTransform.forestFromBlocks .indent
-        |> Generic.Forest.map (Generic.Pipeline.toExpressionBlock XMarkdown.Expression.parse)
+        |> Generic.Forest.map (Generic.Pipeline.toExpressionBlock XMarkdown.Inline.Expression.parse)
 
 
 
