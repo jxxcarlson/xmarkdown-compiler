@@ -1,6 +1,6 @@
-module Scripta.Symbol exposing (Symbol(..), balance, toSymbols, value)
+module XMarkdown.Inline.Core.Symbol exposing (Symbol(..), balance, toSymbols, value)
 
-import Scripta.Tokenizer exposing (Token, Token_(..))
+import XMarkdown.Inline.Core.Tokenizer exposing (Token, Token_(..))
 
 
 type Symbol

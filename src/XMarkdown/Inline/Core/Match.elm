@@ -1,7 +1,7 @@
-module Scripta.Match exposing (getSegment, isReducible, match, splitAt)
+module XMarkdown.Inline.Core.Match exposing (getSegment, isReducible, match, splitAt)
 
 import List.Extra
-import Scripta.Symbol exposing (Symbol(..), value)
+import XMarkdown.Inline.Core.Symbol exposing (Symbol(..), value)
 import Tools.ParserHelpers exposing (Step(..), loop)
 
 

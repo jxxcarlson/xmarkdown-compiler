@@ -9,7 +9,7 @@ import Generic.ASTTools as AT
 import Generic.Language exposing (Expr(..), Expression)
 import Generic.TextMacroParser
 import List.Extra
-import Scripta.Expression
+import XMarkdown.Inline.Core.Expression
 
 
 type alias Macro =
@@ -37,7 +37,7 @@ macroFromString str =
 macroFromL0String : String -> Maybe Macro
 macroFromL0String str =
     str
-        |> Scripta.Expression.parse 0
+        |> XMarkdown.Inline.Core.Expression.parse 0
         |> List.head
         |> Maybe.andThen extract
 
@@ -228,7 +228,7 @@ makeF a var =
 
 parseMicroLaTeX : String -> List Expression
 parseMicroLaTeX str =
-    Scripta.Expression.parse 0 str
+    XMarkdown.Inline.Core.Expression.parse 0 str
 
 
 

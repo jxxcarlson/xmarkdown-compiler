@@ -1,4 +1,4 @@
-module Scripta.Tokenizer exposing
+module XMarkdown.Inline.Core.Tokenizer exposing
     ( Meta
     , Token
     , TokenType(..)
