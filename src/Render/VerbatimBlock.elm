@@ -95,7 +95,7 @@ renderLoad _ _ _ _ block =
                     block.args |> List.head |> Maybe.withDefault "default"
             in
             Element.Input.button []
-                { onPress = Just (LoadFile tag url)
+                { onPress = Just MMNoOp
                 , label =
                     Element.el
                         [ Border.rounded 12

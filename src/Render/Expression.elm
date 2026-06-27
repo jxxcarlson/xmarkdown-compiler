@@ -430,12 +430,11 @@ ilink settings attr exprList =
                                 SelectId fragmentId
 
                             else
-                                -- Cross-document link - send full slug including fragment
-                                -- The Frontend will parse and handle the fragment after loading
-                                GetDocumentWithSlug ScriptaV2.Msg.MHStandard fullSlug
+                                -- Cross-document link: no document loader in the standalone compiler
+                                MMNoOp
 
                         Nothing ->
-                            GetDocumentWithSlug ScriptaV2.Msg.MHStandard slug
+                            MMNoOp
             in
             Input.button attr
                 { onPress = Just message
@@ -458,15 +457,9 @@ ulink settings attr exprList =
 
                 label =
                     List.take (n - 1) args |> String.join " "
-
-                fragment =
-                    List.drop (n - 1) args |> String.join " "
-
-                username =
-                    String.split ":" fragment |> List.head |> Maybe.withDefault "---"
             in
             Input.button attr
-                { onPress = Just (GetPublicDocumentFromAuthor ScriptaV2.Msg.MHStandard username fragment)
+                { onPress = Just MMNoOp
                 , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text label)
                 }
 
@@ -478,8 +471,7 @@ newPost settings attr exprList =
 
         Just _ ->
             Input.button attr
-                { -- onPress = Just (NewPost (String.join " " args))
-                  onPress = Just (NewPost "Add new post")
+                { onPress = Just MMNoOp
                 , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text "title")
                 }
 
@@ -499,15 +491,9 @@ cslink settings attr exprList =
 
                 label =
                     List.take (n - 1) args |> String.join " "
-
-                fragment =
-                    List.drop (n - 1) args |> String.join " "
-
-                username =
-                    String.split ":" fragment |> List.head |> Maybe.withDefault "---"
             in
             Input.button attr
-                { onPress = Just (GetPublicDocumentFromAuthor ScriptaV2.Msg.MHAsCheatSheet username fragment)
+                { onPress = Just MMNoOp
                 , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text label)
                 }
 
@@ -740,8 +726,8 @@ renderButton attr exprList =
 msgDict : Dict String MarkupMsg
 msgDict =
     Dict.fromList
-        [ ( "CopyDocument", RequestCopyOfDocument )
-        , ( "ToggleIndex", RequestToggleIndexSize )
+        [ ( "CopyDocument", MMNoOp )
+        , ( "ToggleIndex", MMNoOp )
         ]
 
 
