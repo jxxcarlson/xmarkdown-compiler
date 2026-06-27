@@ -1,7 +1,7 @@
-module XMarkdown.Inline.Core.Match exposing (getSegment, isReducible, match, splitAt)
+module Parser.Inline.Core.Match exposing (getSegment, isReducible, match, splitAt)
 
 import List.Extra
-import XMarkdown.Inline.Core.Symbol exposing (Symbol(..), value)
+import Parser.Inline.Core.Symbol exposing (Symbol(..), value)
 import Tools.ParserHelpers exposing (Step(..), loop)
 
 

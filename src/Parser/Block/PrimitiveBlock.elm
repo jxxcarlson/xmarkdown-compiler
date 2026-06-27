@@ -1,4 +1,4 @@
-module XMarkdown.Block.PrimitiveBlock exposing (parse)
+module Parser.Block.PrimitiveBlock exposing (parse)
 
 {-| The main function is
 
@@ -11,7 +11,7 @@ module XMarkdown.Block.PrimitiveBlock exposing (parse)
 import Dict exposing (Dict)
 import AST.BlockUtilities
 import AST.Language exposing (Heading(..), PrimitiveBlock, emptyBlockMeta)
-import XMarkdown.Block.Line as Line exposing (HeadingData, HeadingError(..), Line)
+import Parser.Block.Line as Line exposing (HeadingData, HeadingError(..), Line)
 import List.Extra
 import Regex
 import Tools.KV as KV

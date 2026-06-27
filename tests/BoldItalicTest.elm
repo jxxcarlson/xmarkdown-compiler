@@ -3,7 +3,7 @@ module BoldItalicTest exposing (suite)
 import Expect
 import AST.Language exposing (Expr(..), Expression)
 import Test exposing (Test, describe, test)
-import XMarkdown.Inline.Expression
+import Parser.Inline.Expression
 
 
 {-| A compact, structural rendering of an inline expression tree, used to assert
@@ -27,7 +27,7 @@ tag expr =
 
 dump : String -> List String
 dump str =
-    XMarkdown.Inline.Expression.parse 0 str |> List.map tag
+    Parser.Inline.Expression.parse 0 str |> List.map tag
 
 
 suite : Test

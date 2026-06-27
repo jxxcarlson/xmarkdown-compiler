@@ -14,9 +14,9 @@ import Element.Font as Font
 import AST.ASTTools
 import AST.Acc exposing (Accumulator)
 import AST.Forest exposing (Forest)
-import XMarkdown.Block.ForestTransform
+import Parser.Block.ForestTransform
 import AST.Language exposing (ExpressionBlock)
-import XMarkdown.Block.Pipeline
+import Parser.Block.Pipeline
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -25,8 +25,8 @@ import RoseTree.Tree
 import Scripta.Config as Config
 import Scripta.Msg exposing (MarkupMsg)
 import Scripta.Types exposing (CompilerParameters, Filter(..))
-import XMarkdown.Inline.Expression
-import XMarkdown.Block.PrimitiveBlock
+import Parser.Inline.Expression
+import Parser.Block.PrimitiveBlock
 
 
 {-| -}
@@ -98,9 +98,9 @@ indentation-based tree → expression blocks (with inline expressions parsed).
 parse : String -> Int -> List String -> Forest ExpressionBlock
 parse idPrefix outerCount lines =
     lines
-        |> XMarkdown.Block.PrimitiveBlock.parse idPrefix outerCount
-        |> XMarkdown.Block.ForestTransform.forestFromBlocks .indent
-        |> AST.Forest.map (XMarkdown.Block.Pipeline.toExpressionBlock XMarkdown.Inline.Expression.parse)
+        |> Parser.Block.PrimitiveBlock.parse idPrefix outerCount
+        |> Parser.Block.ForestTransform.forestFromBlocks .indent
+        |> AST.Forest.map (Parser.Block.Pipeline.toExpressionBlock Parser.Inline.Expression.parse)
 
 
 

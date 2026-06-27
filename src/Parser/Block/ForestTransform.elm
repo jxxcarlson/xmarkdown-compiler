@@ -1,4 +1,4 @@
-module XMarkdown.Block.ForestTransform exposing (forestFromBlocks)
+module Parser.Block.ForestTransform exposing (forestFromBlocks)
 
 {-| This module provides tools for building
 a tree from a string or a list of blocks. As noted

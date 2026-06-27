@@ -1,4 +1,4 @@
-module XMarkdown.Block.GFMTable exposing
+module Parser.Block.GFMTable exposing
     ( Alignment(..)
     , encodeAlignments
     , isSeparatorRow

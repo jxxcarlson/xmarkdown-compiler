@@ -1,6 +1,6 @@
-module XMarkdown.Inline.Core.Symbol exposing (Symbol(..), balance, toSymbols, value)
+module Parser.Inline.Core.Symbol exposing (Symbol(..), balance, toSymbols, value)
 
-import XMarkdown.Inline.Core.Tokenizer exposing (Token, Token_(..))
+import Parser.Inline.Core.Tokenizer exposing (Token, Token_(..))
 
 
 type Symbol

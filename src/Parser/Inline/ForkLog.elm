@@ -1,4 +1,4 @@
-module XMarkdown.Inline.ForkLog exposing
+module Parser.Inline.ForkLog exposing
     ( forklogBlue
     , forklogCyan
     , forklogRed

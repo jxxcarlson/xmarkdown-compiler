@@ -1,4 +1,4 @@
-module XMarkdown.Inline.Core.Expression exposing
+module Parser.Inline.Core.Expression exposing
     ( State
     , parse
     , parseWithMessages
@@ -6,9 +6,9 @@ module XMarkdown.Inline.Core.Expression exposing
 
 import AST.Language exposing (Expr(..), ExprMeta, Expression)
 import List.Extra
-import XMarkdown.Inline.Core.Match as M
-import XMarkdown.Inline.Core.Symbol as Symbol exposing (Symbol(..))
-import XMarkdown.Inline.Core.Tokenizer as Token exposing (Token, TokenType(..), Token_(..))
+import Parser.Inline.Core.Match as M
+import Parser.Inline.Core.Symbol as Symbol exposing (Symbol(..))
+import Parser.Inline.Core.Tokenizer as Token exposing (Token, TokenType(..), Token_(..))
 import Scripta.Config as Config
 import Tools.Loop exposing (Step(..), loop)
 import Tools.ParserHelpers as Helpers
