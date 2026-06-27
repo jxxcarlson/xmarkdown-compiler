@@ -77,4 +77,12 @@ def factorial(n):
         return n * factorial(n - 1)
 ```
 
+# Tables
+
+| Name  | Age | Occupation    |
+|-------|----:|:-------------:|
+| Alice |  29 | Engineer      |
+| Bob   |  34 | Musician      |
+| Carol |  41 | $a^2+b^2$     |
+
  """

@@ -18,7 +18,7 @@ import Render.Blocks.Text as TextBlocks
 import Render.Indentation
 import Render.List
 import Render.Settings exposing (RenderSettings)
-import Render.Table
+import Render.GHTable
 import ScriptaV2.Msg exposing (MarkupMsg)
 
 
@@ -44,7 +44,7 @@ initRegistry =
         |> ContainerBlocks.registerRenderers
         |> DocumentBlocks.registerRenderers
         |> Render.BlockRegistry.registerBatch
-            [ ( "table", Render.Table.render )
+            [ ( "table", Render.GHTable.render )
             , ( "item", Render.List.item )
             , ( "desc", Render.List.desc )
             , ( "numbered", Render.List.numbered )

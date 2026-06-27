@@ -2,6 +2,7 @@ module Generic.Pipeline exposing (toExpressionBlock)
 
 import Dict
 import Either exposing (Either(..))
+import Generic.GFMTable
 import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
 
 
@@ -17,70 +18,74 @@ toExpressionBlock exprParser block =
 
 toExpressionBlock_ : (String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
 toExpressionBlock_ parse primitiveBlock =
-    { heading = primitiveBlock.heading
-    , indent = primitiveBlock.indent
-    , args = primitiveBlock.args
-    , properties =
-        primitiveBlock.properties |> Dict.insert "id" primitiveBlock.meta.id
-    , firstLine = primitiveBlock.firstLine
-    , body =
-        case primitiveBlock.heading of
-            Paragraph ->
-                Right (String.join "\n" primitiveBlock.body |> parse)
+    if Generic.GFMTable.isTable primitiveBlock then
+        Generic.GFMTable.toExpressionBlock parse primitiveBlock
 
-            Ordinary "itemList_" ->
-                let
-                    items : List String
-                    items =
-                        (primitiveBlock.firstLine :: primitiveBlock.body)
-                            |> fixItems
+    else
+        { heading = primitiveBlock.heading
+        , indent = primitiveBlock.indent
+        , args = primitiveBlock.args
+        , properties =
+            primitiveBlock.properties |> Dict.insert "id" primitiveBlock.meta.id
+        , firstLine = primitiveBlock.firstLine
+        , body =
+            case primitiveBlock.heading of
+                Paragraph ->
+                    Right (String.join "\n" primitiveBlock.body |> parse)
 
-                    content_ : List (List Expression)
-                    content_ =
-                        List.map parse items
-                in
-                Right (List.map (\list -> ExprList 0 list Generic.Language.emptyExprMeta) content_)
+                Ordinary "itemList_" ->
+                    let
+                        items : List String
+                        items =
+                            (primitiveBlock.firstLine :: primitiveBlock.body)
+                                |> fixItems
 
-            -- Nested itemized lists: parse indentation to support proper nesting.
-            -- Each item is parsed from its own (marker-stripped) substring, so its
-            -- expression offsets start at 0; we shift each item's expressions by the
-            -- offset of its content within the block's sourceText so that the
-            -- block-level boostBlock pass then lands them at absolute source
-            -- positions (needed for rendered→editor sync).
-            Ordinary "itemList" ->
-                Right (parseListItems "- " parse primitiveBlock.meta.sourceText)
+                        content_ : List (List Expression)
+                        content_ =
+                            List.map parse items
+                    in
+                    Right (List.map (\list -> ExprList 0 list Generic.Language.emptyExprMeta) content_)
 
-            -- Nested numbered lists: parse indentation to support proper nesting
-            Ordinary "numberedList" ->
-                let
-                    extractIndentAndContent : String -> ( Int, String )
-                    extractIndentAndContent str =
-                        ( numberOfLeadingSpaces str, String.trimLeft str |> String.replace ". " "" )
+                -- Nested itemized lists: parse indentation to support proper nesting.
+                -- Each item is parsed from its own (marker-stripped) substring, so its
+                -- expression offsets start at 0; we shift each item's expressions by the
+                -- offset of its content within the block's sourceText so that the
+                -- block-level boostBlock pass then lands them at absolute source
+                -- positions (needed for rendered→editor sync).
+                Ordinary "itemList" ->
+                    Right (parseListItems "- " parse primitiveBlock.meta.sourceText)
 
-                    numberOfLeadingSpaces : String -> Int
-                    numberOfLeadingSpaces str =
-                        String.length str - String.length (String.trimLeft str)
+                -- Nested numbered lists: parse indentation to support proper nesting
+                Ordinary "numberedList" ->
+                    let
+                        extractIndentAndContent : String -> ( Int, String )
+                        extractIndentAndContent str =
+                            ( numberOfLeadingSpaces str, String.trimLeft str |> String.replace ". " "" )
 
-                    items : List ( Int, String )
-                    items =
-                        String.split "\n" primitiveBlock.meta.sourceText
-                            |> List.map extractIndentAndContent
+                        numberOfLeadingSpaces : String -> Int
+                        numberOfLeadingSpaces str =
+                            String.length str - String.length (String.trimLeft str)
 
-                    content_ : List ( Int, List Expression )
-                    content_ =
-                        List.map (\( indent, str ) -> ( indent, parse str )) items
-                in
-                -- Store indentation in ExprList's Int parameter for rendering
-                Right (List.map (\( indent, exprList ) -> ExprList indent exprList Generic.Language.emptyExprMeta) content_)
+                        items : List ( Int, String )
+                        items =
+                            String.split "\n" primitiveBlock.meta.sourceText
+                                |> List.map extractIndentAndContent
 
-            Ordinary _ ->
-                Right (String.join "\n" primitiveBlock.body |> parse)
+                        content_ : List ( Int, List Expression )
+                        content_ =
+                            List.map (\( indent, str ) -> ( indent, parse str )) items
+                    in
+                    -- Store indentation in ExprList's Int parameter for rendering
+                    Right (List.map (\( indent, exprList ) -> ExprList indent exprList Generic.Language.emptyExprMeta) content_)
 
-            Verbatim _ ->
-                Left <| String.join "\n" primitiveBlock.body
-    , meta = primitiveBlock.meta
-    , style = primitiveBlock.style
-    }
+                Ordinary _ ->
+                    Right (String.join "\n" primitiveBlock.body |> parse)
+
+                Verbatim _ ->
+                    Left <| String.join "\n" primitiveBlock.body
+        , meta = primitiveBlock.meta
+        , style = primitiveBlock.style
+        }
 
 
 {-| Parse the items of a list block. Each item is parsed from its own
