@@ -1,6 +1,5 @@
 module ETeX.MathMacros exposing
-    ( Context
-    , Deco(..)
+    ( Deco(..)
     , MacroBody(..)
     , MathExpr(..)
     , MathMacroDict
@@ -75,10 +74,6 @@ type alias MathMacroDict =
     Dict String MacroBody
 
 
-type Context
-    = CArg String
-
-
 type Problem
     = ExpectingLeftBrace
     | ExpectingAlpha
@@ -102,7 +97,7 @@ type Problem
 
 
 type alias MathExprParser a =
-    PA.Parser Context Problem a
+    PA.Parser () Problem a
 
 
 
@@ -198,7 +193,7 @@ commaParser =
         |. symbol (Token "," ExpectingComma)
 
 
-argParser : PA.Parser Context Problem MathExpr
+argParser : PA.Parser () Problem MathExpr
 argParser =
     (succeed identity
         |. symbol (Token "{" ExpectingLeftBrace)
@@ -208,7 +203,7 @@ argParser =
         |> PA.map Arg
 
 
-parenthesizedGroupParser : PA.Parser Context Problem MathExpr
+parenthesizedGroupParser : PA.Parser () Problem MathExpr
 parenthesizedGroupParser =
     (succeed identity
         |. symbol (Token "(" ExpectingLeftParen)
@@ -237,7 +232,7 @@ alphaNumParser_ =
         |= getSource
 
 
-f0Parser : PA.Parser Context Problem MathExpr
+f0Parser : PA.Parser () Problem MathExpr
 f0Parser =
     second (symbol (Token "\\" ExpectingBackslash)) alphaNumParser_
         |> PA.map MacroName

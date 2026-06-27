@@ -1,6 +1,5 @@
 module Tools.ParserTools exposing
-    ( Context
-    , Problem
+    ( Problem
     , StringData
     , text
     )
@@ -12,12 +11,8 @@ type Problem
     = ExpectingPrefix
 
 
-type Context
-    = TextExpression
-
-
 type alias Parser a =
-    Parser.Parser Context Problem a
+    Parser.Parser () Problem a
 
 
 type alias StringData =

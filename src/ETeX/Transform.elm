@@ -182,7 +182,7 @@ evalStr userDefinedMacroDict str =
             str
 
 
-parseManyWithDict : MathMacroDict -> String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
+parseManyWithDict : MathMacroDict -> String -> Result (List (DeadEnd () Problem)) (List MathExpr)
 parseManyWithDict userMacroDict str =
     str
         |> String.trim
@@ -1154,10 +1154,6 @@ makeEntry newCommand_ =
             Nothing
 
 
-type Context
-    = CArg String
-
-
 type Problem
     = ExpectingLeftBrace
     | ExpectingAlpha
@@ -1186,19 +1182,19 @@ type Problem
 
 
 type alias MathExprParser a =
-    PA.Parser Context Problem a
+    PA.Parser () Problem a
 
 
 
 -- PARSER
 
 
-parseWithDict : MathMacroDict -> String -> Result (List (DeadEnd Context Problem)) (List MathExpr)
+parseWithDict : MathMacroDict -> String -> Result (List (DeadEnd () Problem)) (List MathExpr)
 parseWithDict userMacroDict str =
     PA.run (many (mathExprParser userMacroDict)) str
 
 
-macroParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+macroParser : MathMacroDict -> PA.Parser () Problem MathExpr
 macroParser userMacroDict =
     succeed Macro
         |. symbol (Token "\\" ExpectingBackslash)
@@ -1210,7 +1206,7 @@ macroParser userMacroDict =
 -- Parser that parses comma-separated function arguments
 
 
-functionArgsParser : MathMacroDict -> PA.Parser Context Problem (List MathExpr)
+functionArgsParser : MathMacroDict -> PA.Parser () Problem (List MathExpr)
 functionArgsParser userMacroDict =
     succeed identity
         |. symbol (Token "(" ExpectingLeftParen)
@@ -1222,7 +1218,7 @@ functionArgsParser userMacroDict =
 -- Helper to parse comma-separated arguments
 
 
-functionArgListParser : MathMacroDict -> PA.Parser Context Problem (List MathExpr)
+functionArgListParser : MathMacroDict -> PA.Parser () Problem (List MathExpr)
 functionArgListParser userMacroDict =
     let
         -- Parse content that can appear in an argument (excluding commas)
@@ -1254,7 +1250,7 @@ functionArgListParser userMacroDict =
 -- Parse alpha numeric and check if it's a macro (no lookahead for parentheses)
 
 
-alphaNumOrMacroParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+alphaNumOrMacroParser : MathMacroDict -> PA.Parser () Problem MathExpr
 alphaNumOrMacroParser userMacroDict =
     alphaNumParser_
         |> PA.map
@@ -1271,7 +1267,7 @@ alphaNumOrMacroParser userMacroDict =
 -- Helper for parsing one or more items
 
 
-many1 : PA.Parser Context Problem a -> PA.Parser Context Problem (List a)
+many1 : PA.Parser () Problem a -> PA.Parser () Problem (List a)
 many1 p =
     succeed (::)
         |= p
@@ -1282,7 +1278,7 @@ many1 p =
 -- Parse items separated by commas, returning the items and commas
 
 
-sepByComma : PA.Parser Context Problem MathExpr -> PA.Parser Context Problem (List MathExpr)
+sepByComma : PA.Parser () Problem MathExpr -> PA.Parser () Problem (List MathExpr)
 sepByComma itemParser =
     oneOf
         [ -- Parse at least one item
@@ -1300,7 +1296,7 @@ sepByComma itemParser =
 -- Helper for parsing more comma-separated items
 
 
-sepByCommaHelp : PA.Parser Context Problem MathExpr -> List MathExpr -> PA.Parser Context Problem (Step (List MathExpr) (List MathExpr))
+sepByCommaHelp : PA.Parser () Problem MathExpr -> List MathExpr -> PA.Parser () Problem (Step (List MathExpr) (List MathExpr))
 sepByCommaHelp itemParser revItems =
     oneOf
         [ -- Try to parse comma and another item
@@ -1316,7 +1312,7 @@ sepByCommaHelp itemParser revItems =
 -- Parser for quoted text
 
 
-textParser : PA.Parser Context Problem MathExpr
+textParser : PA.Parser () Problem MathExpr
 textParser =
     succeed Text
         |. symbol (Token "\"" ExpectingQuote)
@@ -1325,7 +1321,7 @@ textParser =
 
 
 
---greekLetterParser : PA.Parser Context Problem MathExpr
+--greekLetterParser : PA.Parser () Problem MathExpr
 --greekLetterParser =
 --    succeed AlphaNum
 --        |. symbol (Token "\\" ExpectingBackslash)
@@ -1334,7 +1330,7 @@ textParser =
 -- Parser that looks for function calls with lookahead
 
 
-alphaNumWithLookaheadParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+alphaNumWithLookaheadParser : MathMacroDict -> PA.Parser () Problem MathExpr
 alphaNumWithLookaheadParser userMacroDict =
     succeed identity
         |= alphaNumParser_
@@ -1363,7 +1359,7 @@ alphaNumWithLookaheadParser userMacroDict =
             )
 
 
-mathExprParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+mathExprParser : MathMacroDict -> PA.Parser () Problem MathExpr
 mathExprParser userMacroDict =
     oneOf
         [ textParser -- Parse quoted text first
@@ -1387,7 +1383,7 @@ mathExprParser userMacroDict =
         ]
 
 
-greekSymbolParser : PA.Parser Context Problem MathExpr
+greekSymbolParser : PA.Parser () Problem MathExpr
 greekSymbolParser =
     succeed identity
         |= alphaNumParser_
@@ -1419,12 +1415,12 @@ optionalParamParser =
         |. symbol (Token "]" ExpectingRightBracket)
 
 
-parseNewCommand : MathMacroDict -> String -> Result (List (DeadEnd Context Problem)) NewCommand
+parseNewCommand : MathMacroDict -> String -> Result (List (DeadEnd () Problem)) NewCommand
 parseNewCommand userMacroDict str =
     run (newCommandParser userMacroDict) str
 
 
-newCommandParser : MathMacroDict -> PA.Parser Context Problem NewCommand
+newCommandParser : MathMacroDict -> PA.Parser () Problem NewCommand
 newCommandParser userMacroDict =
     oneOf [ backtrackable (newCommandParser1 userMacroDict), newCommandParser2 userMacroDict ]
 
@@ -1469,7 +1465,7 @@ commaParser =
         |. symbol (Token "," ExpectingComma)
 
 
-newCommandParser1 : MathMacroDict -> PA.Parser Context Problem NewCommand
+newCommandParser1 : MathMacroDict -> PA.Parser () Problem NewCommand
 newCommandParser1 userMacroDict =
     succeed (\name arity body -> NewCommand (convertToETeXMathExpr name) arity (List.map convertToETeXMathExpr body))
         |. symbol (Token "\\newcommand" ExpectingNewCommand)
@@ -1480,7 +1476,7 @@ newCommandParser1 userMacroDict =
         |= many (mathExprParser userMacroDict)
 
 
-newCommandParser2 : MathMacroDict -> PA.Parser Context Problem NewCommand
+newCommandParser2 : MathMacroDict -> PA.Parser () Problem NewCommand
 newCommandParser2 userMacroDict =
     succeed (\name body -> NewCommand (convertToETeXMathExpr name) 0 (List.map convertToETeXMathExpr body))
         |. symbol (Token "\\newcommand" ExpectingNewCommand)
@@ -1490,7 +1486,7 @@ newCommandParser2 userMacroDict =
         |= many (mathExprParser userMacroDict)
 
 
-argParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+argParser : MathMacroDict -> PA.Parser () Problem MathExpr
 argParser userMacroDict =
     (succeed identity
         |. symbol (Token "{" ExpectingLeftBrace)
@@ -1504,7 +1500,7 @@ argParser userMacroDict =
 -- Removed unused parsers: parentheticalExprParser and parentheticalExprParserM
 
 
-standaloneParenthExprParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+standaloneParenthExprParser : MathMacroDict -> PA.Parser () Problem MathExpr
 standaloneParenthExprParser userMacroDict =
     (succeed identity
         |. symbol (Token "(" ExpectingLeftParen)
@@ -1532,7 +1528,7 @@ alphaNumParser_ =
         |= getSource
 
 
-f0Parser : PA.Parser Context Problem MathExpr
+f0Parser : PA.Parser () Problem MathExpr
 f0Parser =
     second (symbol (Token "\\" ExpectingBackslash)) alphaNumParser_
         |> PA.map F0
@@ -1546,7 +1542,7 @@ paramParser =
         |> PA.map Param
 
 
-subscriptParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+subscriptParser : MathMacroDict -> PA.Parser () Problem MathExpr
 subscriptParser userMacroDict =
     (succeed identity
         |. symbol (Token "_" ExpectingUnderscore)
@@ -1555,7 +1551,7 @@ subscriptParser userMacroDict =
         |> PA.map Sub
 
 
-superscriptParser : MathMacroDict -> PA.Parser Context Problem MathExpr
+superscriptParser : MathMacroDict -> PA.Parser () Problem MathExpr
 superscriptParser userMacroDict =
     (succeed identity
         |. symbol (Token "^" ExpectingCaret)
@@ -1564,7 +1560,7 @@ superscriptParser userMacroDict =
         |> PA.map Super
 
 
-decoParser : MathMacroDict -> PA.Parser Context Problem Deco
+decoParser : MathMacroDict -> PA.Parser () Problem Deco
 decoParser userMacroDict =
     oneOf [ numericDecoParser, lazy (\_ -> mathExprParser userMacroDict) |> PA.map DecoM ]
 

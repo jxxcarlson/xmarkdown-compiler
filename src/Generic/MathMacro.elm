@@ -1,6 +1,5 @@
 module Generic.MathMacro exposing
-    ( Context
-    , Deco(..)
+    ( Deco(..)
     , MathExpr(..)
     , Problem
     )
@@ -55,10 +54,6 @@ type Deco
 -- RESUlT: [Macro "frac" [Arg [Macro "baar" [Arg [AlphaNum "X"]]],Arg [Macro "baar" [Arg [AlphaNum "Y"]]]]]
 
 
-type Context
-    = CArg String
-
-
 type Problem
     = ExpectingLeftBrace
     | ExpectingAlpha
@@ -79,7 +74,7 @@ type Problem
 
 
 type alias MathExprParser a =
-    PA.Parser Context Problem a
+    PA.Parser () Problem a
 
 
 
@@ -153,7 +148,7 @@ rightBraceParser =
         |. symbol (Token "\\}" ExpectingRightMathBrace)
 
 
-argParser : PA.Parser Context Problem MathExpr
+argParser : PA.Parser () Problem MathExpr
 argParser =
     (succeed identity
         |. symbol (Token "{" ExpectingLeftBrace)
@@ -182,7 +177,7 @@ alphaNumParser_ =
         |= getSource
 
 
-f0Parser : PA.Parser Context Problem MathExpr
+f0Parser : PA.Parser () Problem MathExpr
 f0Parser =
     second (symbol (Token "\\" ExpectingBackslash)) alphaNumParser_
         |> PA.map F0
