@@ -18,7 +18,7 @@ cells (`Generic.Pipeline`), text macros (`Generic.TextMacro`), and XMarkdown's
 The Elm compiler is the regression net. After every change:
 
 ```bash
-elm make src/ScriptaV2/APISimple.elm src/ScriptaV2/API.elm src/ScriptaV2/Types.elm src/ScriptaV2/Msg.elm src/ScriptaV2/Language.elm src/Render/Theme.elm --output=/dev/null
+elm make src/ScriptaV2/APISimple.elm src/ScriptaV2/API.elm src/ScriptaV2/Types.elm src/ScriptaV2/Msg.elm src/Render/Theme.elm --output=/dev/null
 npx elm-test
 ```
 
@@ -31,5 +31,5 @@ Both must pass before committing.
 - `npx elm-review --ignore-dirs src/Evergreen/` for code review.
 - Generated `main.js` files are git-ignored.
 - Public entry points: `ScriptaV2.APISimple`, `ScriptaV2.API`, `ScriptaV2.Types`,
-  `ScriptaV2.Msg`, `ScriptaV2.Language`, `Render.Theme`.
+  `ScriptaV2.Msg`, `Render.Theme`, `ScriptaV2.Editor`, `ScriptaV2.Sync`.
 - When asked to "show me the code", give module name + line numbers.

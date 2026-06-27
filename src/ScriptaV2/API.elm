@@ -33,15 +33,13 @@ navigation panels.
 # Usage Example
 
     import ScriptaV2.API
-    import ScriptaV2.Language exposing (Language(..))
     import ScriptaV2.Types exposing (defaultCompilerParameters)
 
 
     -- Configure compiler
     params =
         { defaultCompilerParameters
-            | lang = SMarkdownLang
-            , docWidth = 600
+            | docWidth = 600
             , editCount = 0
         }
 
@@ -62,11 +60,6 @@ navigation panels.
     -- Render table of contents separately
     tocElements =
         ScriptaV2.API.viewTOC output
-
-
-# Supported Languages
-
-  - **SMarkdownLang** - XMarkdown: extended Markdown with scientific notation support
 
 
 # See Also
@@ -92,8 +85,7 @@ which can then be displayed using the view functions.
 
     params =
         { defaultCompilerParameters
-            | lang = SMarkdownLang
-            , docWidth = 600
+            | docWidth = 600
         }
 
     output =

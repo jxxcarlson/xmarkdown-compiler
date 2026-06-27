@@ -1,11 +1,10 @@
 module ScriptaV2.APISimple exposing (compile)
 
-{-| Use `ScriptaV2.APISimple.compile` to transform source text to elm-ui HTML for the given markup language.
+{-| Use `ScriptaV2.APISimple.compile` to transform XMarkdown source text to elm-ui HTML.
 You will need the following imports in your Elm file:
 
     import ScriptaV2.APISimple
     import ScriptaV2.Msg exposing (MarkupMsg)
-    import ScriptaV2.Language exposing (Language)
     import Element exposing (Element)
 
 Your `Msg` type definition should read:
@@ -13,13 +12,6 @@ Your `Msg` type definition should read:
     type Msg
         =  ...
         | Render MarkupMsg
-
-The choice of language is made from
-
-    type Language
-        = SMarkdownLang
-
-in ScriptaV2.Language
 
 @docs compile
 

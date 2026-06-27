@@ -4,7 +4,6 @@ import Expect
 import Generic.Vector
 import ScriptaV2.APISimple
 import ScriptaV2.Compiler
-import ScriptaV2.Language exposing (Language(..))
 import ScriptaV2.Types exposing (CompilerParameters, defaultCompilerParameters)
 import Test exposing (..)
 
@@ -17,7 +16,7 @@ suite =
                 \_ ->
                     let
                         params =
-                            defaultParams SMarkdownLang
+                            defaultParams
 
                         lines =
                             [ "This is a test paragraph." ]
@@ -32,7 +31,7 @@ suite =
                 \_ ->
                     let
                         params =
-                            defaultParams SMarkdownLang
+                            defaultParams
 
                         lines =
                             [ "# Introduction", "", "Some text here." ]
@@ -84,6 +83,6 @@ suite =
         ]
 
 
-defaultParams : Language -> CompilerParameters
-defaultParams lang =
-    { defaultCompilerParameters | lang = lang }
+defaultParams : CompilerParameters
+defaultParams =
+    defaultCompilerParameters

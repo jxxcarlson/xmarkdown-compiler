@@ -79,11 +79,7 @@ bottomPadding k =
     Element.paddingEach { left = 0, right = 0, top = 0, bottom = k }
 
 
-{-|
-
-    compile lang width counter selectedId lines
-    Used only in View.Phone (twice)
-
+{-| Compile XMarkdown source lines into renderable output (body, banner, TOC, title).
 -}
 compile : CompilerParameters -> List String -> CompilerOutput
 compile params lines =

@@ -14,7 +14,6 @@ import Html.Events
 import List.Extra
 import ScriptaV2.Compiler
 import ScriptaV2.Editor
-import ScriptaV2.Language
 import ScriptaV2.Msg exposing (MarkupMsg)
 import ScriptaV2.Sync
 import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
@@ -189,8 +188,7 @@ view model =
 
         params =
             { defaultCompilerParameters
-                | lang = ScriptaV2.Language.SMarkdownLang
-                , docWidth = g.docWidth
+                | docWidth = g.docWidth
                 , editCount = model.count
                 , selectedId = "selectedId"
                 , idsOfOpenNodes = model.idsOfOpenNodes
