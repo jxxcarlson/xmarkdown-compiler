@@ -1,4 +1,4 @@
-module XMarkdown.Block.BlockUtilities exposing
+module AST.BlockUtilities exposing
     ( dropLast
     , getExpressionBlockName
     , getPrimitiveBlockName

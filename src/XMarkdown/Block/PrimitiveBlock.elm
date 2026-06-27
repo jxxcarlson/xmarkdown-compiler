@@ -9,7 +9,7 @@ module XMarkdown.Block.PrimitiveBlock exposing (parse)
 -}
 
 import Dict exposing (Dict)
-import XMarkdown.Block.BlockUtilities
+import AST.BlockUtilities
 import AST.Language exposing (Heading(..), PrimitiveBlock, emptyBlockMeta)
 import XMarkdown.Block.Line as Line exposing (HeadingData, HeadingError(..), Line)
 import List.Extra
@@ -228,7 +228,7 @@ nextStep state =
                 Just block_ ->
                     let
                         block =
-                            { block_ | body = XMarkdown.Block.BlockUtilities.dropLast block_.body }
+                            { block_ | body = AST.BlockUtilities.dropLast block_.body }
 
                         blocks =
                             if block.body == [ "" ] then
@@ -371,8 +371,8 @@ commitBlock state currentLine =
                             (state.lineNumber |> String.fromInt) ++ "-" ++ String.fromInt state.blocksCommitted
                     in
                     block__
-                        |> XMarkdown.Block.BlockUtilities.updateMeta (\m -> { m | id = id })
-                        |> XMarkdown.Block.BlockUtilities.updateMeta (\m -> { m | numberOfLines = List.length block__.body })
+                        |> AST.BlockUtilities.updateMeta (\m -> { m | id = id })
+                        |> AST.BlockUtilities.updateMeta (\m -> { m | numberOfLines = List.length block__.body })
                         |> (\b -> { b | properties = Dict.insert "outerId" id b.properties })
 
                 block =
@@ -383,13 +383,13 @@ commitBlock state currentLine =
                         Ordinary _ ->
                             case Dict.get "section-type" block_.properties of
                                 Just "markdown" ->
-                                    { block_ | body = block_.body |> XMarkdown.Block.BlockUtilities.dropLast }
+                                    { block_ | body = block_.body |> AST.BlockUtilities.dropLast }
                                         |> finalize
                                         |> transformBlock
                                         |> fixMarkdownTitleBlock
 
                                 _ ->
-                                    { block_ | body = block_.body |> XMarkdown.Block.BlockUtilities.dropLast }
+                                    { block_ | body = block_.body |> AST.BlockUtilities.dropLast }
                                         |> finalize
                                         |> transformBlock
 
@@ -399,7 +399,7 @@ commitBlock state currentLine =
                                     |> finalize
 
                             else
-                                { block_ | body = XMarkdown.Block.BlockUtilities.dropLast block_.body } |> finalize
+                                { block_ | body = AST.BlockUtilities.dropLast block_.body } |> finalize
             in
             { state
                 | lines = List.drop 1 state.lines
@@ -499,7 +499,7 @@ fixMarkdownTitleBlock block =
 -}
 transformBlock : PrimitiveBlock -> PrimitiveBlock
 transformBlock block =
-    case XMarkdown.Block.BlockUtilities.getPrimitiveBlockName block of
+    case AST.BlockUtilities.getPrimitiveBlockName block of
         Just "section" ->
             case List.head block.args of
                 Nothing ->
