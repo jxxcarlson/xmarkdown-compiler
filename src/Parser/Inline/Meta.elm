@@ -1,4 +1,4 @@
-module XMarkdown.Inline.Meta exposing (Meta, dummy)
+module Parser.Inline.Meta exposing (Meta, dummy)
 
 
 type alias Meta =

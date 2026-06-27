@@ -1,4 +1,4 @@
-module XMarkdown.Inline.Expression exposing
+module Parser.Inline.Expression exposing
     ( State
     , parse
     )
@@ -7,14 +7,14 @@ module XMarkdown.Inline.Expression exposing
 
 import AST.Language exposing (Expr(..), Expression)
 import List.Extra
-import XMarkdown.Inline.Core.Expression exposing (parseWithMessages)
+import Parser.Inline.Core.Expression exposing (parseWithMessages)
 import Scripta.Config as Config
 import Tools.Loop exposing (Step(..), loop)
-import XMarkdown.Inline.ForkLog as Tools
-import XMarkdown.Inline.Match as M
-import XMarkdown.Inline.Meta as Meta
-import XMarkdown.Inline.Symbol as Symbol exposing (Symbol(..))
-import XMarkdown.Inline.Token as Token exposing (Token(..), TokenType(..))
+import Parser.Inline.ForkLog as Tools
+import Parser.Inline.Match as M
+import Parser.Inline.Meta as Meta
+import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
+import Parser.Inline.Token as Token exposing (Token(..), TokenType(..))
 
 
 
@@ -186,7 +186,7 @@ push token state =
 
 
 {-| Build a meta whose begin/end span all tokens currently on the stack.
-The tokens already carry within-line column offsets (set in XMarkdown.Inline.Token),
+The tokens already carry within-line column offsets (set in Parser.Inline.Token),
 so this recovers the true source span of a reduced construct (bold, italic,
 link, image, math, …) instead of discarding it as { begin = 0, end = 0 }.
 -}

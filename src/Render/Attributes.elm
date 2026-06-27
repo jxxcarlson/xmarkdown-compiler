@@ -10,7 +10,7 @@ provides a unified approach to determining the attributes for any given block.
 -}
 
 import Element
-import XMarkdown.Block.BlockUtilities
+import AST.BlockUtilities
 import AST.Language exposing (ExpressionBlock)
 import Render.BlockType as BlockType exposing (BlockType(..))
 import Render.Utility
@@ -22,7 +22,7 @@ getBlockAttributes : ExpressionBlock -> List (Element.Attribute msg)
 getBlockAttributes block =
     let
         blockName =
-            XMarkdown.Block.BlockUtilities.getExpressionBlockName block
+            AST.BlockUtilities.getExpressionBlockName block
                 |> Maybe.withDefault ""
 
         blockType =

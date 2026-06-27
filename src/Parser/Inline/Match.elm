@@ -1,8 +1,8 @@
-module XMarkdown.Inline.Match exposing (match, reducible, splitAt)
+module Parser.Inline.Match exposing (match, reducible, splitAt)
 
 import List.Extra
 import Tools.Loop exposing (Step(..), loop)
-import XMarkdown.Inline.Symbol as Symbol exposing (Symbol(..))
+import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
 
 
 reducible : List Symbol -> Bool

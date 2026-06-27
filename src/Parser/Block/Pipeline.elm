@@ -1,8 +1,8 @@
-module XMarkdown.Block.Pipeline exposing (toExpressionBlock)
+module Parser.Block.Pipeline exposing (toExpressionBlock)
 
 import Dict
 import Either exposing (Either(..))
-import XMarkdown.Block.GFMTable
+import Parser.Block.GFMTable
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
 
 
@@ -18,8 +18,8 @@ toExpressionBlock exprParser block =
 
 toExpressionBlock_ : (String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
 toExpressionBlock_ parse primitiveBlock =
-    if XMarkdown.Block.GFMTable.isTable primitiveBlock then
-        XMarkdown.Block.GFMTable.toExpressionBlock parse primitiveBlock
+    if Parser.Block.GFMTable.isTable primitiveBlock then
+        Parser.Block.GFMTable.toExpressionBlock parse primitiveBlock
 
     else
         { heading = primitiveBlock.heading

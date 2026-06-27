@@ -43,7 +43,7 @@ import ETeX.MathMacros
 import ETeX.Transform
 import Either exposing (Either(..))
 import AST.ASTTools
-import XMarkdown.Block.BlockUtilities
+import AST.BlockUtilities
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
 import AST.Settings
 import Macro.TextMacro exposing (Macro)
@@ -717,7 +717,7 @@ updateBibItemBlock accumulator args id =
 
 updateWithOrdinaryBlock : ExpressionBlock -> Accumulator -> Accumulator
 updateWithOrdinaryBlock block accumulator =
-    case XMarkdown.Block.BlockUtilities.getExpressionBlockName block of
+    case AST.BlockUtilities.getExpressionBlockName block of
         Just "setcounter" ->
             case block.body of
                 Left _ ->
@@ -845,7 +845,7 @@ updateWithVerbatimBlock block accumulator =
         Left _ ->
             let
                 name =
-                    XMarkdown.Block.BlockUtilities.getExpressionBlockName block |> Maybe.withDefault ""
+                    AST.BlockUtilities.getExpressionBlockName block |> Maybe.withDefault ""
 
                 updateAccumulatorWithLabel =
                     case Dict.get "label" block.properties of

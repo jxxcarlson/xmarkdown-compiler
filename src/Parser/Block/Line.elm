@@ -1,4 +1,4 @@
-module XMarkdown.Block.Line exposing
+module Parser.Block.Line exposing
     ( HeadingData
     , HeadingError(..)
     , Line

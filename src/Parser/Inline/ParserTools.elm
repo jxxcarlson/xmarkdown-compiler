@@ -1,4 +1,4 @@
-module XMarkdown.Inline.ParserTools exposing
+module Parser.Inline.ParserTools exposing
     ( Problem(..)
     , StringData
     , text

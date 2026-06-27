@@ -1,4 +1,4 @@
-module XMarkdown.Inline.Core.Tokenizer exposing
+module Parser.Inline.Core.Tokenizer exposing
     ( Meta
     , Token
     , TokenType(..)
