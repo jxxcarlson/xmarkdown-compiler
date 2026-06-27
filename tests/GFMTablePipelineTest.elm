@@ -78,4 +78,12 @@ suite =
                 probe "| theorem\nThe body of a theorem."
                     |> Maybe.map (\( h, _, _ ) -> h)
                     |> Expect.equal (Just "Ordinary:theorem")
+        , test "a table with a trailing newline (finalized block) is still detected" <|
+            \_ ->
+                probe "| Name | Age |\n|---|---:|\n| Alice | 29 |\n| Bob | 34 |\n"
+                    |> Expect.equal (Just ( "Ordinary:table", "l,r", ( 3, "Name" ) ))
+        , test "a table followed by a blank line and more content (real document) is detected" <|
+            \_ ->
+                probe "| Name | Age |\n|---|---:|\n| Alice | 29 |\n| Bob | 34 |\n\nSome following text."
+                    |> Expect.equal (Just ( "Ordinary:table", "l,r", ( 3, "Name" ) ))
         ]

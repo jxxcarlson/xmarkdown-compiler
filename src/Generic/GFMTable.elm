@@ -128,10 +128,31 @@ padRow n cells =
         cells ++ List.repeat (n - List.length cells) ""
 
 
-{-| All source rows in order: header, separator, data…  -}
+{-| All source rows in order: header, separator, data…
+
+The header is always `firstLine`. The body's orientation is not stable: a
+normally-terminated (finalized) block stores body in source order (separator
+first), while a block terminated by end-of-input is left in reversed
+accumulation order (separator last). A valid table always has the separator
+immediately after the header, so we pick whichever orientation places a
+separator on the second line.
+-}
 rowsInOrder : PrimitiveBlock -> List String
 rowsInOrder pb =
-    pb.firstLine :: List.reverse pb.body
+    let
+        forward =
+            pb.firstLine :: pb.body
+    in
+    case forward of
+        _ :: second :: _ ->
+            if isSeparatorRow second then
+                forward
+
+            else
+                pb.firstLine :: List.reverse pb.body
+
+        _ ->
+            forward
 
 
 {-| A block is a GFM table iff its first line is a pipe-row and its second line is
