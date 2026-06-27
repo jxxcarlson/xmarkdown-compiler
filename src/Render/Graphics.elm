@@ -8,7 +8,7 @@ import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expression, ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 import Tools.Utility as Utility
 
 

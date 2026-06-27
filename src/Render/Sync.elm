@@ -12,7 +12,7 @@ import Element.Events as Events
 import Generic.Language
 import Render.Settings
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Scripta.Msg exposing (MarkupMsg(..))
 
 
 {-| Use this function to add all needed properties to an element for LR sync

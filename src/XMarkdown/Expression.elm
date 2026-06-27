@@ -8,7 +8,7 @@ module XMarkdown.Expression exposing
 import Generic.Language exposing (Expr(..), Expression)
 import List.Extra
 import XMarkdown.Inline.Core.Expression exposing (parseWithMessages)
-import ScriptaV2.Config as Config
+import Scripta.Config as Config
 import Tools.Loop exposing (Step(..), loop)
 import XMarkdown.ForkLog as Tools
 import XMarkdown.Match as M

@@ -1,14 +1,14 @@
 module SyncTest exposing (suite)
 
 import Expect
-import ScriptaV2.Msg exposing (MarkupMsg(..))
-import ScriptaV2.Sync as Sync
+import Scripta.Msg exposing (MarkupMsg(..))
+import Scripta.Sync as Sync
 import Test exposing (Test, describe, test)
 
 
 suite : Test
 suite =
-    describe "ScriptaV2.Sync"
+    describe "Scripta.Sync"
         [ test "SendMeta: begin/end are absolute document char offsets (end inclusive -> +1)" <|
             \_ ->
                 -- e.g. the line-3 paragraph: doc chars 26..204 inclusive

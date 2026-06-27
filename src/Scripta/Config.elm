@@ -1,4 +1,4 @@
-module ScriptaV2.Config exposing
+module Scripta.Config exposing
     ( expressionIdPrefix
     , idPrefix
     , indentationQuantum

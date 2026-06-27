@@ -25,7 +25,7 @@ import Render.Sync
 import Render.Theme
 import Render.ThemeHelpers
 import Render.Utility as Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Scripta.Msg exposing (MarkupMsg(..))
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> Expression -> Element MarkupMsg

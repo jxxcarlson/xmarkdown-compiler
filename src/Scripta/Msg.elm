@@ -1,6 +1,6 @@
-module ScriptaV2.Msg exposing (MarkupMsg(..), Handling(..))
+module Scripta.Msg exposing (MarkupMsg(..), Handling(..))
 
-{-| The ScriptaV2.Msg.MarkupMsg type is need for synchronization of the source and rendered
+{-| The Scripta.Msg.MarkupMsg type is need for synchronization of the source and rendered
 text when using the Codemirror editor.
 
 @docs MarkupMsg, Handling

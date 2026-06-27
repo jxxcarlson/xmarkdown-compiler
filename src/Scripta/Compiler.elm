@@ -1,4 +1,4 @@
-module ScriptaV2.Compiler exposing
+module Scripta.Compiler exposing
     ( CompilerOutput, compile, parseFromString, view, viewTOC
     , parseToForestWithAccumulator, viewBodyOnly
     )
@@ -22,9 +22,9 @@ import Render.Settings
 import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
-import ScriptaV2.Config as Config
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types exposing (CompilerParameters, Filter(..))
+import Scripta.Config as Config
+import Scripta.Msg exposing (MarkupMsg)
+import Scripta.Types exposing (CompilerParameters, Filter(..))
 import XMarkdown.Expression
 import XMarkdown.PrimitiveBlock
 
@@ -186,7 +186,7 @@ render params ( accumulator_, forest_ ) =
 
 -}
 renderForest :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> Render.Settings.RenderSettings
     -> Generic.Acc.Accumulator
     -> List (RoseTree.Tree.Tree ExpressionBlock)

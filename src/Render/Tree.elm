@@ -18,14 +18,14 @@ import Render.Settings exposing (RenderSettings)
 import Render.Theme
 import Render.TreeSupport
 import RoseTree.Tree exposing (Tree)
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types
+import Scripta.Msg exposing (MarkupMsg)
+import Scripta.Types
 
 
 {-| Render a tree of expression blocks
 -}
 renderTree :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> Render.Settings.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
@@ -100,7 +100,7 @@ renderTree params settings accumulator tree =
 
 
 renderTree_ :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> Render.Settings.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
@@ -123,7 +123,7 @@ renderTree_ params settings accumulator tree =
 {-| Render a leaf node (a block with no children)
 -}
 renderLeafNode :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
     -> ExpressionBlock
@@ -136,7 +136,7 @@ renderLeafNode params settings accumulator root =
 {-| Render a branch node (a block with children)
 -}
 renderBranchNode :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
     -> ExpressionBlock
@@ -156,7 +156,7 @@ renderBranchNode params settings accumulator root children =
 
 -}
 renderStandardBranch :
-    ScriptaV2.Types.CompilerParameters
+    Scripta.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
     -> ExpressionBlock

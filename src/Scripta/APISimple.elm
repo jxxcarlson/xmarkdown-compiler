@@ -1,10 +1,10 @@
-module ScriptaV2.APISimple exposing (compile)
+module Scripta.APISimple exposing (compile)
 
-{-| Use `ScriptaV2.APISimple.compile` to transform XMarkdown source text to elm-ui HTML.
+{-| Use `Scripta.APISimple.compile` to transform XMarkdown source text to elm-ui HTML.
 You will need the following imports in your Elm file:
 
-    import ScriptaV2.APISimple
-    import ScriptaV2.Msg exposing (MarkupMsg)
+    import Scripta.APISimple
+    import Scripta.Msg exposing (MarkupMsg)
     import Element exposing (Element)
 
 Your `Msg` type definition should read:
@@ -18,9 +18,9 @@ Your `Msg` type definition should read:
 -}
 
 import Element exposing (Element)
-import ScriptaV2.Compiler
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types exposing (CompilerParameters)
+import Scripta.Compiler
+import Scripta.Msg exposing (MarkupMsg)
+import Scripta.Types exposing (CompilerParameters)
 
 
 {-| Compile source text to elm-ui HTML. The width of the rendered text in pixels is
@@ -30,4 +30,4 @@ This ensures that the rendered text is properly updated.
 -}
 compile : CompilerParameters -> String -> List (Element MarkupMsg)
 compile params sourceText =
-    ScriptaV2.Compiler.compile params (String.lines sourceText) |> ScriptaV2.Compiler.view params.docWidth
+    Scripta.Compiler.compile params (String.lines sourceText) |> Scripta.Compiler.view params.docWidth

@@ -25,7 +25,7 @@ import List.Extra
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.ThemeHelpers
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 type DisplayMode

@@ -1,4 +1,4 @@
-module ScriptaV2.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..))
+module Scripta.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..))
 
 {-| This module defines the core types used for configuring the Scripta compiler.
 The main type is `CompilerParameters`, which controls how XMarkdown source text

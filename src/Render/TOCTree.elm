@@ -21,8 +21,8 @@ import Render.Settings
 import Render.Theme
 import Render.Utility
 import RoseTree.Tree exposing (Tree)
-import ScriptaV2.Config as Config
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Scripta.Config as Config
+import Scripta.Msg exposing (MarkupMsg(..))
 import String.Extra
 
 

@@ -5,13 +5,13 @@
     "license": "MIT",
     "version": "1.0.0",
     "exposed-modules": [
-        "ScriptaV2.APISimple",
-        "ScriptaV2.API",
-        "ScriptaV2.Types",
-        "ScriptaV2.Msg",
+        "Scripta.APISimple",
+        "Scripta.API",
+        "Scripta.Types",
+        "Scripta.Msg",
         "Render.Theme",
-        "ScriptaV2.Editor",
-        "ScriptaV2.Sync"
+        "Scripta.Editor",
+        "Scripta.Sync"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

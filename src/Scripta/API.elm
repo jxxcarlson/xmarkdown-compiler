@@ -1,10 +1,10 @@
-module ScriptaV2.API exposing
+module Scripta.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
     , compileString, compileStringWithTitle
     )
 
-{-| ScriptaV2.API provides the core compilation interface for converting XMarkdown
+{-| Scripta.API provides the core compilation interface for converting XMarkdown
 (SMarkdown) source text into renderable elm-ui Elements.
 
 
@@ -32,8 +32,8 @@ navigation panels.
 
 # Usage Example
 
-    import ScriptaV2.API
-    import ScriptaV2.Types exposing (defaultCompilerParameters)
+    import Scripta.API
+    import Scripta.Types exposing (defaultCompilerParameters)
 
 
     -- Configure compiler
@@ -45,7 +45,7 @@ navigation panels.
 
     -- Compile source text
     output =
-        ScriptaV2.API.compileOutput params
+        Scripta.API.compileOutput params
             [ "# Introduction"
             , "This is a document with **bold** text."
             , ""
@@ -55,26 +55,26 @@ navigation panels.
 
     -- Render the document body
     bodyElements =
-        ScriptaV2.API.viewBodyOnly 600 output
+        Scripta.API.viewBodyOnly 600 output
 
     -- Render table of contents separately
     tocElements =
-        ScriptaV2.API.viewTOC output
+        Scripta.API.viewTOC output
 
 
 # See Also
 
 For a simpler API that handles both compilation and rendering in one step,
-see `ScriptaV2.APISimple`.
+see `Scripta.APISimple`.
 
 -}
 
 import Element exposing (Element)
 import Element.Font
 import Render.Settings
-import ScriptaV2.Compiler
-import ScriptaV2.Msg
-import ScriptaV2.Types
+import Scripta.Compiler
+import Scripta.Msg
+import Scripta.Types
 
 
 {-| Compile source text into a CompilerOutput structure.
@@ -96,9 +96,9 @@ which can then be displayed using the view functions.
             ]
 
 -}
-compileOutput : ScriptaV2.Types.CompilerParameters -> List String -> ScriptaV2.Compiler.CompilerOutput
+compileOutput : Scripta.Types.CompilerParameters -> List String -> Scripta.Compiler.CompilerOutput
 compileOutput params lines =
-    ScriptaV2.Compiler.compile params lines
+    Scripta.Compiler.compile params lines
 
 
 {-| Render only the body content from a CompilerOutput.
@@ -113,9 +113,9 @@ This is useful when you want to display the main content separately from other
 document parts like the table of contents or title.
 
 -}
-viewBodyOnly : Int -> ScriptaV2.Compiler.CompilerOutput -> List (Element ScriptaV2.Msg.MarkupMsg)
+viewBodyOnly : Int -> Scripta.Compiler.CompilerOutput -> List (Element Scripta.Msg.MarkupMsg)
 viewBodyOnly =
-    ScriptaV2.Compiler.viewBodyOnly
+    Scripta.Compiler.viewBodyOnly
 
 
 {-| Render the table of contents from a CompilerOutput.
@@ -130,19 +130,19 @@ The table of contents automatically includes links to document sections and
 respects the document hierarchy.
 
 -}
-viewTOC : ScriptaV2.Compiler.CompilerOutput -> List (Element ScriptaV2.Msg.MarkupMsg)
+viewTOC : Scripta.Compiler.CompilerOutput -> List (Element Scripta.Msg.MarkupMsg)
 viewTOC =
-    ScriptaV2.Compiler.viewTOC
+    Scripta.Compiler.viewTOC
 
 
 {-| -}
-compileString : ScriptaV2.Types.CompilerParameters -> String -> List (Element ScriptaV2.Msg.MarkupMsg)
+compileString : Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
 compileString params str =
-    ScriptaV2.Compiler.compile params (String.lines str) |> ScriptaV2.Compiler.view params.docWidth
+    Scripta.Compiler.compile params (String.lines str) |> Scripta.Compiler.view params.docWidth
 
 
-compileStringWithTitle : String -> ScriptaV2.Types.CompilerParameters -> String -> List (Element ScriptaV2.Msg.MarkupMsg)
+compileStringWithTitle : String -> Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
 compileStringWithTitle title params str =
-    ScriptaV2.Compiler.compile params (String.lines str)
-        |> ScriptaV2.Compiler.viewBodyOnly params.docWidth
+    Scripta.Compiler.compile params (String.lines str)
+        |> Scripta.Compiler.viewBodyOnly params.docWidth
         |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size (Render.Settings.scaleFont (Render.Settings.defaultRenderSettings params) 24), Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)

@@ -1,4 +1,4 @@
-module ScriptaV2.Sync exposing (SyncHighlight, fromMsg, encode, highlightAttribute)
+module Scripta.Sync exposing (SyncHighlight, fromMsg, encode, highlightAttribute)
 
 {-| RL sync (rendered → editor): clicking rendered text highlights and scrolls
 to the corresponding source span in the CodeMirror editor.
@@ -73,7 +73,7 @@ the compiler parsed).
 import Html
 import Html.Attributes
 import Json.Encode as E
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Scripta.Msg exposing (MarkupMsg(..))
 
 
 {-| A source span to highlight in the editor.

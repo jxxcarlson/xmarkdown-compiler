@@ -23,7 +23,7 @@ import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 

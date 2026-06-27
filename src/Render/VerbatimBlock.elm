@@ -16,7 +16,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Theme
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 import SyntaxHighlight exposing (toBlockHtml)
 
 

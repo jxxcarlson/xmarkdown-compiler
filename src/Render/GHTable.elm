@@ -9,7 +9,7 @@ import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expr(..), Expression, ExpressionBlock)
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg

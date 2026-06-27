@@ -14,7 +14,7 @@ import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 {-| Register all text block renderers to the registry
