@@ -1,7 +1,7 @@
 module Scripta.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
-    , compileString, compileStringWithTitle
+    , compileSimple, compileString, compileStringWithTitle
     )
 
 {-| Scripta.API provides the core compilation interface for converting XMarkdown
@@ -64,8 +64,9 @@ navigation panels.
 
 # See Also
 
-For a simpler API that handles both compilation and rendering in one step,
-see `Scripta.APISimple`.
+For one-step compilation that parses and renders together, use `compileSimple`.
+
+@docs compileSimple
 
 -}
 
@@ -75,6 +76,24 @@ import Render.Settings
 import Scripta.Compiler
 import Scripta.Msg
 import Scripta.Types
+
+
+{-| Compile source text to elm-ui HTML in one step (parse + render). The width of
+the rendered text in pixels is `docWidth`. Use `editCount = 0` for a static
+document; in a live-editing context, increment it after each edit so the rendered
+text updates correctly.
+
+    import Element exposing (Element)
+    import Scripta.API
+    import Scripta.Msg exposing (MarkupMsg)
+    import Scripta.Types exposing (defaultCompilerParameters)
+
+Your `Msg` type should include `| Render MarkupMsg`.
+
+-}
+compileSimple : Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
+compileSimple params sourceText =
+    Scripta.Compiler.compile params (String.lines sourceText) |> Scripta.Compiler.view params.docWidth
 
 
 {-| Compile source text into a CompilerOutput structure.

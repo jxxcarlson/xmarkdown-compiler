@@ -1,8 +1,8 @@
 module ToForestAndAccumulatorTest exposing (suite)
 
-import Expect
 import AST.Vector
-import Scripta.APISimple
+import Expect
+import Scripta.API
 import Scripta.Compiler
 import Scripta.Types exposing (CompilerParameters, defaultCompilerParameters)
 import Test exposing (..)
@@ -42,7 +42,7 @@ suite =
                     AST.Vector.level accumulator.headingIndex
                         |> Expect.greaterThan 0
             ]
-        , describe "APISimple.compile round-trip"
+        , describe "API.compileSimple round-trip"
             [ test "paragraph with bold produces non-empty elm-ui output" <|
                 \_ ->
                     let
@@ -50,7 +50,7 @@ suite =
                             "# Introduction\n\nThis is a **bold** word in a paragraph.\n\n- item one\n- item two\n"
 
                         output =
-                            Scripta.APISimple.compile defaultCompilerParameters source
+                            Scripta.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -62,7 +62,7 @@ suite =
                             "```\nlet x = 1\n```\n"
 
                         output =
-                            Scripta.APISimple.compile defaultCompilerParameters source
+                            Scripta.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -74,7 +74,7 @@ suite =
                             "$$\nE = mc^2\n$$\n"
 
                         output =
-                            Scripta.APISimple.compile defaultCompilerParameters source
+                            Scripta.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length

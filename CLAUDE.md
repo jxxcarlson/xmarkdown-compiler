@@ -16,7 +16,7 @@ language.
   Vector, BlockUtilities).
 - `Macro/`, `ETeX/` — macro expansion and math rendering.
 - `Render/` — AST → elm-ui.
-- `Scripta/` — the public API + driver (API, APISimple, Compiler, Types, Msg,
+- `Scripta/` — the public API + driver (API, Compiler, Types, Msg,
   Editor, Sync, Config). The driver is `Scripta.Compiler`.
 
 ## Key architectural fact (do not get this wrong)
@@ -31,7 +31,7 @@ is the math renderer, not a language — keep it.
 The Elm compiler is the regression net. After every change:
 
 ```bash
-elm make src/Scripta/APISimple.elm src/Scripta/API.elm src/Scripta/Types.elm src/Scripta/Msg.elm src/Render/Theme.elm --output=/dev/null
+elm make src/Scripta/API.elm src/Scripta/Types.elm src/Scripta/Msg.elm src/Render/Theme.elm --output=/dev/null
 npx elm-test
 ```
 
@@ -43,6 +43,6 @@ Both must pass before committing.
   (`npx elm-json install <author/package>`, `npx elm-json uninstall --yes <author/package>`)
 - `npx elm-review --ignore-dirs src/Evergreen/` for code review.
 - Generated `main.js` files are git-ignored.
-- Public entry points: `Scripta.APISimple`, `Scripta.API`, `Scripta.Types`,
+- Public entry points: `Scripta.API`, `Scripta.Types`,
   `Scripta.Msg`, `Render.Theme`, `Scripta.Editor`, `Scripta.Sync`.
 - When asked to "show me the code", give module name + line numbers.

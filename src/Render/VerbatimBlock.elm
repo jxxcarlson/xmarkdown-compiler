@@ -1,12 +1,12 @@
 module Render.VerbatimBlock exposing (render)
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
 import Render.Constants as Constants
 import Render.Graphics
@@ -31,11 +31,11 @@ render count acc settings attrs block =
                 Verbatim functionName_ ->
                     let
                         functionName =
-                            if functionName_ == "table" then
-                                "textarray"
-
-                            else
-                                functionName_
+                            --if functionName_ == "table" then
+                            --    "textarray"
+                            --
+                            --else
+                            functionName_
                     in
                     case Dict.get functionName verbatimDict of
                         Nothing ->
