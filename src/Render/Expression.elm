@@ -249,7 +249,6 @@ markupDict =
         , ( "cite", \_ acc _ attr exprList -> cite acc attr exprList )
         , ( "table", \g acc s attr exprList -> table g acc s attr exprList )
         , ( "image", \_ _ s attr exprList -> Render.Graphics.image s attr exprList )
-        , ( "inlineimage", \_ _ s _ exprList -> Render.Graphics.inlineimage s exprList )
         , ( "tags", \_ _ _ _ _ -> Element.none )
         , ( "quote", quote )
         , ( "anchor", anchor )
