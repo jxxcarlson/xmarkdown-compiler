@@ -1,7 +1,7 @@
 module BoldItalicTest exposing (suite)
 
 import Expect
-import Generic.Language exposing (Expr(..), Expression)
+import AST.Language exposing (Expr(..), Expression)
 import Test exposing (Test, describe, test)
 import XMarkdown.Inline.Expression
 

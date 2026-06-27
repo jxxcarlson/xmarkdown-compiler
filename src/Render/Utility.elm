@@ -10,8 +10,8 @@ module Render.Utility exposing
 
 import Either
 import Element exposing (paddingEach)
-import Generic.ASTTools
-import Generic.Language
+import AST.ASTTools
+import AST.Language
 import Html.Attributes
 
 
@@ -19,7 +19,7 @@ leftPadding p =
     Element.paddingEach { left = p, right = 0, top = 0, bottom = 0 }
 
 
-getVerbatimContent : Generic.Language.ExpressionBlock -> String
+getVerbatimContent : AST.Language.ExpressionBlock -> String
 getVerbatimContent { body } =
     case body of
         Either.Left str ->
@@ -49,10 +49,10 @@ internalLink str =
     "#" ++ str |> makeSlug
 
 
-makeId : List Generic.Language.Expression -> Element.Attribute msg
+makeId : List AST.Language.Expression -> Element.Attribute msg
 makeId exprs =
     elementAttribute "id"
-        (Generic.ASTTools.stringValueOfList exprs |> String.trim |> makeSlug)
+        (AST.ASTTools.stringValueOfList exprs |> String.trim |> makeSlug)
 
 
 makeSlug : String -> String

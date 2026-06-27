@@ -1,4 +1,4 @@
-module Generic.Vector exposing (Vector, get, increment, init, level, set, toString)
+module AST.Vector exposing (Vector, get, increment, init, level, set, toString)
 
 import List.Extra
 

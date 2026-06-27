@@ -1,4 +1,4 @@
-module Generic.Line exposing
+module XMarkdown.Block.Line exposing
     ( HeadingData
     , HeadingError(..)
     , Line
@@ -8,7 +8,7 @@ module Generic.Line exposing
     )
 
 import Dict exposing (Dict)
-import Generic.Language
+import AST.Language
 import Parser exposing ((|.), (|=), Parser)
 
 
@@ -31,7 +31,7 @@ type HeadingError
 
 
 type alias HeadingData =
-    { heading : Generic.Language.Heading, args : List String, properties : Dict String String }
+    { heading : AST.Language.Heading, args : List String, properties : Dict String String }
 
 
 isEmpty : Line -> Bool

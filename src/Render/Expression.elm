@@ -8,9 +8,9 @@ import Element.Background as Background
 import Element.Border
 import Element.Events as Events
 import Element.Font as Font
-import Generic.ASTTools as ASTTools
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expr(..), Expression)
+import AST.ASTTools as ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (Expr(..), Expression)
 import Html
 import Html.Attributes
 import Html.Events
@@ -51,7 +51,7 @@ render generation acc settings attrs expr =
 
                     -- Get all IDs from the content
                     contentIds =
-                        List.map (Generic.Language.getMeta >> .id) exprList
+                        List.map (AST.Language.getMeta >> .id) exprList
 
                     -- Check if any content ID matches selectedId
                     contentIdMatches =

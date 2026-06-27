@@ -2,7 +2,7 @@ module ListSyncTest exposing (suite)
 
 import Either exposing (Either(..))
 import Expect
-import Generic.Language exposing (Expr(..))
+import AST.Language exposing (Expr(..))
 import Library.Tree
 import Scripta.Compiler
 import Test exposing (Test, describe, test)
@@ -24,7 +24,7 @@ sliceAtTextSpans str =
         go expr =
             let
                 m =
-                    Generic.Language.getMeta expr
+                    AST.Language.getMeta expr
             in
             case expr of
                 Text _ _ ->

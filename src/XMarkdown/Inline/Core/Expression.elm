@@ -4,7 +4,7 @@ module XMarkdown.Inline.Core.Expression exposing
     , parseWithMessages
     )
 
-import Generic.Language exposing (Expr(..), ExprMeta, Expression)
+import AST.Language exposing (Expr(..), ExprMeta, Expression)
 import List.Extra
 import XMarkdown.Inline.Core.Match as M
 import XMarkdown.Inline.Core.Symbol as Symbol exposing (Symbol(..))
@@ -20,7 +20,7 @@ import Tools.ParserHelpers as Helpers
 
 {-|
 
-    > import Generic.Language exposing(..)
+    > import AST.Language exposing(..)
     > p str = parse 0 str |> List.map simplifyExpr
       <function> : String -> List (Expr ())
 

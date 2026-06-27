@@ -1,13 +1,13 @@
-module Generic.TextMacro exposing
+module Macro.TextMacro exposing
     ( Macro
     , buildDictionary
     , expand
     )
 
 import Dict exposing (Dict)
-import Generic.ASTTools as AT
-import Generic.Language exposing (Expr(..), Expression)
-import Generic.TextMacroParser
+import AST.ASTTools as AT
+import AST.Language exposing (Expr(..), Expression)
+import Macro.TextMacroParser
 import List.Extra
 import XMarkdown.Inline.Core.Expression
 
@@ -81,7 +81,7 @@ getVars_ expr =
 
 getParam : String -> List String
 getParam str =
-    case Generic.TextMacroParser.getParam str of
+    case Macro.TextMacroParser.getParam str of
         Just result ->
             [ result ]
 

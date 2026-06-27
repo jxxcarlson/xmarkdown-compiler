@@ -1,4 +1,4 @@
-module Generic.PTextMacro exposing (MyMacro(..), eraseLeadingMacro)
+module Macro.PTextMacro exposing (MyMacro(..), eraseLeadingMacro)
 
 import Parser exposing ((|.), (|=), Parser)
 

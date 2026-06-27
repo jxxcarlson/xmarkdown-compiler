@@ -1,7 +1,7 @@
 module ToForestAndAccumulatorTest exposing (suite)
 
 import Expect
-import Generic.Vector
+import AST.Vector
 import Scripta.APISimple
 import Scripta.Compiler
 import Scripta.Types exposing (CompilerParameters, defaultCompilerParameters)
@@ -39,7 +39,7 @@ suite =
                         ( accumulator, _ ) =
                             Scripta.Compiler.parseToForestWithAccumulator params lines
                     in
-                    Generic.Vector.level accumulator.headingIndex
+                    AST.Vector.level accumulator.headingIndex
                         |> Expect.greaterThan 0
             ]
         , describe "APISimple.compile round-trip"

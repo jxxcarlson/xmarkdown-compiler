@@ -1,4 +1,4 @@
-module Generic.TextMacroParser exposing (getParam)
+module Macro.TextMacroParser exposing (getParam)
 
 import Parser.Advanced as PA
     exposing

@@ -8,8 +8,8 @@ module Render.Blocks.Text exposing (registerRenderers)
 
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
@@ -40,5 +40,5 @@ quotation count acc settings attrs block =
         [ Render.Helper.noteFromPropertyKey "title" [ Font.bold ] block
         , Element.paragraph
             (Element.centerX :: Render.Helper.blockAttributes settings block [])
-            (Render.Helper.renderWithDefault "quotation" count acc settings attrs (Generic.Language.getExpressionContent block))
+            (Render.Helper.renderWithDefault "quotation" count acc settings attrs (AST.Language.getExpressionContent block))
         ]

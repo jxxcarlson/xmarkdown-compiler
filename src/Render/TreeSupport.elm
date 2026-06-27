@@ -9,8 +9,8 @@ to avoid import cycles.
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.Expression
 import Render.Helper
 import Render.Indentation

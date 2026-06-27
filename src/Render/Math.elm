@@ -14,9 +14,9 @@ import ETeX.Transform
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
-import Generic.PTextMacro
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
+import Macro.PTextMacro
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
@@ -359,7 +359,7 @@ mathText theme generation id displayMode content =
 
 
 eraseLabeMacro content =
-    content |> String.lines |> List.map (Generic.PTextMacro.eraseLeadingMacro "label") |> String.join "\n"
+    content |> String.lines |> List.map (Macro.PTextMacro.eraseLeadingMacro "label") |> String.join "\n"
 
 
 mathText_ : String -> DisplayMode -> String -> Html msg

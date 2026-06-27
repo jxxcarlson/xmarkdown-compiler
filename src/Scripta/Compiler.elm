@@ -11,12 +11,12 @@ module Scripta.Compiler exposing
 
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.ASTTools
-import Generic.Acc exposing (Accumulator)
-import Generic.Forest exposing (Forest)
-import Generic.ForestTransform
-import Generic.Language exposing (ExpressionBlock)
-import Generic.Pipeline
+import AST.ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Forest exposing (Forest)
+import XMarkdown.Block.ForestTransform
+import AST.Language exposing (ExpressionBlock)
+import XMarkdown.Block.Pipeline
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -99,8 +99,8 @@ parse : String -> Int -> List String -> Forest ExpressionBlock
 parse idPrefix outerCount lines =
     lines
         |> XMarkdown.Block.PrimitiveBlock.parse idPrefix outerCount
-        |> Generic.ForestTransform.forestFromBlocks .indent
-        |> Generic.Forest.map (Generic.Pipeline.toExpressionBlock XMarkdown.Inline.Expression.parse)
+        |> XMarkdown.Block.ForestTransform.forestFromBlocks .indent
+        |> AST.Forest.map (XMarkdown.Block.Pipeline.toExpressionBlock XMarkdown.Inline.Expression.parse)
 
 
 
@@ -125,8 +125,8 @@ filterForest filter forest =
 
         SuppressDocumentBlocks ->
             forest
-                |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "document")
-                |> Generic.ASTTools.filterForestOnLabelNames (\name -> name /= Just "title")
+                |> AST.ASTTools.filterForestOnLabelNames (\name -> name /= Just "document")
+                |> AST.ASTTools.filterForestOnLabelNames (\name -> name /= Just "title")
 
 
 parseToForestWithAccumulator : CompilerParameters -> List String -> ( Accumulator, Forest ExpressionBlock )
@@ -135,7 +135,7 @@ parseToForestWithAccumulator params lines =
         forest =
             filterForest params.filter (parse Config.idPrefix params.editCount lines)
     in
-    Generic.Acc.transformAccumulate Generic.Acc.initialData forest
+    AST.Acc.transformAccumulate AST.Acc.initialData forest
 
 
 render : CompilerParameters -> ( Accumulator, Forest ExpressionBlock ) -> CompilerOutput
@@ -146,7 +146,7 @@ render params ( accumulator_, forest_ ) =
             Render.Settings.defaultRenderSettings params
 
         --( accumulator, forest ) =
-        --    Generic.Acc.transformAccumulate Generic.Acc.initialData forest_
+        --    AST.Acc.transformAccumulate AST.Acc.initialData forest_
         viewParameters =
             { idsOfOpenNodes = params.idsOfOpenNodes
             , selectedId = params.selectedId
@@ -164,13 +164,13 @@ render params ( accumulator_, forest_ ) =
 
         banner : Maybe (Element MarkupMsg)
         banner =
-            Generic.ASTTools.banner forest_
+            AST.ASTTools.banner forest_
                 |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [ Font.color (Element.rgb 1 0 0) ])
                 |> Maybe.map (Element.row [ Element.height (Element.px 40) ])
 
         title : Element MarkupMsg
         title =
-            Element.paragraph [ Font.size renderSettings.titleSize ] [ Element.text <| Generic.ASTTools.title forest_ ]
+            Element.paragraph [ Font.size renderSettings.titleSize ] [ Element.text <| AST.ASTTools.title forest_ ]
     in
     { body =
         renderForest params renderSettings accumulator_ forest_
@@ -188,7 +188,7 @@ render params ( accumulator_, forest_ ) =
 renderForest :
     Scripta.Types.CompilerParameters
     -> Render.Settings.RenderSettings
-    -> Generic.Acc.Accumulator
+    -> AST.Acc.Accumulator
     -> List (RoseTree.Tree.Tree ExpressionBlock)
     -> List (Element MarkupMsg)
 renderForest params settings accumulator forest =

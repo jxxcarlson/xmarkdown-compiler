@@ -3,8 +3,8 @@ module Render.List exposing (desc, item, numbered)
 import Dict
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import List.Extra
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
@@ -63,7 +63,7 @@ item count acc settings attr block =
             (Render.Utility.leftPadding settings.leftIndentation
                 :: Render.Sync.attributes settings block
             )
-            (Render.Helper.renderWithDefault "| item" count acc { settings | width = settings.width - indentation } attr (Generic.Language.getExpressionContent block))
+            (Render.Helper.renderWithDefault "| item" count acc { settings | width = settings.width - indentation } attr (AST.Language.getExpressionContent block))
         ]
 
 
@@ -128,7 +128,7 @@ numbered count acc settings attr block =
             ]
             (Element.text (label_ ++ ". "))
         , Element.paragraph (Render.Utility.leftPadding settings.leftIndentation :: Render.Sync.attributes settings block)
-            (Render.Helper.renderWithDefault "| numbered" count acc { settings | width = settings.width - indentation } attr (Generic.Language.getExpressionContent block))
+            (Render.Helper.renderWithDefault "| numbered" count acc { settings | width = settings.width - indentation } attr (AST.Language.getExpressionContent block))
         ]
 
 
@@ -141,5 +141,5 @@ desc count acc settings attr block =
     Element.row ([ Element.alignTop, Render.Utility.idAttribute block.meta.id, Render.Utility.vspace 0 settings.topMarginForChildren ] ++ Render.Sync.attributes settings block)
         [ Element.el [ Font.bold, Element.alignTop, Element.width (Element.px 100) ] (Element.text label)
         , Element.paragraph (Render.Utility.leftPadding settings.leftIndentation :: Render.Sync.attributes settings block)
-            (Render.Helper.renderWithDefault "| desc" count acc settings attr (Generic.Language.getExpressionContent block))
+            (Render.Helper.renderWithDefault "| desc" count acc settings attr (AST.Language.getExpressionContent block))
         ]

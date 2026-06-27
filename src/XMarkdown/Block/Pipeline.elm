@@ -1,15 +1,15 @@
-module Generic.Pipeline exposing (toExpressionBlock)
+module XMarkdown.Block.Pipeline exposing (toExpressionBlock)
 
 import Dict
 import Either exposing (Either(..))
-import Generic.GFMTable
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
+import XMarkdown.Block.GFMTable
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
 
 
 toExpressionBlock : (Int -> String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
 toExpressionBlock exprParser block =
     toExpressionBlock_ (exprParser block.meta.lineNumber) block
-        |> Generic.Language.boostBlock
+        |> AST.Language.boostBlock
 
 
 
@@ -18,8 +18,8 @@ toExpressionBlock exprParser block =
 
 toExpressionBlock_ : (String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
 toExpressionBlock_ parse primitiveBlock =
-    if Generic.GFMTable.isTable primitiveBlock then
-        Generic.GFMTable.toExpressionBlock parse primitiveBlock
+    if XMarkdown.Block.GFMTable.isTable primitiveBlock then
+        XMarkdown.Block.GFMTable.toExpressionBlock parse primitiveBlock
 
     else
         { heading = primitiveBlock.heading
@@ -44,7 +44,7 @@ toExpressionBlock_ parse primitiveBlock =
                         content_ =
                             List.map parse items
                     in
-                    Right (List.map (\list -> ExprList 0 list Generic.Language.emptyExprMeta) content_)
+                    Right (List.map (\list -> ExprList 0 list AST.Language.emptyExprMeta) content_)
 
                 -- Nested itemized lists: parse indentation to support proper nesting.
                 -- Each item is parsed from its own (marker-stripped) substring, so its
@@ -76,7 +76,7 @@ toExpressionBlock_ parse primitiveBlock =
                             List.map (\( indent, str ) -> ( indent, parse str )) items
                     in
                     -- Store indentation in ExprList's Int parameter for rendering
-                    Right (List.map (\( indent, exprList ) -> ExprList indent exprList Generic.Language.emptyExprMeta) content_)
+                    Right (List.map (\( indent, exprList ) -> ExprList indent exprList AST.Language.emptyExprMeta) content_)
 
                 Ordinary _ ->
                     Right (String.join "\n" primitiveBlock.body |> parse)
@@ -117,12 +117,12 @@ parseListItems marker parse sourceText =
                     offset + indent + markerLen
 
                 exprs =
-                    parse content |> List.map (Generic.Language.shiftExpressionPositions delta)
+                    parse content |> List.map (AST.Language.shiftExpressionPositions delta)
 
                 nextOffset =
                     offset + String.length line + 1
             in
-            ( nextOffset, ExprList indent exprs Generic.Language.emptyExprMeta :: acc )
+            ( nextOffset, ExprList indent exprs AST.Language.emptyExprMeta :: acc )
     in
     String.split "\n" sourceText
         |> List.foldl folder ( 0, [] )

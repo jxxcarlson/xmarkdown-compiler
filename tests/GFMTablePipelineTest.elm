@@ -3,7 +3,7 @@ module GFMTablePipelineTest exposing (suite)
 import Dict
 import Either exposing (Either(..))
 import Expect
-import Generic.Language exposing (Expr(..), Heading(..))
+import AST.Language exposing (Expr(..), Heading(..))
 import Library.Tree
 import Scripta.Compiler
 import Test exposing (Test, describe, test)

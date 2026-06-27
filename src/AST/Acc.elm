@@ -1,4 +1,4 @@
-module Generic.Acc exposing
+module AST.Acc exposing
     ( Accumulator
     , InListState
     , InitialAccumulatorData
@@ -8,7 +8,7 @@ module Generic.Acc exposing
 
 {-|
 
-    The function the Generic.Acc module is to collect information from the AST that will
+    The function the AST.Acc module is to collect information from the AST that will
     be used when it is rendered. This information is built up in an Accumulator, a
     data structure used for
 
@@ -42,12 +42,12 @@ import Dict exposing (Dict)
 import ETeX.MathMacros
 import ETeX.Transform
 import Either exposing (Either(..))
-import Generic.ASTTools
-import Generic.BlockUtilities
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
-import Generic.Settings
-import Generic.TextMacro exposing (Macro)
-import Generic.Vector as Vector exposing (Vector)
+import AST.ASTTools
+import XMarkdown.Block.BlockUtilities
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import AST.Settings
+import Macro.TextMacro exposing (Macro)
+import AST.Vector as Vector exposing (Vector)
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
 import Scripta.Config as Config
@@ -110,7 +110,7 @@ init data =
     , blockCounter = 0
     , itemVector = Vector.init data.vectorSize
     , numberedItemDict = Dict.empty
-    , numberedBlockNames = Generic.Settings.numberedBlockNames
+    , numberedBlockNames = AST.Settings.numberedBlockNames
     , reference = Dict.empty
     , footnotes = Dict.empty
     , footnoteNumbers = Dict.empty
@@ -256,7 +256,7 @@ transformBlock acc block =
 
         ( heading, _ ) ->
             -- TODO: not at all sure that the below is correct
-            case Generic.Language.getNameFromHeading heading of
+            case AST.Language.getNameFromHeading heading of
                 Nothing ->
                     block
 
@@ -280,7 +280,7 @@ transformBlock acc block =
 
                     else
                         -- Default insertion of "label" property (used for block numbering)
-                        (if List.member name Generic.Settings.numberedBlockNames then
+                        (if List.member name AST.Settings.numberedBlockNames then
                             { block
                                 | properties =
                                     Dict.insert "label"
@@ -326,7 +326,7 @@ reduceName str =
 
 expand : Dict String Macro -> ExpressionBlock -> ExpressionBlock
 expand dict block =
-    { block | body = Either.map (List.map (Generic.TextMacro.expand dict)) block.body }
+    { block | body = Either.map (List.map (Macro.TextMacro.expand dict)) block.body }
 
 
 {-| The first component of the return value (Bool, Maybe Vector) is the
@@ -408,7 +408,7 @@ getNameContentId block =
     let
         name : Maybe String
         name =
-            Generic.Language.getNameFromHeading block.heading
+            AST.Language.getNameFromHeading block.heading
 
         content : Maybe (Either String (List Expression))
         content =
@@ -583,7 +583,7 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
 
         -- provide for numbering of equations
         Verbatim "mathmacros" ->
-            case Generic.Language.getVerbatimContent block of
+            case AST.Language.getVerbatimContent block of
                 Nothing ->
                     accumulator
 
@@ -591,7 +591,7 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                     updateWithMathMacros str accumulator
 
         Verbatim "textmacros" ->
-            case Generic.Language.getVerbatimContent block of
+            case AST.Language.getVerbatimContent block of
                 Nothing ->
                     accumulator
 
@@ -631,7 +631,7 @@ updateWithOrdinarySectionBlock accumulator content level id =
                     [ Utility.compressWhitespace str ]
 
                 Right expr ->
-                    List.map Generic.ASTTools.getText expr |> Maybe.Extra.values |> List.map Utility.compressWhitespace
+                    List.map AST.ASTTools.getText expr |> Maybe.Extra.values |> List.map Utility.compressWhitespace
 
         sectionTag =
             -- TODO: the below is a bad solution
@@ -682,7 +682,7 @@ updateWithOrdinaryDocumentBlock accumulator content level id =
                     str
 
                 Right expr ->
-                    List.map Generic.ASTTools.getText expr |> Maybe.Extra.values |> String.join " "
+                    List.map AST.ASTTools.getText expr |> Maybe.Extra.values |> String.join " "
 
         sectionTag =
             title |> String.toLower |> String.replace " " "-"
@@ -717,7 +717,7 @@ updateBibItemBlock accumulator args id =
 
 updateWithOrdinaryBlock : ExpressionBlock -> Accumulator -> Accumulator
 updateWithOrdinaryBlock block accumulator =
-    case Generic.BlockUtilities.getExpressionBlockName block of
+    case XMarkdown.Block.BlockUtilities.getExpressionBlockName block of
         Just "setcounter" ->
             case block.body of
                 Left _ ->
@@ -774,7 +774,7 @@ updateWithOrdinaryBlock block accumulator =
             if List.member name_ [ "title", "contents", "banner", "a" ] then
                 accumulator
 
-            else if List.member name_ Generic.Settings.numberedBlockNames then
+            else if List.member name_ AST.Settings.numberedBlockNames then
                 --- TODO: fix thereom labels
                 let
                     level =
@@ -806,7 +806,7 @@ updateWithOrdinaryBlock block accumulator =
 
 updateWithTextMacros : String -> Accumulator -> Accumulator
 updateWithTextMacros content accumulator =
-    { accumulator | textMacroDict = Generic.TextMacro.buildDictionary (String.lines content |> normalizeLines) }
+    { accumulator | textMacroDict = Macro.TextMacro.buildDictionary (String.lines content |> normalizeLines) }
 
 
 updateWithMathMacros : String -> Accumulator -> Accumulator
@@ -822,7 +822,7 @@ updateWithMathMacros content accumulator =
                 |> String.trim
 
         mathMacroDict =
-            --Generic.MathMacro.makeMacroDict (String.trim definitions)
+            --Macro.MathMacro.makeMacroDict (String.trim definitions)
             ETeX.Transform.makeMacroDict (String.trim definitions)
     in
     { accumulator | mathMacroDict = mathMacroDict }
@@ -845,7 +845,7 @@ updateWithVerbatimBlock block accumulator =
         Left _ ->
             let
                 name =
-                    Generic.BlockUtilities.getExpressionBlockName block |> Maybe.withDefault ""
+                    XMarkdown.Block.BlockUtilities.getExpressionBlockName block |> Maybe.withDefault ""
 
                 updateAccumulatorWithLabel =
                     case Dict.get "label" block.properties of
@@ -925,7 +925,7 @@ getFootnotes : Maybe String -> Either String (List Expression) -> List TermData2
 getFootnotes mBlockId content_ =
     case content_ of
         Right expressionList ->
-            Generic.ASTTools.filterExpressionsOnName_ "footnote" expressionList
+            AST.ASTTools.filterExpressionsOnName_ "footnote" expressionList
                 |> List.map (extractFootnote mBlockId)
                 |> Maybe.Extra.values
 
@@ -971,7 +971,7 @@ addFootnotesFromContent block ( dict1, dict2 ) =
                     Nothing
 
                 Right expr ->
-                    List.map Generic.Language.getMeta expr |> List.head |> Maybe.map .id
+                    List.map AST.Language.getMeta expr |> List.head |> Maybe.map .id
     in
     addFootnotes (getFootnotes blockId block.body) ( dict1, dict2 )
 

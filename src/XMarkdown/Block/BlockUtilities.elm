@@ -1,11 +1,11 @@
-module Generic.BlockUtilities exposing
+module XMarkdown.Block.BlockUtilities exposing
     ( dropLast
     , getExpressionBlockName
     , getPrimitiveBlockName
     , updateMeta
     )
 
-import Generic.Language exposing (BlockMeta, ExpressionBlock, Heading(..), PrimitiveBlock)
+import AST.Language exposing (BlockMeta, ExpressionBlock, Heading(..), PrimitiveBlock)
 
 
 updateMeta : (BlockMeta -> BlockMeta) -> { a | meta : BlockMeta } -> { a | meta : BlockMeta }

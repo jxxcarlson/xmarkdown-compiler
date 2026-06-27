@@ -5,8 +5,8 @@ import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Border as Border
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock)
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Scripta.Msg exposing (MarkupMsg)

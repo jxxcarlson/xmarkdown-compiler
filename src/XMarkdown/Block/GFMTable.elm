@@ -1,4 +1,4 @@
-module Generic.GFMTable exposing
+module XMarkdown.Block.GFMTable exposing
     ( Alignment(..)
     , encodeAlignments
     , isSeparatorRow
@@ -18,7 +18,7 @@ each cell's text parsed by the supplied inline parser.
 
 import Dict
 import Either exposing (Either(..))
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock, emptyExprMeta)
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock, emptyExprMeta)
 
 
 type Alignment

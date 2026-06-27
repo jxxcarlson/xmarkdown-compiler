@@ -11,8 +11,8 @@ import Element exposing (Element)
 import Element.Background
 import Element.Border
 import Element.Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Render.Attributes
 import Render.Settings exposing (RenderSettings)
 import Render.Theme
@@ -38,7 +38,7 @@ renderTree params settings accumulator tree =
 
         isBoxLike : ExpressionBlock -> Bool
         isBoxLike block =
-            case Generic.Language.getName block of
+            case AST.Language.getName block of
                 Nothing ->
                     False
 

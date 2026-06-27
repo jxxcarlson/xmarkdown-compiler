@@ -9,7 +9,7 @@ module Render.Sync exposing
 import Element
 import Element.Background as Background
 import Element.Events as Events
-import Generic.Language
+import AST.Language
 import Render.Settings
 import Render.Utility
 import Scripta.Msg exposing (MarkupMsg(..))
@@ -17,7 +17,7 @@ import Scripta.Msg exposing (MarkupMsg(..))
 
 {-| Use this function to add all needed properties to an element for LR sync
 -}
-attributes : Render.Settings.RenderSettings -> Generic.Language.ExpressionBlock -> List (Element.Attribute MarkupMsg)
+attributes : Render.Settings.RenderSettings -> AST.Language.ExpressionBlock -> List (Element.Attribute MarkupMsg)
 attributes settings block =
     [ rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
     , Render.Utility.idAttribute block.meta.id

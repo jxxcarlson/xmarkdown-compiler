@@ -5,7 +5,7 @@ module XMarkdown.Inline.Expression exposing
 
 -- import L0.Parser.Expression
 
-import Generic.Language exposing (Expr(..), Expression)
+import AST.Language exposing (Expr(..), Expression)
 import List.Extra
 import XMarkdown.Inline.Core.Expression exposing (parseWithMessages)
 import Scripta.Config as Config
@@ -164,7 +164,7 @@ commit token state =
         Just expr ->
             -- TODO: the "0" below is problematics, but I am using this rather than token.index
             -- TODO: in order to match what the TOC needs
-            { state | committed = Generic.Language.updateMeta (\m -> { m | id = makeId state.lineNumber 0 }) expr :: state.committed }
+            { state | committed = AST.Language.updateMeta (\m -> { m | id = makeId state.lineNumber 0 }) expr :: state.committed }
 
 
 exprOfToken : Token -> Maybe Expression

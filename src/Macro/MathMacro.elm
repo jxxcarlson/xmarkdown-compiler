@@ -1,4 +1,4 @@
-module Generic.MathMacro exposing
+module Macro.MathMacro exposing
     ( Deco(..)
     , MathExpr(..)
     , Problem

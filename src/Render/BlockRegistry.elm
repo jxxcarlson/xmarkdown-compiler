@@ -15,8 +15,8 @@ allows renderers to be registered from various modules and looked up by name.
 
 import Dict exposing (Dict)
 import Element exposing (Element)
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import Scripta.Msg exposing (MarkupMsg)
 

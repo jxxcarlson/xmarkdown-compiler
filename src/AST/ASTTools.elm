@@ -1,4 +1,4 @@
-module Generic.ASTTools exposing
+module AST.ASTTools exposing
     ( banner
     , exprListToStringList
     , filterExpressionsOnName_
@@ -11,8 +11,8 @@ module Generic.ASTTools exposing
     , title
     )
 
-import Generic.Forest exposing (Forest)
-import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import AST.Forest exposing (Forest)
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
 import Library.Tree
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
@@ -65,22 +65,22 @@ filterForestOnLabelNames predicate forest =
 
 labelName : Tree ExpressionBlock -> Maybe String
 labelName tree =
-    Tree.value tree |> Generic.Language.getName
+    Tree.value tree |> AST.Language.getName
 
 
 matchBlockName : String -> ExpressionBlock -> Bool
 matchBlockName key block =
-    Just key == Generic.Language.getName block
+    Just key == AST.Language.getName block
 
 
 matchBlockName2 : String -> String -> ExpressionBlock -> Bool
 matchBlockName2 key key2 block =
-    (Just key == Generic.Language.getName block) || (Just key2 == Generic.Language.getName block)
+    (Just key == AST.Language.getName block) || (Just key2 == AST.Language.getName block)
 
 
 matchExprOnName_ : String -> Expression -> Bool
 matchExprOnName_ name expr =
-    case Generic.Language.getFunctionName expr of
+    case AST.Language.getFunctionName expr of
         Nothing ->
             False
 
@@ -118,7 +118,7 @@ getValue key ast =
             "(" ++ key ++ ")"
 
         Just block ->
-            Generic.Language.getExpressionContent block
+            AST.Language.getExpressionContent block
                 |> List.map getText
                 |> Maybe.Extra.values
                 |> String.join ""

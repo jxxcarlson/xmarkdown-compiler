@@ -1,4 +1,4 @@
-module Generic.Language exposing
+module AST.Language exposing
     ( Block
     , BlockMeta
     , Expr(..)

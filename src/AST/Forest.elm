@@ -1,4 +1,4 @@
-module Generic.Forest exposing (Forest, map)
+module AST.Forest exposing (Forest, map)
 
 {-| This module provides tools for building
 a tree from a string or a list of blocks. As noted

@@ -1,4 +1,4 @@
-module Generic.Settings exposing (numberedBlockNames)
+module AST.Settings exposing (numberedBlockNames)
 
 
 numberedBlockNames =
