@@ -7,7 +7,7 @@ import Dict exposing (Dict)
 import ETeX.Dictionary
 import ETeX.KaTeX exposing (isKaTeX)
 import ETeX.MathMacros exposing (MacroBody(..), MathMacroDict, NewCommand(..))
-import Generic.MathMacro
+import Macro.MathMacro
 import Parser.Advanced as PA
     exposing
         ( (|.)
@@ -840,99 +840,99 @@ tokenToString token =
 -- Convert simple macro syntax to LaTeX newcommands
 -- Convert a single simple macro line to LaTeX newcommand
 -- CONVERSIONS
--- Convert local MacroBody to Generic.MathMacro.MacroBody
--- Convert local MathExpr to Generic.MathMacro.MathExpr
+-- Convert local MacroBody to Macro.MathMacro.MacroBody
+-- Convert local MathExpr to Macro.MathMacro.MathExpr
 
 
-convertToGenericMathExpr : MathExpr -> Generic.MathMacro.MathExpr
+convertToGenericMathExpr : MathExpr -> Macro.MathMacro.MathExpr
 convertToGenericMathExpr expr =
     case expr of
         AlphaNum str ->
-            Generic.MathMacro.AlphaNum str
+            Macro.MathMacro.AlphaNum str
 
         F0 str ->
-            Generic.MathMacro.F0 str
+            Macro.MathMacro.F0 str
 
         Arg exprs ->
-            Generic.MathMacro.Arg (List.map convertToGenericMathExpr exprs)
+            Macro.MathMacro.Arg (List.map convertToGenericMathExpr exprs)
 
         PArg exprs ->
             -- Convert PArg to Arg in generic representation
-            Generic.MathMacro.Arg (List.map convertToGenericMathExpr exprs)
+            Macro.MathMacro.Arg (List.map convertToGenericMathExpr exprs)
 
         ParenthExpr exprs ->
             -- Convert ParenthExpr to Expr in generic representation
-            Generic.MathMacro.Expr (List.map convertToGenericMathExpr exprs)
+            Macro.MathMacro.Expr (List.map convertToGenericMathExpr exprs)
 
         Sub deco ->
-            Generic.MathMacro.Sub (convertToGenericDeco deco)
+            Macro.MathMacro.Sub (convertToGenericDeco deco)
 
         Super deco ->
-            Generic.MathMacro.Super (convertToGenericDeco deco)
+            Macro.MathMacro.Super (convertToGenericDeco deco)
 
         Param n ->
-            Generic.MathMacro.Param n
+            Macro.MathMacro.Param n
 
         WS ->
-            Generic.MathMacro.WS
+            Macro.MathMacro.WS
 
         MathSpace ->
-            Generic.MathMacro.MathSpace
+            Macro.MathMacro.MathSpace
 
         MathSmallSpace ->
-            Generic.MathMacro.MathSmallSpace
+            Macro.MathMacro.MathSmallSpace
 
         MathMediumSpace ->
-            Generic.MathMacro.MathMediumSpace
+            Macro.MathMacro.MathMediumSpace
 
         LeftMathBrace ->
-            Generic.MathMacro.LeftMathBrace
+            Macro.MathMacro.LeftMathBrace
 
         RightMathBrace ->
-            Generic.MathMacro.RightMathBrace
+            Macro.MathMacro.RightMathBrace
 
         LeftParen ->
             -- Convert to MathSymbols in generic representation
-            Generic.MathMacro.MathSymbols "("
+            Macro.MathMacro.MathSymbols "("
 
         RightParen ->
             -- Convert to MathSymbols in generic representation
-            Generic.MathMacro.MathSymbols ")"
+            Macro.MathMacro.MathSymbols ")"
 
         Comma ->
             -- Convert to MathSymbols in generic representation
-            Generic.MathMacro.MathSymbols ","
+            Macro.MathMacro.MathSymbols ","
 
         MathSymbols str ->
-            Generic.MathMacro.MathSymbols str
+            Macro.MathMacro.MathSymbols str
 
         Macro name args ->
-            Generic.MathMacro.Macro name (List.map convertToGenericMathExpr args)
+            Macro.MathMacro.Macro name (List.map convertToGenericMathExpr args)
 
         FCall name args ->
             -- Convert FCall to Macro in generic representation
-            Generic.MathMacro.Macro name (List.map convertToGenericMathExpr args)
+            Macro.MathMacro.Macro name (List.map convertToGenericMathExpr args)
 
         Expr exprs ->
-            Generic.MathMacro.Expr (List.map convertToGenericMathExpr exprs)
+            Macro.MathMacro.Expr (List.map convertToGenericMathExpr exprs)
 
         Text str ->
-            -- Generic.MathMacro doesn't have Text, so convert to MathSymbols
-            Generic.MathMacro.MathSymbols str
+            -- Macro.MathMacro doesn't have Text, so convert to MathSymbols
+            Macro.MathMacro.MathSymbols str
 
 
 
--- Convert local Deco to Generic.MathMacro.Deco
+-- Convert local Deco to Macro.MathMacro.Deco
 
 
-convertToGenericDeco : Deco -> Generic.MathMacro.Deco
+convertToGenericDeco : Deco -> Macro.MathMacro.Deco
 convertToGenericDeco deco =
     case deco of
         DecoM expr ->
-            Generic.MathMacro.DecoM (convertToGenericMathExpr expr)
+            Macro.MathMacro.DecoM (convertToGenericMathExpr expr)
 
         DecoI n ->
-            Generic.MathMacro.DecoI n
+            Macro.MathMacro.DecoI n
 
 
 

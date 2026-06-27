@@ -10,15 +10,15 @@ module Render.Blocks.Document exposing (registerRenderers)
 import Dict
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Expression
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 {-| Register all document structure block renderers to the registry
@@ -64,7 +64,7 @@ section count acc settings attr block =
                 Element.none
 
         exprs =
-            Generic.Language.getExpressionContent block
+            AST.Language.getExpressionContent block
     in
     Element.link
         (sectionBlockAttributes block
@@ -96,7 +96,7 @@ unnumberedSection count acc settings attr block =
             1.2 * (settings.maxHeadingFontSize / sqrt headingLevel) |> round
 
         exprs =
-            Generic.Language.getExpressionContent block
+            AST.Language.getExpressionContent block
     in
     Element.link
         (sectionBlockAttributes block
@@ -114,7 +114,7 @@ unnumberedSection count acc settings attr block =
 -}
 sectionBlockAttributes : ExpressionBlock -> RenderSettings -> List (Element.Attr () MarkupMsg) -> List (Element.Attr () MarkupMsg)
 sectionBlockAttributes block settings attrs =
-    [ Render.Utility.makeId (Generic.Language.getExpressionContent block)
+    [ Render.Utility.makeId (AST.Language.getExpressionContent block)
     , Render.Utility.idAttribute block.meta.id
     ]
         ++ Render.Sync.highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
@@ -130,7 +130,7 @@ topPadding k =
 
 {-| Helper for rendering with a default and size
 -}
-renderWithDefaultWithSize : Int -> String -> Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Generic.Language.Expression -> List (Element MarkupMsg)
+renderWithDefaultWithSize : Int -> String -> Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List AST.Language.Expression -> List (Element MarkupMsg)
 renderWithDefaultWithSize size default count acc settings attr exprs =
     if List.isEmpty exprs then
         [ Element.el ([ Font.color settings.redColor, Font.size (Render.Settings.scaleFont settings size) ] ++ attr) (Element.text default) ]

@@ -9,8 +9,8 @@ module Render.Blocks.Container exposing (registerRenderers)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import List.Extra
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Blocks.Stack as Stack
@@ -18,7 +18,7 @@ import Render.Constants
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 {-| Register all container block renderers to the registry
@@ -35,7 +35,7 @@ registerRenderers registry =
 itemList : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 itemList count acc settings _ block =
     let
-        listOfExprList : List Generic.Language.Expression
+        listOfExprList : List AST.Language.Expression
         listOfExprList =
             case block.body of
                 Left _ ->
@@ -44,12 +44,12 @@ itemList count acc settings _ block =
                 Right list ->
                     list
 
-        renderItem : RenderSettings -> Generic.Language.Expression -> Element MarkupMsg
+        renderItem : RenderSettings -> AST.Language.Expression -> Element MarkupMsg
         renderItem settings_ expr =
             let
                 indentation =
                     case expr of
-                        Generic.Language.ExprList n _ _ ->
+                        AST.Language.ExprList n _ _ ->
                             n
 
                         _ ->
@@ -73,7 +73,7 @@ numberedList _ acc settings _ block =
     let
         indentation_ expr_ =
             case expr_ of
-                Generic.Language.ExprList n _ _ ->
+                AST.Language.ExprList n _ _ ->
                     n
 
                 _ ->
@@ -82,7 +82,7 @@ numberedList _ acc settings _ block =
         level expr_ =
             1 + indentation_ expr_ // 2
 
-        listOfExprList : List Generic.Language.Expression
+        listOfExprList : List AST.Language.Expression
         listOfExprList =
             case block.body of
                 Left _ ->
@@ -91,7 +91,7 @@ numberedList _ acc settings _ block =
                 Right list ->
                     list
 
-        preRenderStep : Generic.Language.Expression -> ( Stack.Stack, List Int ) -> ( Stack.Stack, List Int )
+        preRenderStep : AST.Language.Expression -> ( Stack.Stack, List Int ) -> ( Stack.Stack, List Int )
         preRenderStep expr ( stack_, intList ) =
             let
                 newStack_ =
@@ -99,13 +99,13 @@ numberedList _ acc settings _ block =
             in
             ( newStack_, (Stack.top newStack_ |> Maybe.withDefault 1) :: intList )
 
-        makeLabels : List Generic.Language.Expression -> List Int
+        makeLabels : List AST.Language.Expression -> List Int
         makeLabels exprs =
             List.foldl preRenderStep ( [], [] ) exprs
                 |> Tuple.second
                 |> List.reverse
 
-        renderNumberedItem_ : Int -> Generic.Language.Expression -> Element MarkupMsg
+        renderNumberedItem_ : Int -> AST.Language.Expression -> Element MarkupMsg
         renderNumberedItem_ k expr =
             Element.row
                 [ Element.width (Element.px 400)

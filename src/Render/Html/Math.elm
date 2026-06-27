@@ -4,7 +4,7 @@ module Render.Html.Math exposing
     )
 
 import Element exposing (Element)
-import Generic.PTextMacro
+import Macro.PTextMacro
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
@@ -34,7 +34,7 @@ mathText generation width id displayMode content =
 
 
 eraseLabeMacro content =
-    content |> String.lines |> List.map (Generic.PTextMacro.eraseLeadingMacro "label") |> String.join "\n"
+    content |> String.lines |> List.map (Macro.PTextMacro.eraseLeadingMacro "label") |> String.join "\n"
 
 
 mathText_ : DisplayMode -> String -> Html msg

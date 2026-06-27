@@ -12,11 +12,11 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events
 import List.Extra
-import ScriptaV2.Compiler
-import ScriptaV2.Editor
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Sync
-import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
+import Scripta.Compiler
+import Scripta.Editor
+import Scripta.Msg exposing (MarkupMsg)
+import Scripta.Sync
+import Scripta.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
 
@@ -43,7 +43,7 @@ type alias Model =
     , windowHeight : Int
     , selectId : String
     , idsOfOpenNodes : List String
-    , syncHighlight : Maybe ScriptaV2.Sync.SyncHighlight
+    , syncHighlight : Maybe Scripta.Sync.SyncHighlight
     , tick : Int
     , fileName : String
     }
@@ -115,13 +115,13 @@ update msg model =
             ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
 
         Render msg_ ->
-            case ScriptaV2.Sync.fromMsg (model.tick + 1) msg_ of
+            case Scripta.Sync.fromMsg (model.tick + 1) msg_ of
                 Just h ->
                     ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
 
                 Nothing ->
                     case msg_ of
-                        ScriptaV2.Msg.ToggleTOCNodeID nodeId ->
+                        Scripta.Msg.ToggleTOCNodeID nodeId ->
                             let
                                 idsOfOpenNodes =
                                     if String.left 2 nodeId == "@-" then
@@ -136,9 +136,9 @@ update msg model =
                             in
                             ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
 
-                        ScriptaV2.Msg.SelectId selId ->
+                        Scripta.Msg.SelectId selId ->
                             if selId == "title" then
-                                ( { model | selectId = selId }, jumpToTopOf ScriptaV2.Editor.renderedTextId )
+                                ( { model | selectId = selId }, jumpToTopOf Scripta.Editor.renderedTextId )
 
                             else
                                 ( { model | selectId = selId }, Cmd.none )
@@ -195,9 +195,9 @@ view model =
                 , filter = NoFilter
             }
 
-        compilerOutput : ScriptaV2.Compiler.CompilerOutput
+        compilerOutput : Scripta.Compiler.CompilerOutput
         compilerOutput =
-            ScriptaV2.Compiler.compile params (String.lines model.sourceText)
+            Scripta.Compiler.compile params (String.lines model.sourceText)
     in
     div [ class "app" ]
         [ div [ class "app-header" ]
@@ -212,7 +212,7 @@ view model =
                 [ editorView model ]
             , div
                 [ class "panel rendered-panel"
-                , id ScriptaV2.Editor.renderedTextId
+                , id Scripta.Editor.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
                 [ Html.map Render (renderPanel compilerOutput.body) ]
@@ -224,7 +224,7 @@ view model =
 
 editorView : Model -> Html Msg
 editorView model =
-    ScriptaV2.Editor.view
+    Scripta.Editor.view
         { source = model.initialText
         , onInput = InputText
         , highlight = model.syncHighlight

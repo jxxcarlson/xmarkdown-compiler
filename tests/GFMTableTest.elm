@@ -1,13 +1,13 @@
 module GFMTableTest exposing (suite)
 
 import Expect
-import Generic.GFMTable as G exposing (Alignment(..))
+import XMarkdown.Block.GFMTable as G exposing (Alignment(..))
 import Test exposing (Test, describe, test)
 
 
 suite : Test
 suite =
-    describe "Generic.GFMTable"
+    describe "XMarkdown.Block.GFMTable"
         [ test "splitRow drops outer pipes and trims" <|
             \_ ->
                 G.splitRow "| Alice | 29 | Engineer |"

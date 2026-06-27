@@ -10,8 +10,8 @@ provides a unified approach to determining the attributes for any given block.
 -}
 
 import Element
-import Generic.BlockUtilities
-import Generic.Language exposing (ExpressionBlock)
+import XMarkdown.Block.BlockUtilities
+import AST.Language exposing (ExpressionBlock)
 import Render.BlockType as BlockType exposing (BlockType(..))
 import Render.Utility
 
@@ -22,7 +22,7 @@ getBlockAttributes : ExpressionBlock -> List (Element.Attribute msg)
 getBlockAttributes block =
     let
         blockName =
-            Generic.BlockUtilities.getExpressionBlockName block
+            XMarkdown.Block.BlockUtilities.getExpressionBlockName block
                 |> Maybe.withDefault ""
 
         blockType =

@@ -16,14 +16,14 @@ import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expression, ExpressionBlock)
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (Expression, ExpressionBlock)
 import Html.Attributes
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 
@@ -112,7 +112,7 @@ renderNothing _ _ _ _ _ =
     Element.none
 
 
-renderWithDefault : String -> Int -> Generic.Acc.Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> List (Element MarkupMsg)
+renderWithDefault : String -> Int -> AST.Acc.Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> List (Element MarkupMsg)
 renderWithDefault default count acc settings attr exprs =
     if List.isEmpty exprs then
         [ Element.el [ Font.color settings.redColor, Font.size (Render.Settings.scaleFont settings 14) ] (Element.text default) ]

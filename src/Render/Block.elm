@@ -2,14 +2,14 @@ module Render.Block exposing (renderBody)
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.Expression
 import Render.Helper
 import Render.OrdinaryBlock
 import Render.Settings exposing (RenderSettings)
 import Render.VerbatimBlock as VerbatimBlock
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 renderBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> List (Element MarkupMsg)

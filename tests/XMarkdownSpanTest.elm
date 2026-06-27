@@ -1,9 +1,9 @@
 module XMarkdownSpanTest exposing (suite)
 
 import Expect
-import Generic.Language
+import AST.Language
 import Test exposing (Test, describe, test)
-import XMarkdown.Expression
+import XMarkdown.Inline.Expression
 
 
 {-| Flatten the top-level expressions to (id, begin, end) triples so we can SEE
@@ -11,12 +11,12 @@ the source spans the parser now produces.
 -}
 spans : String -> List ( String, Int, Int )
 spans str =
-    XMarkdown.Expression.parse 0 str
+    XMarkdown.Inline.Expression.parse 0 str
         |> List.map
             (\expr ->
                 let
                     m =
-                        Generic.Language.getMeta expr
+                        AST.Language.getMeta expr
                 in
                 ( m.id, m.begin, m.end )
             )

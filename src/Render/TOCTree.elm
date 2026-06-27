@@ -10,10 +10,10 @@ import Element exposing (Element)
 import Element.Background
 import Element.Events as Events
 import Element.Font as Font
-import Generic.ASTTools
-import Generic.Acc exposing (Accumulator)
-import Generic.Forest exposing (Forest)
-import Generic.Language exposing (ExpressionBlock)
+import AST.ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Forest exposing (Forest)
+import AST.Language exposing (ExpressionBlock)
 import Library.Forest
 import Library.Tree
 import Render.Expression
@@ -21,8 +21,8 @@ import Render.Settings
 import Render.Theme
 import Render.Utility
 import RoseTree.Tree exposing (Tree)
-import ScriptaV2.Config as Config
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import Scripta.Config as Config
+import Scripta.Msg exposing (MarkupMsg(..))
 import String.Extra
 
 
@@ -40,7 +40,7 @@ view theme viewParameters acc documentAst =
     let
         tocAST : List ExpressionBlock
         tocAST =
-            Generic.ASTTools.tableOfContents documentAst
+            AST.ASTTools.tableOfContents documentAst
 
         nodes : List TOCNodeValue
         nodes =
@@ -141,7 +141,7 @@ makeNodeValue block =
             -- The "xy" line below is needed because we also have the possibility of
             -- the TOC in the sidebar. We do not want click on a TOC item in the sidebar
             -- targeting the TOC item in the main text.
-            Generic.Language.updateMetaInBlock (\m -> { m | id = "xy" ++ m.id }) block
+            AST.Language.updateMetaInBlock (\m -> { m | id = "xy" ++ m.id }) block
     in
     { block = newBlock, visible = True }
 
@@ -183,12 +183,12 @@ viewTocItem_ theme viewParameters acc hasChildren ({ body, properties } as block
                 --    nosectionNumber "!!"
                 --exprs2 : Element MarkupMsg
                 exprs2 =
-                    case exprs |> List.head |> Maybe.andThen Generic.Language.extractText of
+                    case exprs |> List.head |> Maybe.andThen AST.Language.extractText of
                         Nothing ->
                             exprs
 
                         Just ( text, meta ) ->
-                            [ Generic.Language.composeTextElement (String.Extra.softWrapWith 22 "..." (String.trim text)) meta ]
+                            [ AST.Language.composeTextElement (String.Extra.softWrapWith 22 "..." (String.trim text)) meta ]
 
                 lvl : Int
                 lvl =

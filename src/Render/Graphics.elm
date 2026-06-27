@@ -3,12 +3,12 @@ module Render.Graphics exposing (image, image2)
 import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, px, spacing)
-import Generic.ASTTools as ASTTools
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (Expression, ExpressionBlock)
+import AST.ASTTools as ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (Expression, ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 import Tools.Utility as Utility
 
 

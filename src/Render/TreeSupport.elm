@@ -9,8 +9,8 @@ to avoid import cycles.
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.Expression
 import Render.Helper
 import Render.Indentation
@@ -19,8 +19,8 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types
+import Scripta.Msg exposing (MarkupMsg)
+import Scripta.Types
 
 
 {-| Simplified version of Block.renderAttributes
@@ -51,7 +51,7 @@ syncAttributes settings block =
 
 {-| Simplified version of Block.renderBody
 -}
-renderBody : ScriptaV2.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
+renderBody : Scripta.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
 renderBody params settings acc block =
     case block.heading of
         Paragraph ->

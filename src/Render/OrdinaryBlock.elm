@@ -8,8 +8,8 @@ module Render.OrdinaryBlock exposing (getAttributes, render)
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.BlockType
 import Render.Blocks.Container as ContainerBlocks
@@ -19,7 +19,7 @@ import Render.Indentation
 import Render.List
 import Render.Settings exposing (RenderSettings)
 import Render.GHTable
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 
 
 {-| Get attributes for a specific block type by name

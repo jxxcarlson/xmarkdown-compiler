@@ -5,8 +5,8 @@ import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
-import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
 import Render.Constants as Constants
 import Render.Graphics
@@ -16,7 +16,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Theme
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg)
+import Scripta.Msg exposing (MarkupMsg)
 import SyntaxHighlight exposing (toBlockHtml)
 
 
