@@ -13,16 +13,16 @@ import Element exposing (Element)
 import Element.Font as Font
 import Generic.ASTTools
 import Generic.Acc exposing (Accumulator)
-import Generic.Compiler
 import Generic.Forest exposing (Forest)
+import Generic.ForestTransform
 import Generic.Language exposing (ExpressionBlock)
+import Generic.Pipeline
 import Render.Block
 import Render.Settings
 import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
 import ScriptaV2.Config as Config
-import ScriptaV2.Language exposing (Language(..))
 import ScriptaV2.Msg exposing (MarkupMsg)
 import ScriptaV2.Types exposing (CompilerParameters, Filter(..))
 import XMarkdown.Expression
@@ -79,11 +79,7 @@ bottomPadding k =
     Element.paddingEach { left = 0, right = 0, top = 0, bottom = k }
 
 
-{-|
-
-    compile lang width counter selectedId lines
-    Used only in View.Phone (twice)
-
+{-| Compile XMarkdown source lines into renderable output (body, banner, TOC, title).
 -}
 compile : CompilerParameters -> List String -> CompilerOutput
 compile params lines =
@@ -96,20 +92,15 @@ parseFromString str =
     parse Config.idPrefix 0 (String.lines str)
 
 
-{-|
-
-    parse lang idPrefix counter lines
-    Used only in CurrentDocument.setInPhone
-
+{-| Parse source lines into a forest of expression blocks: primitive blocks →
+indentation-based tree → expression blocks (with inline expressions parsed).
 -}
-parse : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
+parse : String -> Int -> List String -> Forest ExpressionBlock
 parse idPrefix outerCount lines =
-    parseSMarkdown idPrefix outerCount lines
-
-
-parseSMarkdown : String -> Int -> List String -> List (RoseTree.Tree.Tree ExpressionBlock)
-parseSMarkdown idPrefix outerCount lines =
-    Generic.Compiler.parse_ XMarkdown.PrimitiveBlock.parse XMarkdown.Expression.parse idPrefix outerCount lines
+    lines
+        |> XMarkdown.PrimitiveBlock.parse idPrefix outerCount
+        |> Generic.ForestTransform.forestFromBlocks .indent
+        |> Generic.Forest.map (Generic.Pipeline.toExpressionBlock XMarkdown.Expression.parse)
 
 
 
@@ -141,14 +132,8 @@ filterForest filter forest =
 parseToForestWithAccumulator : CompilerParameters -> List String -> ( Accumulator, Forest ExpressionBlock )
 parseToForestWithAccumulator params lines =
     let
-        parser =
-            case params.lang of
-                SMarkdownLang ->
-                    parseSMarkdown
-
-        -- NOTE: really bad idea!
         forest =
-            filterForest params.filter (parser Config.idPrefix params.editCount lines)
+            filterForest params.filter (parse Config.idPrefix params.editCount lines)
     in
     Generic.Acc.transformAccumulate Generic.Acc.initialData forest
 

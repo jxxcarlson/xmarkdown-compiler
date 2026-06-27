@@ -1,15 +1,8 @@
 module ScriptaV2.Config exposing
-    ( defaultLanguage
-    , expressionIdPrefix
+    ( expressionIdPrefix
     , idPrefix
     , indentationQuantum
     )
-
-import ScriptaV2.Language exposing (Language(..))
-
-
-defaultLanguage =
-    SMarkdownLang
 
 
 idPrefix =

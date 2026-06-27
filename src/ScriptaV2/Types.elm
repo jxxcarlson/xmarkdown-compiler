@@ -1,8 +1,8 @@
 module ScriptaV2.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..))
 
 {-| This module defines the core types used for configuring the Scripta compiler.
-The main type is `CompilerParameters`, which controls how source text is compiled
-and rendered across all supported markup languages (MicroLaTeX, SMarkdown, L0/Enclosure).
+The main type is `CompilerParameters`, which controls how XMarkdown source text
+is compiled and rendered.
 
 
 # Configuration
@@ -12,7 +12,6 @@ and rendered across all supported markup languages (MicroLaTeX, SMarkdown, L0/En
 
 ## Key Parameters
 
-  - **lang**: The markup language to compile (MicroLaTeX, SMarkdown, or Enclosure)
   - **docWidth**: Width of the rendered document in pixels
   - **editCount**: Increment this after each edit for live editing contexts (use 0 for static documents)
   - **selectedId**: ID of the currently selected block for highlighting
@@ -25,8 +24,7 @@ and rendered across all supported markup languages (MicroLaTeX, SMarkdown, L0/En
 For simple use cases, start with `defaultCompilerParameters` and override the fields you need:
 
     { defaultCompilerParameters
-        | lang = ScriptaV2.Language.MicroLaTeXLang
-        , docWidth = 600
+        | docWidth = 600
         , editCount = model.editCount
     }
 
@@ -34,7 +32,6 @@ For simple use cases, start with `defaultCompilerParameters` and override the fi
 
 import Dict exposing (Dict)
 import Render.Theme
-import ScriptaV2.Language exposing (Language)
 
 
 {-| -}
@@ -46,8 +43,7 @@ type Filter
 {-| -}
 defaultCompilerParameters : CompilerParameters
 defaultCompilerParameters =
-    { lang = ScriptaV2.Language.SMarkdownLang
-    , docWidth = 500
+    { docWidth = 500
     , editCount = 0
     , selectedId = ""
     , selectedSlug = Nothing
@@ -69,7 +65,6 @@ defaultCompilerParameters =
 type alias CompilerParameters =
     { windowWidth : Int
     , scale : Float
-    , lang : Language
     , docWidth : Int
     , editCount : Int
     , selectedId : String

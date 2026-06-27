@@ -9,7 +9,6 @@
         "ScriptaV2.API",
         "ScriptaV2.Types",
         "ScriptaV2.Msg",
-        "ScriptaV2.Language",
         "Render.Theme",
         "ScriptaV2.Editor",
         "ScriptaV2.Sync"

@@ -51,7 +51,6 @@ import Generic.Vector as Vector exposing (Vector)
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
 import ScriptaV2.Config as Config
-import ScriptaV2.Language exposing (Language)
 import Tools.String
 import Tools.Utility as Utility
 
@@ -61,7 +60,6 @@ initialData =
     { mathMacros = ""
     , textMacros = ""
     , vectorSize = 4
-    , language = Config.defaultLanguage
     , shiftAndSetCounter = Nothing
     }
 
@@ -150,7 +148,6 @@ type alias InitialAccumulatorData =
     { mathMacros : String
     , textMacros : String
     , vectorSize : Int
-    , language : Language
     , shiftAndSetCounter : Maybe Int
     }
 
