@@ -210,5 +210,4 @@ toExpressionBlock parse pb =
     , firstLine = pb.firstLine
     , body = Right [ tableExpr ]
     , meta = pb.meta
-    , style = pb.style
     }

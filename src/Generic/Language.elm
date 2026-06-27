@@ -7,9 +7,6 @@ module Generic.Language exposing
     , ExpressionBlock
     , Heading(..)
     , PrimitiveBlock
-    , Style
-    , StyleAttr
-    , StyleColor
     , boostBlock
     , composeTextElement
     , emptyBlockMeta
@@ -71,32 +68,7 @@ type alias Block content blockMetaData =
     , firstLine : String
     , body : content
     , meta : blockMetaData
-    , style : Maybe Style
     }
-
-
-type alias Style =
-    { lineWidth : Int
-    , lineSpacing : Int
-    , spaceAbove : Int
-    , spaceBelow : Int
-    , indent : Int
-    , firstLineIndent : Int
-    , fontSize : Int
-    , borderWidth : Maybe Int
-    , bgColor : StyleColor
-    , fgColor : StyleColor
-    , borderColor : Maybe StyleColor
-    , attrs : List StyleAttr
-    }
-
-
-type StyleColor
-    = RGBA Float Float Float Float
-
-
-type StyleAttr
-    = None
 
 
 
