@@ -54,7 +54,6 @@ defaultCompilerParameters =
     --
     , fontSize = 16
     , windowWidth = 500
-    , longEquationLimit = 500
     , scale = 1
     , numberToLevel = 1
     , data = Dict.empty
@@ -75,7 +74,6 @@ type alias CompilerParameters =
 
     --
     , fontSize : Int
-    , longEquationLimit : Float
     , numberToLevel : Int
     , data : Dict String String
     }

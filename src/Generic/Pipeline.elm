@@ -84,7 +84,6 @@ toExpressionBlock_ parse primitiveBlock =
                 Verbatim _ ->
                     Left <| String.join "\n" primitiveBlock.body
         , meta = primitiveBlock.meta
-        , style = primitiveBlock.style
         }
 
 

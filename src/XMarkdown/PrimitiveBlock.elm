@@ -189,7 +189,6 @@ blockFromLine ({ indent, lineNumber, position, prefix, content } as line) =
                 , firstLine = content
                 , body = [ prefix ++ content ]
                 , meta = meta
-                , style = Nothing
                 }
 
 
@@ -214,7 +213,6 @@ bogusBlockFromLine message_ { indent, lineNumber, position, content } =
     , firstLine = ""
     , body = [ message ]
     , meta = meta
-    , style = Nothing
     }
 
 
