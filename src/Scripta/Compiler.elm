@@ -65,8 +65,7 @@ header compiled =
 {-| -}
 body : CompilerOutput -> Element MarkupMsg
 body compiled =
-    -- Element.column [ Element.spacing 18, Element.moveUp 156 ] compiled.body
-    Element.column [ Element.spacing 18, Element.alignTop ] compiled.body
+    Element.column [ Element.spacing (round compiled.interBlockSpacing), Element.alignTop ] compiled.body
 
 
 {-| -}
@@ -113,6 +112,7 @@ type alias CompilerOutput =
     , banner : Maybe (Element MarkupMsg)
     , toc : List (Element MarkupMsg)
     , title : Element MarkupMsg
+    , interBlockSpacing : Float
     }
 
 
@@ -177,6 +177,7 @@ render params ( accumulator_, forest_ ) =
     , banner = banner
     , toc = toc
     , title = title
+    , interBlockSpacing = renderSettings.interBlockSpacing
     }
 
 

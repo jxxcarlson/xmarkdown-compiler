@@ -215,9 +215,9 @@ view model =
                 , id Scripta.Editor.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
-                [ Html.map Render (renderPanel compilerOutput.body) ]
+                [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body) ]
             , div [ class "panel toc-panel", style "width" (px g.tocW) ]
-                [ Html.map Render (renderPanel compilerOutput.toc) ]
+                [ Html.map Render (renderPanel 18 compilerOutput.toc) ]
             ]
         ]
 
@@ -234,11 +234,11 @@ editorView model =
 
 {-| Bridge the compiler's still-elm-ui output into the html app.
 -}
-renderPanel : List (Element.Element MarkupMsg) -> Html MarkupMsg
-renderPanel elements =
+renderPanel : Int -> List (Element.Element MarkupMsg) -> Html MarkupMsg
+renderPanel blockSpacing elements =
     Element.layout [ Element.width Element.fill ]
         (Element.column
-            [ Element.spacing 12, Element.width Element.fill ]
+            [ Element.spacing blockSpacing, Element.width Element.fill ]
             elements
         )
 

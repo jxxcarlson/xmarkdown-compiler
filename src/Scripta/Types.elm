@@ -52,10 +52,11 @@ defaultCompilerParameters =
     , theme = Render.Theme.Light
 
     --
+    , interBlockSpacing = 18
     , fontSize = 16
     , windowWidth = 500
     , scale = 1
-    , numberToLevel = 1
+    , numberToLevel = 3
     , data = Dict.empty
     }
 
@@ -73,6 +74,7 @@ type alias CompilerParameters =
     , theme : Render.Theme.Theme
 
     --
+    , interBlockSpacing : Float
     , fontSize : Int
     , numberToLevel : Int
     , data : Dict String String

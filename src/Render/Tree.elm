@@ -163,7 +163,7 @@ renderStandardBranch :
     -> List (Tree ExpressionBlock)
     -> Element MarkupMsg
 renderStandardBranch params settings accumulator root children =
-    Element.column (Element.spacing 12 :: getBlockAttributes root)
+    Element.column (Element.spacing (round settings.interBlockSpacing) :: getBlockAttributes root)
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )

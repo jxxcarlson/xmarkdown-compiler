@@ -31,7 +31,7 @@ For instance, the`width`field defines the width of the
 page in which the document is e
 -}
 type alias RenderSettings =
-    { paragraphSpacing : Int
+    { interBlockSpacing : Float
     , selectedId : String -- the element with this id will be highlighted
     , display : Display
     , longEquationLimit : Float
@@ -185,7 +185,7 @@ makeSettings params =
     { width = round (params.scale * toFloat params.windowWidth)
     , titleSize = titleSize
     , fontSize = params.fontSize
-    , paragraphSpacing = 28
+    , interBlockSpacing = params.interBlockSpacing
     , display = DefaultDisplay
     , longEquationLimit = 1 * (params.windowWidth |> toFloat)
     , showTOC = True
