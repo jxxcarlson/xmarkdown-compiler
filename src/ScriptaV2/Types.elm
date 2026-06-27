@@ -25,8 +25,7 @@ and rendered across all supported markup languages (MicroLaTeX, SMarkdown, L0/En
 For simple use cases, start with `defaultCompilerParameters` and override the fields you need:
 
     { defaultCompilerParameters
-        | lang = ScriptaV2.Language.MicroLaTeXLang
-        , docWidth = 600
+        | docWidth = 600
         , editCount = model.editCount
     }
 
