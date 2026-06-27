@@ -62,24 +62,11 @@ verbatimDict =
         , ( "equation", Render.Math.equation )
         , ( "aligned", Render.Math.aligned )
         , ( "array", Render.Math.array )
-        , ( "textarray", Render.Math.textarray )
-        , ( "table", Render.Math.textarray )
         , ( "code", renderCode )
         , ( "verse", renderVerse )
         , ( "verbatim", renderVerbatim )
-        , ( "settings", Render.Helper.renderNothing )
-
-        -- , ( "tabular", Render.Tabular.render )
-        , ( "load-data", Render.Helper.renderNothing )
-        , ( "hide", Render.Helper.renderNothing )
-        , ( "texComment", Render.Helper.renderNothing )
         , ( "docinfo", Render.Helper.renderNothing )
-        , ( "mathmacros", Render.Helper.renderNothing )
-        , ( "textmacros", Render.Helper.renderNothing )
         , ( "image", Render.Graphics.image2 )
-        , ( "load-files", Render.Helper.renderNothing )
-        , ( "include", Render.Helper.renderNothing )
-        , ( "setup", Render.Helper.renderNothing )
         ]
 
 

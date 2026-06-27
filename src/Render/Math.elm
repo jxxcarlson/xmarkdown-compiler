@@ -6,22 +6,20 @@ module Render.Math exposing
     , displayedMath
     , equation
     , mathText
-    , textarray
     )
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Dict
 import ETeX.Transform
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock)
-import Macro.PTextMacro
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
 import Json.Encode
-import List.Extra
+import Macro.PTextMacro
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.ThemeHelpers
@@ -250,90 +248,6 @@ array count acc settings attrs block =
 
         content =
             "\\begin{array}{" ++ format ++ "}\n" ++ innerContent ++ "\n\\end{array}"
-    in
-    Element.column ([ Element.width (Element.px settings.width) ] ++ attrs)
-        [ Element.row
-            (Element.width (Element.px settings.width) :: Render.Sync.attributes settings block)
-            [ Element.el
-                (Element.centerX :: Render.Sync.attributes settings block)
-                (mathText (Render.ThemeHelpers.themeAsStringFromSettings settings) count block.meta.id DisplayMathMode content)
-            ]
-        ]
-
-
-textarray : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-textarray count acc settings attrs block =
-    let
-        format : String
-        format =
-            block.args
-                |> List.Extra.getAt 1
-                |> Maybe.withDefault defaultFormat
-
-        str =
-            case block.body of
-                Left str_ ->
-                    str_
-
-                Right _ ->
-                    ""
-
-        filteredLines =
-            -- filter stuff out of lines of math text to be rendered:
-            String.lines str
-                |> List.filter (\line -> not (String.left 6 line == "[label") && not (line == ""))
-                |> List.map fixrow
-
-        mNumberOfColumns =
-            filteredLines
-                |> List.head
-                |> Maybe.map (String.split "&")
-                |> Maybe.map List.length
-
-        defaultFormat =
-            case mNumberOfColumns of
-                Nothing ->
-                    ""
-
-                Just n ->
-                    List.repeat n "c" |> String.join ""
-
-        fixrow : String -> String
-        fixrow str_ =
-            str_
-                |> String.split "&"
-                |> List.map String.trim
-                |> List.map (\s -> "\\text{" ++ s ++ "}")
-                |> String.join " & "
-
-        deleteTrailingSlashes inputString =
-            let
-                str_ =
-                    String.trim inputString
-            in
-            if String.right 2 str_ == "\\\\" then
-                String.dropRight 2 str_
-
-            else
-                str_
-
-        adjustedLines_ =
-            -- delete trailing slashes before evaluating macros
-            List.map (deleteTrailingSlashes >> ETeX.Transform.evalStr acc.mathMacroDict) filteredLines
-                -- remove bank lines
-                |> List.filter (\line -> line /= "")
-
-        innerContent =
-            -- restore trailing slashes
-            adjustedLines_
-                |> String.join "\\\\\n"
-
-        content =
-            "\\begin{array}{"
-                ++ format
-                ++ "}\n"
-                ++ innerContent
-                ++ "\n\\end{array}"
     in
     Element.column ([ Element.width (Element.px settings.width) ] ++ attrs)
         [ Element.row

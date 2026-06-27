@@ -1,5 +1,8 @@
 module Render.Expression exposing (render)
 
+import AST.ASTTools as ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (Expr(..), Expression)
 import Dict exposing (Dict)
 import ETeX.MathMacros
 import ETeX.Transform
@@ -8,9 +11,6 @@ import Element.Background as Background
 import Element.Border
 import Element.Events as Events
 import Element.Font as Font
-import AST.ASTTools as ASTTools
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (Expr(..), Expression)
 import Html
 import Html.Attributes
 import Html.Events
