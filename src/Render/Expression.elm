@@ -18,7 +18,6 @@ import Html.Events
 import Json.Decode
 import List.Extra
 import Maybe.Extra
-import MicroScheme.Interpreter
 import Render.Constants as Constants
 import Render.Graphics
 import Render.Html.Math
@@ -164,7 +163,6 @@ markupDict =
         [ ( "bibitem", \_ _ _ _ exprList -> bibitem exprList )
 
         -- STYLE
-        , ( "scheme", \_ _ _ _ exprList -> renderScheme exprList )
         , ( "compute", \g _ _ _ exprList -> renderComputation g exprList )
         , ( "data", \_ _ s _ exprList -> renderDataTools s exprList )
         , ( "button", \_ _ _ attr exprList -> renderButton attr exprList )
@@ -605,16 +603,6 @@ indent _ _ _ _ _ =
 
 strong g acc s attr exprList =
     simpleElement [ Font.bold ] g acc s attr exprList
-
-
-renderScheme : List Expression -> Element msg
-renderScheme exprList =
-    let
-        inputText : String
-        inputText =
-            ASTTools.exprListToStringList exprList |> String.join " "
-    in
-    Element.text (MicroScheme.Interpreter.runProgram ";" inputText)
 
 
 renderComputation :
