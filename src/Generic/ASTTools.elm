@@ -1,11 +1,9 @@
 module Generic.ASTTools exposing
     ( banner
     , exprListToStringList
-    , filterExpressionsOnName
     , filterExpressionsOnName_
     , filterExprs
     , filterForestOnLabelNames
-    , filterOutExpressionsOnName
     , getText
     , isBlank
     , stringValueOfList
@@ -18,16 +16,6 @@ import Generic.Language exposing (Expr(..), Expression, ExpressionBlock, Heading
 import Library.Tree
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
-
-
-filterExpressionsOnName : String -> List Expression -> List Expression
-filterExpressionsOnName name exprs =
-    List.filter (matchExprOnName name) exprs
-
-
-filterOutExpressionsOnName : String -> List Expression -> List Expression
-filterOutExpressionsOnName name exprs =
-    List.filter (\expr -> not (matchExprOnName name expr)) exprs
 
 
 filterExpressionsOnName_ : String -> List Expression -> List Expression
@@ -88,11 +76,6 @@ matchBlockName key block =
 matchBlockName2 : String -> String -> ExpressionBlock -> Bool
 matchBlockName2 key key2 block =
     (Just key == Generic.Language.getName block) || (Just key2 == Generic.Language.getName block)
-
-
-matchExprOnName : String -> Expression -> Bool
-matchExprOnName name expr =
-    Just name == Generic.Language.getFunctionName expr
 
 
 matchExprOnName_ : String -> Expression -> Bool
