@@ -115,7 +115,7 @@ equation_ count acc settings block =
         label : Element msg
         label =
             if isNumbered then
-                equationLabel block.properties
+                equationLabel settings block.properties
 
             else
                 Element.none
@@ -137,13 +137,13 @@ highlightMath settings block =
         )
 
 
-equationLabel properties =
+equationLabel settings properties =
     let
         labelText =
             "(" ++ (Dict.get "equation-number" properties |> Maybe.withDefault "-") ++ ")"
 
         label_ =
-            Element.el [ Font.size 12 ] (Element.text labelText)
+            Element.el [ Font.size (Render.Settings.scaleFont settings 12) ] (Element.text labelText)
     in
     --showIf settings content label_
     label_

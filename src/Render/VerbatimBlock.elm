@@ -113,7 +113,7 @@ renderCode _ _ settings _ block =
          , Element.paddingXY 18 12
          , Element.width (Element.px settings.width)
          , Element.scrollbarX
-         , Font.size 13
+         , Font.size (Render.Settings.scaleFont settings 13)
          ]
             ++ Render.Sync.attributes settings block
             ++ [ Background.color bgColor ]
@@ -225,16 +225,16 @@ renderVerbatim _ _ settings attrs block =
          , Element.spacing 8
          , Background.color Constants.syncHighlightColor
          , Element.paddingEach { left = 24, right = 0, top = 0, bottom = 0 }
-         , Font.size 13
+         , Font.size (Render.Settings.scaleFont settings 13)
          ]
             ++ attrs
             ++ Render.Sync.attributes settings block
         )
-        (List.map renderVerbatimLine (String.lines (String.trim (Render.Utility.getVerbatimContent block))))
+        (List.map (renderVerbatimLine settings) (String.lines (String.trim (Render.Utility.getVerbatimContent block))))
 
 
-renderVerbatimLine : String -> Element msg
-renderVerbatimLine str =
+renderVerbatimLine : RenderSettings -> String -> Element msg
+renderVerbatimLine settings str =
     let
         spacer s =
             let
@@ -244,10 +244,10 @@ renderVerbatimLine str =
             Element.paddingEach { top = 0, bottom = 0, left = n * 8, right = 0 }
     in
     if String.trim str == "" then
-        Element.row [ spacer str, Element.spacing 12 ] [ Element.el [ Element.height (Element.px 11), Font.size 13 ] (Element.text "") ]
+        Element.row [ spacer str, Element.spacing 12 ] [ Element.el [ Element.height (Element.px 11), Font.size (Render.Settings.scaleFont settings 13) ] (Element.text "") ]
 
     else
-        Element.row [ spacer str, Element.spacing 12 ] [ Element.el [ Element.height (Element.px 22), Font.size 13 ] (Element.text str) ]
+        Element.row [ spacer str, Element.spacing 12 ] [ Element.el [ Element.height (Element.px 22), Font.size (Render.Settings.scaleFont settings 13) ] (Element.text str) ]
 
 
 renderVerse : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -279,7 +279,7 @@ renderVerse _ _ settings attrs block =
                 [ Element.paddingEach { left = 12, right = 0, top = 0, bottom = 0 } ]
                 ++ attrs
             )
-            (List.map renderVerbatimLine lines)
+            (List.map (renderVerbatimLine settings) lines)
         , Render.Helper.noteFromPropertyKey "source" [ Render.Helper.leftPadding 12 ] block
         ]
 

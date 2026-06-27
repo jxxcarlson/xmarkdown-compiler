@@ -233,12 +233,12 @@ verbatimDict =
 
 
 abstract g acc s attr exprList =
-    Element.paragraph [] [ Element.el [ Font.size 18 ] (Element.text "Abstract."), simpleElement [] g acc s attr exprList ]
+    Element.paragraph [] [ Element.el [ Font.size (Render.Settings.scaleFont s 18) ] (Element.text "Abstract."), simpleElement [] g acc s attr exprList ]
 
 
 large : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
 large g acc s attr exprList =
-    simpleElement [ Font.size 18 ] g acc s attr exprList
+    simpleElement [ Font.size (Render.Settings.scaleFont s 18) ] g acc s attr exprList
 
 
 link : RenderSettings -> List Expression -> Element MarkupMsg
@@ -456,7 +456,7 @@ mark1 g acc s attr exprList =
 
 
 title g acc s attr exprList =
-    simpleElement [ Font.size Constants.titleFontSize, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g acc s attr exprList
+    simpleElement [ Font.size (Render.Settings.scaleFont s Constants.titleFontSize), Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g acc s attr exprList
 
 
 term g acc s attr exprList =
@@ -515,7 +515,7 @@ simpleElement formatList g acc s attr exprList =
 
 
 verbatimElement settings formatList meta str =
-    Element.el (Font.size 13 :: htmlId meta.id :: Element.height (Element.px 11) :: Background.color settings.codeBackground :: formatList) (Element.text str)
+    Element.el (Font.size (Render.Settings.scaleFont settings 13) :: htmlId meta.id :: Element.height (Element.px 11) :: Background.color settings.codeBackground :: formatList) (Element.text str)
 
 
 {-| A click handler that does NOT bubble, so an inline expression click reports

@@ -52,7 +52,7 @@ item count acc settings attr block =
             ++ Render.Sync.attributes settings block
         )
         [ Element.el
-            [ Font.size 14
+            [ Font.size (Render.Settings.scaleFont settings 14)
             , Element.alignTop
             , Element.moveRight 6
             , Element.width (Element.px 24)
@@ -121,7 +121,7 @@ numbered count acc settings attr block =
         , Element.width (Element.px <| settings.width - 50)
         ]
         [ Element.el
-            [ Font.size 14
+            [ Font.size (Render.Settings.scaleFont settings 14)
             , Element.alignTop
             , Element.width (Element.px 24)
             , Render.Utility.leftPadding settings.leftRightIndentation

@@ -115,7 +115,7 @@ renderNothing _ _ _ _ _ =
 renderWithDefault : String -> Int -> Generic.Acc.Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> List (Element MarkupMsg)
 renderWithDefault default count acc settings attr exprs =
     if List.isEmpty exprs then
-        [ Element.el [ Font.color settings.redColor, Font.size 14 ] (Element.text default) ]
+        [ Element.el [ Font.color settings.redColor, Font.size (Render.Settings.scaleFont settings 14) ] (Element.text default) ]
 
     else
         List.map (Render.Expression.render count acc settings attr) exprs

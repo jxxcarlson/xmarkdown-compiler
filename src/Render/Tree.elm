@@ -74,7 +74,7 @@ renderTree params settings accumulator tree =
             Element.width <| Element.px (settings.width - 60)
 
         blockAttrs =
-            style :: (Element.width <| Element.px settings.width) :: Element.Background.color bgColorAttr :: []
+            style :: Element.Font.size settings.fontSize :: (Element.width <| Element.px settings.width) :: Element.Background.color bgColorAttr :: []
     in
     if isBoxLike root then
         Element.column blockAttrs
@@ -96,7 +96,7 @@ renderTree params settings accumulator tree =
             ]
 
     else
-        Element.column [ style ] [ renderTree_ params settings accumulator tree ]
+        Element.column [ style, Element.Font.size settings.fontSize ] [ renderTree_ params settings accumulator tree ]
 
 
 renderTree_ :

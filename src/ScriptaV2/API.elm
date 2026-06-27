@@ -78,6 +78,7 @@ see `ScriptaV2.APISimple`.
 
 import Element exposing (Element)
 import Element.Font
+import Render.Settings
 import ScriptaV2.Compiler
 import ScriptaV2.Msg
 import ScriptaV2.Types
@@ -152,4 +153,4 @@ compileStringWithTitle : String -> ScriptaV2.Types.CompilerParameters -> String 
 compileStringWithTitle title params str =
     ScriptaV2.Compiler.compile params (String.lines str)
         |> ScriptaV2.Compiler.viewBodyOnly params.docWidth
-        |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size 24, Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)
+        |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size (Render.Settings.scaleFont (Render.Settings.defaultRenderSettings params) 24), Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)

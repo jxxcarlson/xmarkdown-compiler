@@ -133,7 +133,7 @@ topPadding k =
 renderWithDefaultWithSize : Int -> String -> Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Generic.Language.Expression -> List (Element MarkupMsg)
 renderWithDefaultWithSize size default count acc settings attr exprs =
     if List.isEmpty exprs then
-        [ Element.el ([ Font.color settings.redColor, Font.size size ] ++ attr) (Element.text default) ]
+        [ Element.el ([ Font.color settings.redColor, Font.size (Render.Settings.scaleFont settings size) ] ++ attr) (Element.text default) ]
 
     else
         List.map (Render.Expression.render count acc settings attr) exprs

@@ -122,7 +122,7 @@ numberedList _ acc settings _ block =
 
 renderNumberedLabel settings level_ index_ =
     Element.el
-        [ Font.size 14
+        [ Font.size (Render.Settings.scaleFont settings 14)
         , Element.alignTop
         , Element.width (Element.px 18)
 

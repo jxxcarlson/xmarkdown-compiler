@@ -1,6 +1,6 @@
 module Render.Settings exposing
     ( RenderSettings
-    , Display, ThemedStyles, darkTheme, defaultRenderSettings, getThemedElementColor, lightTheme, toElementColor, unrollTheme
+    , Display, ThemedStyles, darkTheme, defaultRenderSettings, getThemedElementColor, lightTheme, scaleFont, toElementColor, unrollTheme
     )
 
 {-| The Settings record holds information needed to render a
@@ -39,6 +39,7 @@ type alias RenderSettings =
     , showErrorMessages : Bool
     , showTOC : Bool -- is this necessary?
     , titleSize : Int
+    , fontSize : Int
     , width : Int
     , backgroundColor : Element.Color
     , textColor : Element.Color
@@ -149,6 +150,25 @@ type Display
     = DefaultDisplay
 
 
+{-| The body size that the hardcoded element sizes were authored against
+(elm-ui's default font size). Element sizes scale as
+`fontSize * designSize / referenceFontSize`, so `fontSize == referenceFontSize`
+reproduces the original appearance.
+-}
+referenceFontSize : Float
+referenceFontSize =
+    20
+
+
+{-| Scale a design-time font size by the document's `fontSize`, preserving the
+proportion the design size had to the reference body size. Use this in place of
+a hardcoded `Font.size n` so all text scales with `settings.fontSize`.
+-}
+scaleFont : RenderSettings -> Int -> Int
+scaleFont settings designSize =
+    round (toFloat settings.fontSize * toFloat designSize / referenceFontSize)
+
+
 {-| -}
 defaultRenderSettings : CompilerParameters -> RenderSettings
 defaultRenderSettings params =
@@ -160,10 +180,11 @@ makeSettings : CompilerParameters -> RenderSettings
 makeSettings params =
     let
         titleSize =
-            32
+            round (toFloat params.fontSize * 32 / referenceFontSize)
     in
     { width = round (params.scale * toFloat params.windowWidth)
     , titleSize = titleSize
+    , fontSize = params.fontSize
     , paragraphSpacing = 28
     , display = DefaultDisplay
     , longEquationLimit = 1 * (params.windowWidth |> toFloat)

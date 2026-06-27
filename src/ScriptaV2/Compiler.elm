@@ -50,13 +50,13 @@ header : CompilerOutput -> List (Element MarkupMsg)
 header compiled =
     case compiled.banner of
         Nothing ->
-            Element.el [ Font.size 32, bottomPadding 18 ] compiled.title
+            Element.el [ bottomPadding 18 ] compiled.title
                 :: Element.column [ Element.spacing 8, bottomPadding 72 ] compiled.toc
                 :: []
 
         Just banner ->
             Element.el [] banner
-                :: (Element.el [ Font.size 32, bottomPadding 18 ] compiled.title
+                :: (Element.el [ bottomPadding 18 ] compiled.title
                         :: Element.column [ Element.spacing 8, bottomPadding 36 ] compiled.toc
                         :: []
                    )
@@ -185,7 +185,7 @@ render params ( accumulator_, forest_ ) =
 
         title : Element MarkupMsg
         title =
-            Element.paragraph [] [ Element.text <| Generic.ASTTools.title forest_ ]
+            Element.paragraph [ Font.size renderSettings.titleSize ] [ Element.text <| Generic.ASTTools.title forest_ ]
     in
     { body =
         renderForest params renderSettings accumulator_ forest_

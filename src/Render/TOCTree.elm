@@ -203,10 +203,10 @@ viewTocItem_ theme viewParameters acc hasChildren ({ body, properties } as block
                 -- Click handlers based on whether the item has children
                 clickHandlers =
                     if hasChildren then
-                        [ Events.onClick (ToggleTOCNodeID nodeId), Font.size 14 ]
+                        [ Events.onClick (ToggleTOCNodeID nodeId), Font.size (Render.Settings.scaleFont viewParameters.settings 14) ]
 
                     else
-                        [ Events.onClick (SelectId <| id), Font.size 14 ]
+                        [ Events.onClick (SelectId <| id), Font.size (Render.Settings.scaleFont viewParameters.settings 14) ]
             in
             Element.row []
                 [ spacer

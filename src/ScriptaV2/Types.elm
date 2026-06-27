@@ -56,7 +56,7 @@ defaultCompilerParameters =
     , theme = Render.Theme.Light
 
     --
-    , fontSize = 10
+    , fontSize = 16
     , windowWidth = 500
     , longEquationLimit = 500
     , scale = 1
