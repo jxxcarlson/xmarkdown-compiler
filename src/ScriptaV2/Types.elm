@@ -47,7 +47,7 @@ type Filter
 defaultCompilerParameters : CompilerParameters
 defaultCompilerParameters =
     { lang = ScriptaV2.Language.SMarkdownLang
-    , docWidth = 800
+    , docWidth = 500
     , editCount = 0
     , selectedId = ""
     , selectedSlug = Nothing
@@ -56,8 +56,9 @@ defaultCompilerParameters =
     , theme = Render.Theme.Light
 
     --
-    , windowWidth = 800
-    , longEquationLimit = 800
+    , fontSize = 10
+    , windowWidth = 500
+    , longEquationLimit = 500
     , scale = 1
     , numberToLevel = 1
     , data = Dict.empty
@@ -78,6 +79,7 @@ type alias CompilerParameters =
     , theme : Render.Theme.Theme
 
     --
+    , fontSize : Int
     , longEquationLimit : Float
     , numberToLevel : Int
     , data : Dict String String

@@ -8,7 +8,6 @@ import Element.Background as Background
 import Element.Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input as Input
 import Generic.ASTTools as ASTTools
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expr(..), Expression)
@@ -17,7 +16,6 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import List.Extra
-import Maybe.Extra
 import Render.Constants as Constants
 import Render.Graphics
 import Render.Html.Math
@@ -28,7 +26,6 @@ import Render.Theme
 import Render.ThemeHelpers
 import Render.Utility as Utility
 import ScriptaV2.Msg exposing (MarkupMsg(..))
-import String.Extra
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> Expression -> Element MarkupMsg
@@ -163,38 +160,11 @@ markupDict =
         [ ( "bibitem", \_ _ _ _ exprList -> bibitem exprList )
 
         -- STYLE
-        , ( "compute", \g _ _ _ exprList -> renderComputation g exprList )
-        , ( "data", \_ _ s _ exprList -> renderDataTools s exprList )
-        , ( "button", \_ _ _ attr exprList -> renderButton attr exprList )
-        , ( "strong", \g acc s attr exprList -> strong g acc s attr exprList )
         , ( "bold", \g acc s attr exprList -> strong g acc s attr exprList )
-        , ( "textbf", \g acc s attr exprList -> strong g acc s attr exprList )
-        , ( "b", \g acc s attr exprList -> strong g acc s attr exprList )
-        , ( "subheading", \g acc s attr exprList -> subheading g acc s attr exprList )
-        , ( "sh", \g acc s attr exprList -> subheading g acc s attr exprList )
-        , ( "smallsubheading", \g acc s attr exprList -> smallsubheading g acc s attr exprList )
-        , ( "ssh", \g acc s attr exprList -> smallsubheading g acc s attr exprList )
         , ( "var", \g acc s attr exprList -> var g acc s attr exprList )
         , ( "marked", \g acc s attr exprList -> marked g acc s attr exprList )
         , ( "italic", \g acc s attr exprList -> italic g acc s attr exprList )
-        , ( "qed", \_ _ _ _ _ -> qed )
         , ( "textit", \g acc s attr exprList -> italic g acc s attr exprList )
-        , ( "bi", \g acc s attr exprList -> boldItalic g acc s attr exprList )
-        , ( "i", \g acc s attr exprList -> italic g acc s attr exprList )
-        , ( "boldItalic", \g acc s attr exprList -> boldItalic g acc s attr exprList )
-        , ( "strike", \g acc s attr exprList -> strike g acc s attr exprList )
-        , ( "underscore", \_ _ _ _ _ -> underscore )
-        , ( "ref", \_ acc settings _ exprList -> ref acc settings exprList )
-        , ( "reflink", \_ acc s _ exprList -> reflink s acc exprList )
-        , ( "eqref", \_ acc s _ exprList -> eqref acc s exprList )
-        , ( "underline", \g acc s attr exprList -> underline g acc s attr exprList )
-        , ( "u", \g acc s attr exprList -> underline g acc s attr exprList )
-        , ( "hide", \_ _ _ _ _ -> Element.none )
-        , ( "author", \_ _ _ _ _ -> Element.none )
-        , ( "date", \_ _ _ _ _ -> Element.none )
-        , ( "today", \_ _ _ _ _ -> Element.none )
-        , ( "comment", \g acc s attr exprList -> blue g acc s attr exprList )
-        , ( "lambda", \_ _ _ _ _ -> Element.none )
         , ( "hrule"
           , \_ _ s _ _ ->
                 Element.column
@@ -212,38 +182,14 @@ markupDict =
 
         -- LATEX
         , ( "title", \g acc s attr exprList -> title g acc s attr exprList )
-        , ( "setcounter", \_ _ _ _ _ -> Element.none )
-
-        -- COLOR
-        , ( "red", \g acc s attr exprList -> red g acc s attr exprList )
-        , ( "blue", \g acc s attr exprList -> blue g acc s attr exprList )
-        , ( "green", \g acc s attr exprList -> green g acc s attr exprList )
-        , ( "pink", \g acc s attr exprList -> pink g acc s attr exprList )
-        , ( "magenta", \g acc s attr exprList -> magenta g acc s attr exprList )
-        , ( "violet", \g acc s attr exprList -> violet g acc s attr exprList )
-        , ( "highlight", \g acc s attr exprList -> highlight g acc s attr exprList )
-        , ( "gray", \g acc s attr exprList -> gray g acc s attr exprList )
         , ( "errorHighlight", \g acc s attr exprList -> errorHighlight g acc s attr exprList )
 
         --
         --, ( "skip", \_ _ _ exprList -> skip exprList )
         , ( "link", \_ _ s _ exprList -> link s exprList )
         , ( "href", \_ _ _ _ exprList -> href exprList )
-        , ( "ilink", \_ _ s attr exprList -> ilink s attr exprList )
-        , ( "ulink", \_ _ s attr exprList -> ulink s attr exprList )
-        , ( "newPost", \_ _ s attr exprList -> newPost s attr exprList )
-        , ( "cslink", \_ _ s attr exprList -> cslink s attr exprList )
         , ( "abstract", \g acc s attr exprList -> abstract g acc s attr exprList )
         , ( "large", \g acc s attr exprList -> large g acc s attr exprList )
-        , ( "mdash", \_ _ _ _ _ -> Element.el [] (Element.text "—") )
-        , ( "ndash", \_ _ _ _ _ -> Element.el [] (Element.text "–") )
-        , ( "box", \_ _ _ _ _ -> Element.el [ Font.size 20 ] (Element.text (Utility.unicodeFromHex 0x2610)) )
-        , ( "cbox", \_ _ _ _ _ -> Element.el [ Font.size 20 ] (Element.text (Utility.unicodeFromHex 0x2611)) )
-        , ( "rbox", \_ _ _ _ _ -> Element.el [ Font.size 20, Font.color (Element.rgb 0.7 0 0) ] (Element.text (Utility.unicodeFromHex 0x2610)) )
-        , ( "crbox", \_ _ _ _ _ -> Element.el [ Font.size 20, Font.color (Element.rgb 0.7 0 0) ] (Element.text (Utility.unicodeFromHex 0x2611)) )
-        , ( "fbox", \_ _ _ _ _ -> Element.el [ Font.size 24 ] (Element.text (Utility.unicodeFromHex 0x25A0)) )
-        , ( "frbox", \_ _ _ _ _ -> Element.el [ Font.size 24, Font.color (Element.rgb 0.7 0 0) ] (Element.text (Utility.unicodeFromHex 0x25A0)) )
-        , ( "label", \_ _ _ _ _ -> Element.none )
         , ( "cite", \_ acc _ attr exprList -> cite acc attr exprList )
         , ( "table", \g acc s attr exprList -> table g acc s attr exprList )
         , ( "image", \_ _ s attr exprList -> Render.Graphics.image s attr exprList )
@@ -268,14 +214,6 @@ markupDict =
         , ( "dollarSign", \_ _ _ _ _ -> Element.el [] (Element.text "$") )
         , ( "dollar", \_ _ _ _ _ -> Element.el [] (Element.text "$") )
         , ( "brackets", \g acc s attr exprList -> brackets g acc s attr exprList )
-        , ( "rb", \_ _ _ _ _ -> rightBracket )
-        , ( "lb", \_ _ _ _ _ -> leftBracket )
-        , ( "bt", \_ _ _ _ _ -> backTick )
-        , ( "ds", \_ _ _ _ _ -> Element.el [] (Element.text "$") )
-
-        --, ( "bs", \g acc s attr  exprList -> Element.paragraph [] (Element.text "\\" :: List.map (render g acc s) exprList) )
-        -- , ( "texarg", \g acc s attr  exprList -> Element.paragraph [] ((Element.text "{" :: List.map (render g acc s) exprList) ++ [ Element.text " }" ]) )
-        , ( "backTick", \_ _ _ _ _ -> Element.el [] (Element.text "`") )
         ]
 
 
@@ -301,22 +239,6 @@ abstract g acc s attr exprList =
 large : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
 large g acc s attr exprList =
     simpleElement [ Font.size 18 ] g acc s attr exprList
-
-
-subheading : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-subheading g acc s attr exprList =
-    Element.column []
-        [ Element.el [ Element.paddingEach { top = 8, bottom = 0, left = 0, right = 0 } ]
-            (Element.paragraph [ Font.size 18 ] (List.map (render g acc s attr) exprList))
-        ]
-
-
-smallsubheading : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
-smallsubheading g acc s attr exprList =
-    Element.column []
-        [ Element.el [ Element.paddingEach { top = 8, bottom = 0, left = 0, right = 0 } ]
-            (Element.paragraph [ Font.size 16, Font.italic ] (List.map (render g acc s attr) exprList))
-        ]
 
 
 link : RenderSettings -> List Expression -> Element MarkupMsg
@@ -376,140 +298,6 @@ href exprList =
         { url = url
         , label = el [ Font.color linkColor ] (Element.text label)
         }
-
-
-{-|
-
-    An ilink element ("internal link") links to another scripta document.
-
-    Usage: [ilink LINK TEXT USERNAME:SLUG]
-
-    Example: [ilink Read more about it here. jxxcarlson:smart-folders]
-
--}
-ilink settings attr exprList =
-    case List.head <| ASTTools.exprListToStringList exprList of
-        Nothing ->
-            errorText_ "Please provide label and url"
-
-        Just argString ->
-            let
-                args =
-                    String.words argString
-
-                n =
-                    List.length args
-
-                fullSlug =
-                    List.Extra.last args |> Maybe.withDefault "((nothing))"
-
-                -- Parse the slug and fragment (e.g., "jxxcarlson:test-anchor#888111")
-                ( slug, maybeFragment ) =
-                    case String.split "#" fullSlug of
-                        [ s, f ] ->
-                            ( s, Just f )
-
-                        [ s ] ->
-                            ( s, Nothing )
-
-                        _ ->
-                            ( fullSlug, Nothing )
-
-                label =
-                    List.take (n - 1) args |> String.join " "
-
-                -- Choose the appropriate message based on whether we have a fragment
-                message =
-                    case maybeFragment of
-                        Just fragmentId ->
-                            -- For now, if there's a fragment, we'll try to select/highlight it
-                            -- This works for internal links within the same document
-                            -- For cross-document links, send the full slug with fragment
-                            if String.isEmpty slug || slug == "current" then
-                                -- Internal link within the same document - use SelectId to highlight and scroll
-                                SelectId fragmentId
-
-                            else
-                                -- Cross-document link - send full slug including fragment
-                                -- The Frontend will parse and handle the fragment after loading
-                                GetDocumentWithSlug ScriptaV2.Msg.MHStandard fullSlug
-
-                        Nothing ->
-                            GetDocumentWithSlug ScriptaV2.Msg.MHStandard slug
-            in
-            Input.button attr
-                { onPress = Just message
-                , label = Element.el [ Element.centerX, Element.centerY, Font.underline, Font.size 14, Font.color settings.linkColor ] (Element.text label)
-                }
-
-
-ulink settings attr exprList =
-    case List.head <| ASTTools.exprListToStringList exprList of
-        Nothing ->
-            errorText_ "Please provide label and url"
-
-        Just argString ->
-            let
-                args =
-                    String.words argString
-
-                n =
-                    List.length args
-
-                label =
-                    List.take (n - 1) args |> String.join " "
-
-                fragment =
-                    List.drop (n - 1) args |> String.join " "
-
-                username =
-                    String.split ":" fragment |> List.head |> Maybe.withDefault "---"
-            in
-            Input.button attr
-                { onPress = Just (GetPublicDocumentFromAuthor ScriptaV2.Msg.MHStandard username fragment)
-                , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text label)
-                }
-
-
-newPost settings attr exprList =
-    case List.head <| ASTTools.exprListToStringList exprList of
-        Nothing ->
-            errorText_ "Please provide post title"
-
-        Just _ ->
-            Input.button attr
-                { -- onPress = Just (NewPost (String.join " " args))
-                  onPress = Just (NewPost "Add new post")
-                , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text "title")
-                }
-
-
-cslink settings attr exprList =
-    case List.head <| ASTTools.exprListToStringList exprList of
-        Nothing ->
-            errorText_ "Please: id or slug"
-
-        Just argString ->
-            let
-                args =
-                    String.words argString
-
-                n =
-                    List.length args
-
-                label =
-                    List.take (n - 1) args |> String.join " "
-
-                fragment =
-                    List.drop (n - 1) args |> String.join " "
-
-                username =
-                    String.split ":" fragment |> List.head |> Maybe.withDefault "---"
-            in
-            Input.button attr
-                { onPress = Just (GetPublicDocumentFromAuthor ScriptaV2.Msg.MHAsCheatSheet username fragment)
-                , label = Element.el [ Element.centerX, Element.centerY, Font.size 14, Font.color settings.linkColor ] (Element.text label)
-                }
 
 
 bibitem : List Expression -> Element MarkupMsg
@@ -605,164 +393,12 @@ strong g acc s attr exprList =
     simpleElement [ Font.bold ] g acc s attr exprList
 
 
-renderComputation :
-    Int
-    -> List Expression
-    -> Element MarkupMsg
-renderComputation g exprList =
-    let
-        inputText : String
-        inputText =
-            ASTTools.exprListToStringList exprList |> String.join " "
-
-        -- TODO: fix id
-    in
-    Render.Math.evalMath g { id = "foo" } inputText
-
-
-renderDataTools : RenderSettings -> List Expression -> Element MarkupMsg
-renderDataTools s exprList =
-    let
-        args =
-            ASTTools.exprListToStringList exprList
-                |> String.join " "
-                |> String.split " "
-                |> List.map (\item -> String.trim item)
-    in
-    renderDTValue (eval s.data args)
-
-
-eval : Dict String String -> List String -> DTValue
-eval dict args_ =
-    case List.Extra.uncons args_ of
-        Nothing ->
-            DTError "No data source given"
-
-        Just ( src, args ) ->
-            --if String.left 7 src == "source:" then
-            --    evalAuxDT dict (String.dropLeft 7 src) args
-            evalAuxDT dict src args
-
-
-renderDTValue : DTValue -> Element msg
-renderDTValue dtValue =
-    case dtValue of
-        DTStringList strList ->
-            Element.column [ Element.spacing 8 ] (List.map (\str -> Element.text str) strList)
-
-        DTInt int ->
-            Element.text <| String.fromInt int
-
-        DTError str ->
-            Element.el [ Font.color (Element.rgb 0.8 0 0) ] (Element.text <| "Error: " ++ str)
-
-
-evalAuxDT : Dict String String -> String -> List String -> DTValue
-evalAuxDT dict src args =
-    case Dict.get src dict of
-        Nothing ->
-            DTError ("No data source named '" ++ src ++ "'")
-
-        Just data ->
-            case args of
-                [] ->
-                    DTError "No arguments given"
-
-                [ "rows" ] ->
-                    List.length (String.lines data) |> DTInt
-
-                [ "columns" ] ->
-                    data
-                        |> String.lines
-                        |> List.map (String.split ",")
-                        |> List.filter (\row -> row /= [ "" ])
-                        |> List.Extra.transpose
-                        |> List.length
-                        |> DTInt
-
-                [ "lines", from_, to_ ] ->
-                    data
-                        |> String.lines
-                        |> List.take (String.toInt to_ |> Maybe.withDefault 2 |> (\x -> x))
-                        |> List.drop (String.toInt from_ |> Maybe.withDefault 1 |> (\x -> x - 1))
-                        |> DTStringList
-
-                [ "header" ] ->
-                    data
-                        |> String.lines
-                        |> List.head
-                        |> Maybe.withDefault ""
-                        |> String.split ","
-                        |> List.indexedMap (\i str -> String.fromInt (i + 1) ++ ": " ++ str)
-                        |> DTStringList
-
-                _ ->
-                    DTError "Invalid arguments given"
-
-
-type DTValue
-    = DTStringList (List String)
-    | DTInt Int
-    | DTError String
-
-
-renderButton attr exprList =
-    let
-        arguments : List String
-        arguments =
-            ASTTools.exprListToStringList exprList
-                |> String.join " "
-                |> String.split ","
-                |> List.map (\item -> String.trim item)
-                |> List.filter (\item -> item /= "")
-    in
-    case arguments of
-        [ labelText, rawMsg ] ->
-            case Dict.get rawMsg msgDict of
-                Nothing ->
-                    Input.button attr { onPress = Just MMNoOp, label = Element.text "Nothing (1)" }
-
-                Just msg ->
-                    Input.button
-                        ([ Font.size 14
-                         , Font.color (Element.rgb 1 1 1)
-                         , Element.padding 8
-                         , Background.color (Element.rgb 0.1 0.1 0.9)
-                         ]
-                            ++ attr
-                        )
-                        { onPress = Just msg, label = Element.text labelText }
-
-        _ ->
-            Input.button [] { onPress = Just MMNoOp, label = Element.text "Nothing (2)" }
-
-
-msgDict : Dict String MarkupMsg
-msgDict =
-    Dict.fromList
-        [ ( "CopyDocument", RequestCopyOfDocument )
-        , ( "ToggleIndex", RequestToggleIndexSize )
-        ]
-
-
 var g acc s attr exprList =
     simpleElement [] g acc s attr exprList
 
 
 brackets g acc s attr exprList =
     Element.paragraph [ Element.spacing 8 ] [ Element.text "[", simpleElement [] g acc s attr exprList, Element.text " ]" ]
-
-
-rightBracket =
-    Element.text "]"
-
-
-leftBracket =
-    Element.text "["
-
-
-backTick =
-    Element.text "`"
 
 
 italic : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> Element MarkupMsg
@@ -819,14 +455,6 @@ mark1 g acc s attr exprList =
             Element.text "Parse error in element mark?"
 
 
-qed =
-    Element.el [ Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] (Element.text "Q.E.D.")
-
-
-boldItalic g acc s attr exprList =
-    simpleElement [ Font.italic, Font.bold, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g acc s attr exprList
-
-
 title g acc s attr exprList =
     simpleElement [ Font.size Constants.titleFontSize, Element.paddingEach { left = 0, right = 2, top = 0, bottom = 0 } ] g acc s attr exprList
 
@@ -870,171 +498,7 @@ emph g acc s attr exprList =
 
 
 -- COLOR FUNCTIONS
-
-
-gray g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb 0.5 0.5 0.5) ] g acc s attr exprList
-
-
-red g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 200 0 0) ] g acc s attr exprList
-
-
-blue g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 0 0 200) ] g acc s attr exprList
-
-
-green g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 0 140 0) ] g acc s attr exprList
-
-
-magenta g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 255 51 192) ] g acc s attr exprList
-
-
-pink g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 255 100 100) ] g acc s attr exprList
-
-
-violet g acc s attr exprList =
-    simpleElement [ Font.color (Element.rgb255 150 100 255) ] g acc s attr exprList
-
-
-highlight g acc s attr exprList_ =
-    let
-        colorName =
-            ASTTools.filterExpressionsOnName "color" exprList_
-                |> List.head
-                |> Maybe.andThen ASTTools.getText
-                |> Maybe.withDefault "yellow"
-                |> String.trim
-
-        exprList =
-            ASTTools.filterOutExpressionsOnName "color" exprList_
-
-        colorElement =
-            Dict.get colorName colorDict |> Maybe.withDefault (Element.rgb255 255 255 0)
-    in
-    simpleElement [ Background.color colorElement, Element.paddingXY 6 3 ] g acc s attr exprList
-
-
-colorDict : Dict String Element.Color
-colorDict =
-    Dict.fromList
-        [ ( "yellow", Element.rgb255 255 255 0 )
-        , ( "blue", Element.rgb255 180 180 255 )
-        ]
-
-
-ref acc settings exprList =
-    let
-        key =
-            -- TODO: review the change below. Is it really OK to not squeeze the hyphens?
-            --List.map ASTTools.getText exprList  |> Maybe.Extra.values |> String.join "" |> String.trim |> String.replace "-" ""
-            List.map ASTTools.getText exprList |> Maybe.Extra.values |> String.join "" |> String.trim
-
-        ref_ =
-            Dict.get key acc.reference
-
-        val =
-            ref_ |> Maybe.map .numRef |> Maybe.withDefault (key |> String.replace "-" " " |> String.Extra.toTitleCase)
-
-        id =
-            ref_ |> Maybe.map .id |> Maybe.withDefault "no-id"
-    in
-    Element.link
-        [ Font.color settings.linkColor
-        , Font.semiBold
-        , Events.onClick (SelectId id)
-        ]
-        { url = Utility.internalLink id
-        , label = Element.paragraph [] [ Element.text val ]
-        }
-
-
-{-|
-
-    \reflink{LINK_TEXT LABEL}
-
--}
-reflink : RenderSettings -> Accumulator -> List Expression -> Element MarkupMsg
-reflink settings acc exprList =
-    let
-        argString =
-            List.map ASTTools.getText exprList |> Maybe.Extra.values |> String.join " "
-
-        args =
-            String.words argString
-
-        n =
-            List.length args
-
-        key =
-            List.drop (n - 1) args |> String.join ""
-
-        label =
-            List.take (n - 1) args |> String.join " "
-
-        ref_ =
-            Dict.get key acc.reference
-
-        id =
-            ref_ |> Maybe.map .id |> Maybe.withDefault ""
-    in
-    Element.link
-        [ Font.color settings.linkColor
-        , Font.semiBold
-        , Events.onClick (SelectId id)
-        ]
-        { url = Utility.internalLink id
-        , label = Element.paragraph [] [ Element.text label ]
-        }
-
-
-eqref : Accumulator -> RenderSettings -> List Expression -> Element MarkupMsg
-eqref acc settings exprList =
-    let
-        key =
-            List.map ASTTools.getText exprList
-                |> Maybe.Extra.values
-                |> String.join ""
-                |> String.trim
-                |> String.replace "label:" ""
-
-        ref_ =
-            Dict.get key acc.reference
-
-        val =
-            ref_ |> Maybe.map .numRef |> Maybe.withDefault ""
-
-        id =
-            ref_ |> Maybe.map .id |> Maybe.withDefault ""
-    in
-    Element.link
-        [ Font.color settings.linkColor
-        , Events.onClick (SelectId id)
-
-        --, Events.onClick (HighlightId id)
-        ]
-        { url = Utility.internalLink id
-        , label = Element.paragraph [] [ Element.text ("(" ++ val ++ ")") ]
-        }
-
-
-
 -- FONT STYLE FUNCTIONS
-
-
-strike g acc s attr exprList =
-    simpleElement [ Font.strike ] g acc s attr exprList
-
-
-underscore =
-    Element.el [] (Element.text "_")
-
-
-underline g acc s attr exprList =
-    simpleElement [ Font.underline ] g acc s attr exprList
 
 
 errorHighlight g acc s attr exprList =

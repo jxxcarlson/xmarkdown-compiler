@@ -4,9 +4,7 @@ import Dict exposing (Dict)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Font as Font
-import Element.Input
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock, Heading(..))
 import Html exposing (Html, text)
@@ -18,7 +16,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Theme
 import Render.Utility
-import ScriptaV2.Msg exposing (MarkupMsg(..))
+import ScriptaV2.Msg exposing (MarkupMsg)
 import SyntaxHighlight exposing (toBlockHtml)
 
 
@@ -72,7 +70,6 @@ verbatimDict =
         , ( "settings", Render.Helper.renderNothing )
 
         -- , ( "tabular", Render.Tabular.render )
-        , ( "load", renderLoad )
         , ( "load-data", Render.Helper.renderNothing )
         , ( "hide", Render.Helper.renderNothing )
         , ( "texComment", Render.Helper.renderNothing )
@@ -84,31 +81,6 @@ verbatimDict =
         , ( "include", Render.Helper.renderNothing )
         , ( "setup", Render.Helper.renderNothing )
         ]
-
-
-renderLoad : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-renderLoad _ _ _ _ block =
-    case block.body of
-        Left url ->
-            let
-                tag =
-                    block.args |> List.head |> Maybe.withDefault "default"
-            in
-            Element.Input.button []
-                { onPress = Just (LoadFile tag url)
-                , label =
-                    Element.el
-                        [ Border.rounded 12
-                        , Element.mouseDown [ Background.color (Element.rgb 0.4 0.2 0.9) ]
-                        , Background.color (Element.rgb 0 0 0.7)
-                        , Font.color (Element.rgb 1 1 1)
-                        , Element.padding 12
-                        ]
-                        (Element.text ("load " ++ url ++ " into " ++ tag))
-                }
-
-        Right _ ->
-            Element.none
 
 
 renderCode : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg

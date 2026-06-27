@@ -5,7 +5,6 @@ module Render.Utility exposing
     , internalLink
     , leftPadding
     , makeId
-    , unicodeFromHex
     , vspace
     )
 
@@ -14,10 +13,6 @@ import Element exposing (paddingEach)
 import Generic.ASTTools
 import Generic.Language
 import Html.Attributes
-
-
-unicodeFromHex hex =
-    String.fromChar (Char.fromCode hex)
 
 
 leftPadding p =

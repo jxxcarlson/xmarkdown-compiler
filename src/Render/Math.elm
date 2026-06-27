@@ -5,7 +5,6 @@ module Render.Math exposing
     , chem
     , displayedMath
     , equation
-    , evalMath
     , mathText
     , textarray
     )
@@ -369,31 +368,6 @@ mathText_ theme displayMode content =
         [ HA.property "display" (Json.Encode.bool (isDisplayMathMode displayMode))
         , HA.property "content" (Json.Encode.string content)
         , HA.attribute "theme" theme
-        ]
-        []
-
-
-evalMath :
-    Int
-    -> { a | id : String }
-    -> String
-    -> Element msg
-evalMath generation gogo content =
-    -- TODO Track this down at the source.
-    Html.Keyed.node "span"
-        [ HA.style "padding-top" "0px"
-        , HA.style "padding-bottom" "0px"
-        , HA.id gogo.id
-        ]
-        [ ( String.fromInt generation, evalMath_ content )
-        ]
-        |> Element.html
-
-
-evalMath_ : String -> Html msg
-evalMath_ content =
-    Html.node "mathjs-compute"
-        [ HA.property "content" (Json.Encode.string content)
         ]
         []
 
