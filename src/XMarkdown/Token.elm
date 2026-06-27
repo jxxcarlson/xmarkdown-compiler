@@ -14,7 +14,7 @@ import List.Extra
 import Parser.Advanced as Parser exposing (DeadEnd, Parser)
 import Tools.Loop exposing (Step(..), loop)
 import XMarkdown.Meta exposing (Meta)
-import XMarkdown.ParserTools as PT exposing (Context, Problem)
+import XMarkdown.ParserTools as PT exposing (Problem)
 
 
 fakeDebugLog =
@@ -38,7 +38,7 @@ type Token
     | W String Meta
     | MathToken Meta
     | CodeToken Meta
-    | TokenError (List (DeadEnd Context Problem)) Meta
+    | TokenError (List (DeadEnd () Problem)) Meta
 
 
 setIndex : Int -> Token -> Token
@@ -355,7 +355,7 @@ init str =
 
 
 type alias TokenParser =
-    Parser Context Problem Token
+    Parser () Problem Token
 
 
 run : String -> List Token

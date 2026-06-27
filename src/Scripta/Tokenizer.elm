@@ -12,7 +12,7 @@ module Scripta.Tokenizer exposing
 
 import Parser.Advanced as Parser exposing (DeadEnd, Parser)
 import Tools.ParserHelpers exposing (Step(..), loop)
-import Tools.ParserTools as PT exposing (Context, Problem)
+import Tools.ParserTools as PT exposing (Problem)
 
 
 
@@ -28,7 +28,7 @@ type Token_ meta
     | W String meta
     | MathToken meta
     | CodeToken meta
-    | TokenError (List (DeadEnd Context Problem)) meta
+    | TokenError (List (DeadEnd () Problem)) meta
 
 
 type alias Token =
@@ -290,7 +290,7 @@ init str =
 
 
 type alias TokenParser =
-    Parser Context Problem Token
+    Parser () Problem Token
 
 
 run : String -> List Token

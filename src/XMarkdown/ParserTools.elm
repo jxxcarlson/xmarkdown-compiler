@@ -1,6 +1,5 @@
 module XMarkdown.ParserTools exposing
-    ( Context
-    , Problem(..)
+    ( Problem(..)
     , StringData
     , text
     )
@@ -15,12 +14,8 @@ type Problem
     | ExpectingATStart
 
 
-type Context
-    = TextExpression
-
-
 type alias Parser a =
-    Parser.Parser Context Problem a
+    Parser.Parser () Problem a
 
 
 type alias StringData =
