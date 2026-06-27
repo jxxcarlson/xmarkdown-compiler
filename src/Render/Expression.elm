@@ -8,7 +8,6 @@ import Element.Background as Background
 import Element.Border
 import Element.Events as Events
 import Element.Font as Font
-import Element.Input as Input
 import Generic.ASTTools as ASTTools
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expr(..), Expression)
@@ -165,7 +164,6 @@ markupDict =
         -- STYLE
         , ( "compute", \g _ _ _ exprList -> renderComputation g exprList )
         , ( "data", \_ _ s _ exprList -> renderDataTools s exprList )
-        , ( "button", \_ _ _ attr exprList -> renderButton attr exprList )
         , ( "strong", \g acc s attr exprList -> strong g acc s attr exprList )
         , ( "bold", \g acc s attr exprList -> strong g acc s attr exprList )
         , ( "textbf", \g acc s attr exprList -> strong g acc s attr exprList )
@@ -566,45 +564,6 @@ type DTValue
     = DTStringList (List String)
     | DTInt Int
     | DTError String
-
-
-renderButton attr exprList =
-    let
-        arguments : List String
-        arguments =
-            ASTTools.exprListToStringList exprList
-                |> String.join " "
-                |> String.split ","
-                |> List.map (\item -> String.trim item)
-                |> List.filter (\item -> item /= "")
-    in
-    case arguments of
-        [ labelText, rawMsg ] ->
-            case Dict.get rawMsg msgDict of
-                Nothing ->
-                    Input.button attr { onPress = Just MMNoOp, label = Element.text "Nothing (1)" }
-
-                Just msg ->
-                    Input.button
-                        ([ Font.size 14
-                         , Font.color (Element.rgb 1 1 1)
-                         , Element.padding 8
-                         , Background.color (Element.rgb 0.1 0.1 0.9)
-                         ]
-                            ++ attr
-                        )
-                        { onPress = Just msg, label = Element.text labelText }
-
-        _ ->
-            Input.button [] { onPress = Just MMNoOp, label = Element.text "Nothing (2)" }
-
-
-msgDict : Dict String MarkupMsg
-msgDict =
-    Dict.fromList
-        [ ( "CopyDocument", MMNoOp )
-        , ( "ToggleIndex", MMNoOp )
-        ]
 
 
 var g acc s attr exprList =
