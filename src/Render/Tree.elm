@@ -12,9 +12,8 @@ import Element.Background
 import Element.Border
 import Element.Font
 import Generic.Acc exposing (Accumulator)
-import Generic.Language exposing (ExpressionBlock, Heading(..))
+import Generic.Language exposing (ExpressionBlock)
 import Render.Attributes
-import Render.BlockType exposing (BlockType(..), ContainerBlockType(..))
 import Render.Settings exposing (RenderSettings)
 import Render.Theme
 import Render.TreeSupport
@@ -130,7 +129,7 @@ renderLeafNode :
     -> ExpressionBlock
     -> Element MarkupMsg
 renderLeafNode params settings accumulator root =
-    Element.column (Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root settings ++ Render.Settings.unrollTheme params.theme)
+    Element.column (Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root ++ Render.Settings.unrollTheme params.theme)
         (Render.TreeSupport.renderBody params settings accumulator root)
 
 
@@ -144,34 +143,7 @@ renderBranchNode :
     -> List (Tree ExpressionBlock)
     -> Element MarkupMsg
 renderBranchNode params settings accumulator root children =
-    case getBlockType root of
-        ContainerBlock Box ->
-            renderBoxBranch params settings accumulator root children
-
-        _ ->
-            renderStandardBranch params settings accumulator root children
-
-
-{-| Render a branch node that is a box
--}
-renderBoxBranch :
-    ScriptaV2.Types.CompilerParameters
-    -> RenderSettings
-    -> Accumulator
-    -> ExpressionBlock
-    -> List (Tree ExpressionBlock)
-    -> Element MarkupMsg
-renderBoxBranch params settings accumulator root children =
-    let
-        settings_ =
-            { settings | width = settings.width - 100, backgroundColor = Render.Settings.getThemedElementColor .offsetBackground params.theme }
-    in
-    Element.column [ Element.paddingEach { left = 18, right = 18, top = 0, bottom = 0 } ]
-        [ Element.column (Render.TreeSupport.renderAttributes settings_ root ++ getBlockAttributes root settings)
-            (Render.TreeSupport.renderBody params settings_ accumulator root
-                ++ List.map (renderTree_ params settings_ accumulator) children
-            )
-        ]
+    renderStandardBranch params settings accumulator root children
 
 
 {-|
@@ -191,26 +163,14 @@ renderStandardBranch :
     -> List (Tree ExpressionBlock)
     -> Element MarkupMsg
 renderStandardBranch params settings accumulator root children =
-    Element.column (Element.spacing 12 :: getBlockAttributes root settings)
+    Element.column (Element.spacing 12 :: getBlockAttributes root)
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )
 
 
-{-| Get the BlockType for a block
--}
-getBlockType : ExpressionBlock -> BlockType
-getBlockType block =
-    case block.heading of
-        Ordinary name ->
-            Render.BlockType.fromString name
-
-        _ ->
-            MiscBlock ""
-
-
 {-| Get attributes for a block using the consolidated Attributes module
 -}
-getBlockAttributes : ExpressionBlock -> RenderSettings -> List (Element.Attribute MarkupMsg)
-getBlockAttributes block settings =
-    Render.Attributes.getBlockAttributes block settings
+getBlockAttributes : ExpressionBlock -> List (Element.Attribute MarkupMsg)
+getBlockAttributes block =
+    Render.Attributes.getBlockAttributes block

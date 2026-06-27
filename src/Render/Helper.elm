@@ -1,16 +1,12 @@
 module Render.Helper exposing
     ( blockAttributes
     , blockLabel
-    , features
-    , fontColor
-    , getLabel
     , htmlId
     , leftPadding
     , noSuchVerbatimBlock
     , noteFromPropertyKey
     , renderNothing
     , renderWithDefault
-    , renderWithDefaultNarrow
     , selectedColor
     , showError
     , topPaddingForIndentedElements
@@ -23,89 +19,11 @@ import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expression, ExpressionBlock)
 import Html.Attributes
-import Render.Constants
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import ScriptaV2.Msg exposing (MarkupMsg)
-
-
-features settings block =
-    let
-        indentation =
-            -- If the argument list is empty, use the default width from settings,
-            -- otherwise try to parse the first argument as an integer for the width.
-            case List.head block.args of
-                Nothing ->
-                    Render.Constants.defaultIndentWidth
-
-                Just str ->
-                    case String.toInt str of
-                        Just w ->
-                            w
-
-                        Nothing ->
-                            Render.Constants.defaultIndentWidth
-
-        italicStyle : Element.Attribute msg
-        italicStyle =
-            case Dict.get "style" block.properties of
-                Just "italic" ->
-                    Font.italic
-
-                _ ->
-                    Font.unitalicized
-
-        colorValue =
-            case Dict.get "color" block.properties of
-                Just "red" ->
-                    Element.rgb 0.8 0 0
-
-                Just "blue" ->
-                    Element.rgb 0 0 0.8
-
-                Just "gray" ->
-                    Element.rgb 0.5 0.5 0.5
-
-                _ ->
-                    Element.rgb 0 0 0
-
-        bodyWidth =
-            settings.width - indentation
-
-        titleElement =
-            case Dict.get "title" block.properties of
-                Just title_ ->
-                    Element.el
-                        [ Element.paddingEach { left = indentation, right = 0, top = 0, bottom = 4 }
-                        , Font.color colorValue
-                        , Font.semiBold
-                        ]
-                        (Element.text title_)
-
-                Nothing ->
-                    Element.none
-
-        authorElement =
-            case Dict.get "author" block.properties of
-                Just author_ ->
-                    Element.el
-                        [ Element.paddingEach { left = 0, right = 0, top = 0, bottom = 4 }
-                        , Font.color colorValue
-                        ]
-                        (Element.text <| "(" ++ author_ ++ ")")
-
-                Nothing ->
-                    Element.none
-    in
-    { titleElement = titleElement
-    , bodyWidth = bodyWidth
-    , indentation = indentation
-    , italicStyle = italicStyle
-    , colorValue = colorValue
-    , authorElement = authorElement
-    }
 
 
 
@@ -149,22 +67,6 @@ blockAttributes settings block attrs =
     ]
         ++ Render.Sync.attributes settings block
         ++ attrs
-
-
-fontColor selectedId selectedSlug docId =
-    if selectedId == docId then
-        Font.color (Element.rgb 0.8 0 0)
-
-    else if selectedSlug == Just docId then
-        Font.color (Element.rgb 0.8 0 0)
-
-    else
-        Font.color (Element.rgb 0 0 0.9)
-
-
-getLabel : Dict String String -> String
-getLabel dict =
-    Dict.get "label" dict |> Maybe.withDefault ""
 
 
 selectedColor id settings =
@@ -217,12 +119,3 @@ renderWithDefault default count acc settings attr exprs =
 
     else
         List.map (Render.Expression.render count acc settings attr) exprs
-
-
-renderWithDefaultNarrow : String -> Int -> Generic.Acc.Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> List (Element MarkupMsg)
-renderWithDefaultNarrow default count acc settings attr exprs =
-    if List.isEmpty exprs then
-        [ Element.el [ Font.color settings.redColor, Font.size 14 ] (Element.text default) ]
-
-    else
-        List.map (Render.Expression.render count acc { settings | paragraphSpacing = 0 } attr) exprs

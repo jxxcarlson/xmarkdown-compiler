@@ -23,5 +23,4 @@ numberedBlockNames =
     , "quiver"
     , "image"
     , "iframe"
-    , "chart"
     ]

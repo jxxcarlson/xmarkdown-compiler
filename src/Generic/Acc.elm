@@ -2,7 +2,6 @@ module Generic.Acc exposing
     ( Accumulator
     , InListState
     , InitialAccumulatorData
-    , TermLoc
     , initialData
     , transformAccumulate
     )
@@ -16,12 +15,10 @@ module Generic.Acc exposing
             - numbering sections, theorems, figures, etc.
             - creating
                - a dictionary of references
-               - a dictionary of terms
                - a dictionary of footnotes
                - a dictionary of math macros
                - a dictionary of text macros
                - a dictionary of key-value pairs
-               - a dictionary of questions and answers
 
 
      The main function is transformAccumulate, which has the signature
@@ -80,14 +77,11 @@ type alias Accumulator =
     , numberedBlockNames : List String
     , inListState : InListState
     , reference : Dict String { id : String, numRef : String }
-    , terms : Dict String TermLoc
     , footnotes : Dict String TermLoc2
     , footnoteNumbers : Dict String Int
     , mathMacroDict : ETeX.MathMacros.MathMacroDict
     , textMacroDict : Dict String Macro
     , keyValueDict : Dict String String
-    , qAndAList : List ( String, String )
-    , qAndADict : Dict String String
     }
 
 
@@ -120,14 +114,11 @@ init data =
     , numberedItemDict = Dict.empty
     , numberedBlockNames = Generic.Settings.numberedBlockNames
     , reference = Dict.empty
-    , terms = Dict.empty
     , footnotes = Dict.empty
     , footnoteNumbers = Dict.empty
     , mathMacroDict = Dict.empty
     , textMacroDict = Dict.empty
     , keyValueDict = Dict.empty
-    , qAndAList = []
-    , qAndADict = Dict.empty
     }
         |> updateWithMathMacros data.mathMacros
 
@@ -235,55 +226,8 @@ transformBlock acc block =
                         |> Dict.insert "tag" (block.firstLine |> Tools.String.makeSlug)
             }
 
-        ( Ordinary "chapter", _ ) ->
-            let
-                tag =
-                    case block.body of
-                        Left str ->
-                            Tools.String.makeSlug str
-
-                        Right expr ->
-                            List.map Generic.ASTTools.getText expr |> Maybe.Extra.values |> String.join "-" |> Tools.String.makeSlug
-            in
-            { block
-                | properties =
-                    block.properties
-                        |> Dict.insert "label" (Vector.toString acc.headingIndex)
-                        |> Dict.insert "tag" tag
-                        |> Dict.insert "chapter-number" (getCounterAsString "chapter" acc.counter)
-                        |> Dict.insert "level" "0"
-            }
-
-        ( Ordinary "quiver", _ ) ->
-            { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
-
-        ( Ordinary "chart", _ ) ->
-            { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
-
         ( Ordinary "image", _ ) ->
             { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
-
-        ( Ordinary "iframe", _ ) ->
-            { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
-
-        ( Ordinary "document", _ ) ->
-            let
-                title =
-                    case block.body of
-                        Left str ->
-                            str
-
-                        Right expr ->
-                            List.map Generic.ASTTools.getText expr |> Maybe.Extra.values |> String.join " "
-
-                label =
-                    if List.member (title |> String.toLower) itemsNotNumbered then
-                        ""
-
-                    else
-                        Vector.toString acc.documentIndex
-            in
-            { block | properties = Dict.insert "label" label block.properties }
 
         ( Verbatim "equation", _ ) ->
             let
@@ -376,7 +320,7 @@ reduceName str =
     else if str == "code" then
         "listing"
 
-    else if List.member str [ "quiver", "image", "iframe", "chart", "table", "csvtable", "svg", "tikz", "iframe" ] then
+    else if List.member str [ "quiver", "image", "table", "svg", "tikz" ] then
         "figure"
 
     else
@@ -536,32 +480,6 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
         -- reference : Dict String { id : String, numRef : String }
         Verbatim "settings" ->
             { accumulator | keyValueDict = Dict.union properties accumulator.keyValueDict }
-
-        Ordinary "q" ->
-            { accumulator
-              -- set the qAndAList to  [(id, "??")]
-              -- where id is the id of the question block
-                | qAndAList = [ ( block.meta.id, "??" ) ]
-                , blockCounter = accumulator.blockCounter + 1
-            }
-                |> updateReferenceWithBlock block
-
-        Ordinary "a" ->
-            case List.head accumulator.qAndAList of
-                Just ( idQ, "??" ) ->
-                    -- Assumption: the qAndAList consists of a single pair
-                    -- (qId, "??") where qId is the id of the question block.
-                    -- We now insert (qId, aId), where aId is the id o
-                    -- the answer block now being processed in the qAndADict
-                    -- Then we clear the qAndAList (set it to empty)
-                    { accumulator
-                        | qAndAList = []
-                        , qAndADict = Dict.insert idQ block.meta.id accumulator.qAndADict
-                    }
-                        |> updateReferenceWithBlock block
-
-                _ ->
-                    accumulator
 
         Ordinary "set-key" ->
             case args of
@@ -986,79 +904,23 @@ updateWithParagraph block accumulator =
         | inListState = nextInListState block.heading accumulator.inListState
         , footnotes = footnotes
         , footnoteNumbers = footnoteNumbers
-        , terms = addTermsFromContent block accumulator.terms
     }
-
-
-addTermsFromContent : ExpressionBlock -> Dict String TermLoc -> Dict String TermLoc
-addTermsFromContent block_ dict =
-    let
-        newTerms : List TermData
-        newTerms =
-            getTerms block_.meta.id block_.body
-
-        folder : TermData -> Dict String TermLoc -> Dict String TermLoc
-        folder termData dict_ =
-            addTerm termData dict_
-    in
-    List.foldl folder dict newTerms
 
 
 
 --|> updateReference tag id tag
 
 
-type alias TermLoc =
-    { begin : Int, end : Int, id : String }
-
-
 type alias TermLoc2 =
     { begin : Int, end : Int, id : String, mSourceId : Maybe String }
-
-
-type alias TermData =
-    { term : String, loc : TermLoc }
 
 
 type alias TermData2 =
     { term : String, loc : TermLoc2 }
 
 
-getTerms : String -> Either String (List Expression) -> List TermData
-getTerms id content_ =
-    case content_ of
-        Right expressionList ->
-            Generic.ASTTools.filterExpressionsOnName_ "term" expressionList
-                |> List.map (extract id)
-                |> Maybe.Extra.values
-
-        Left _ ->
-            []
-
-
 
 -- TERMS: [Expression "term" [Text "group" { begin = 19, end = 23, index = 4 }] { begin = 13, end = 13, index = 1 }]
-
-
-extract : String -> Expression -> Maybe TermData
-extract id expr =
-    case expr of
-        Fun "term" [ Text name { begin, end } ] _ ->
-            Just { term = name, loc = { begin = begin, end = end, id = id } }
-
-        Fun "term_" [ Text name { begin, end } ] _ ->
-            Just { term = name, loc = { begin = begin, end = end, id = id } }
-
-        _ ->
-            Nothing
-
-
-addTerm : TermData -> Dict String TermLoc -> Dict String TermLoc
-addTerm termData dict =
-    Dict.insert termData.term termData.loc dict
-
-
-
 -- FOOTNOTES
 
 

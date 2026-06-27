@@ -8,45 +8,31 @@ module Render.OrdinaryBlock exposing (getAttributes, render)
 
 import Either exposing (Either(..))
 import Element exposing (Element)
-import Element.Background as Background
-import Element.Font as Font
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (ExpressionBlock, Heading(..))
-import Render.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
-import Render.BlockType exposing (BlockType(..), ContainerBlockType(..), ListBlockType(..))
+import Render.BlockType
 import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
-import Render.Blocks.Interactive as InteractiveBlocks
 import Render.Blocks.Text as TextBlocks
-import Render.Color
-import Render.Footnote
 import Render.Indentation
 import Render.List
 import Render.Settings exposing (RenderSettings)
 import Render.Table
-import Render.Theme
 import ScriptaV2.Msg exposing (MarkupMsg)
 
 
 {-| Get attributes for a specific block type by name
 -}
-getAttributes : Render.Theme.Theme -> String -> List (Element.Attribute MarkupMsg)
-getAttributes theme name =
+getAttributes : String -> List (Element.Attribute MarkupMsg)
+getAttributes name =
     let
         blockType =
             Render.BlockType.fromString name
     in
     case blockType of
-        ContainerBlock Box ->
-            [ Background.color (Render.Color.boxBackground theme) ]
-
         _ ->
-            if List.member name Render.Attributes.italicBlockNames then
-                [ Font.italic ]
-
-            else
-                []
+            []
 
 
 {-| Initialize the registry with all renderers
@@ -57,14 +43,11 @@ initRegistry =
         |> TextBlocks.registerRenderers
         |> ContainerBlocks.registerRenderers
         |> DocumentBlocks.registerRenderers
-        |> InteractiveBlocks.registerRenderers
         |> Render.BlockRegistry.registerBatch
             [ ( "table", Render.Table.render )
             , ( "item", Render.List.item )
             , ( "desc", Render.List.desc )
             , ( "numbered", Render.List.numbered )
-            , ( "index", Render.Footnote.index )
-            , ( "endnotes", Render.Footnote.endnotes )
             ]
 
 
@@ -103,12 +86,6 @@ render count acc settings attr block =
 
                                         newSettings =
                                             case blockType of
-                                                ListBlock Item ->
-                                                    { settings | width = settings.width - 6 * block.indent }
-
-                                                ListBlock Numbered ->
-                                                    { settings | width = settings.width - 6 * block.indent }
-
                                                 _ ->
                                                     settings
                                     in

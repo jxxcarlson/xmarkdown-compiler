@@ -1,23 +1,15 @@
-module Render.Graphics exposing (image, image2, inlineimage, quiver, svg, tikz)
+module Render.Graphics exposing (image, image2)
 
 import Dict exposing (Dict)
 import Either exposing (Either(..))
-import Element exposing (Element, alignLeft, alignRight, centerX, column, el, px, rgb255, spacing)
-import Element.Font as Font
+import Element exposing (Element, alignLeft, alignRight, centerX, column, el, px, spacing)
 import Generic.ASTTools as ASTTools
 import Generic.Acc exposing (Accumulator)
 import Generic.Language exposing (Expression, ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Render.Utility
 import ScriptaV2.Msg exposing (MarkupMsg)
-import SvgParser
 import Tools.Utility as Utility
-
-
-red : Element.Color
-red =
-    rgb255 255 0 0
 
 
 type alias ImageParameters msg =
@@ -56,19 +48,6 @@ image settings attrs body =
         { url = params.url
         , label = inner
         }
-
-
-inlineimage : Render.Settings.RenderSettings -> List Expression -> Element MarkupMsg
-inlineimage settings body =
-    let
-        params =
-            body |> argumentsFromAST |> imageParameters settings
-
-        inner =
-            Element.image [ Element.width params.width, params.placement ]
-                { src = params.url, description = params.description }
-    in
-    inner
 
 
 {-| For \\image and [image ...]
@@ -158,117 +137,6 @@ image2 _ _ settings attrs block =
 getDescription : Dict String String -> String
 getDescription properties =
     Dict.get "description" properties |> Maybe.withDefault ""
-
-
-getVerbatimContent : ExpressionBlock -> String
-getVerbatimContent { body } =
-    case body of
-        Left str ->
-            str
-
-        Right _ ->
-            ""
-
-
-svg : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-svg _ _ settings attrs block =
-    case SvgParser.parse (getVerbatimContent block) of
-        Ok html_ ->
-            Element.column
-                ([ Element.paddingEach { left = 0, right = 0, top = 24, bottom = 0 }
-                 , Element.width (Element.px settings.width)
-                 ]
-                    ++ attrs
-                    ++ Render.Sync.attributes settings block
-                )
-                [ Element.column [ Element.centerX ] [ html_ |> Element.html ]
-                ]
-
-        Err _ ->
-            Element.el [] (Element.text "SVG parse error")
-
-
-{-| Create elements from HTML markup. On parsing error, output no elements.
--}
-tikz : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-tikz _ _ settings attrs block =
-    let
-        maybePair_ =
-            case String.split "---" (getVerbatimContent block) of
-                a :: b :: [] ->
-                    Just ( a, b )
-
-                _ ->
-                    Nothing
-    in
-    case maybePair_ of
-        Nothing ->
-            Element.el [ Font.size 16, Font.color red ] (Element.text "Something is wrong")
-
-        Just ( imageData, _ ) ->
-            let
-                params =
-                    String.words imageData |> imageParameters settings
-            in
-            Element.column
-                ([ Element.spacing 8, Element.width (Element.px settings.width), params.placement, Element.paddingXY 0 18 ]
-                    ++ attrs
-                    ++ Render.Sync.attributes settings block
-                )
-                [ Element.image [ Element.width params.width, params.placement ]
-                    { src = params.url, description = params.description }
-                , Element.el [ params.placement ] params.caption
-                ]
-
-
-quiver : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
-quiver _ _ settings attrs block =
-    let
-        -- arguments: ["width:250","caption:Fig","1"]
-        qArgs : { caption : Maybe String, description : Maybe String, placement : Element.Attribute a, width : Element.Length }
-        qArgs =
-            parameters settings block.properties
-
-        maybePair =
-            case String.split "---" (getVerbatimContent block) of
-                a :: b :: [] ->
-                    Just ( a, b )
-
-                _ ->
-                    Nothing
-    in
-    case maybePair of
-        Nothing ->
-            Element.el [ Font.size 16, Font.color red ] (Element.text "Something is wrong")
-
-        Just ( imageData, _ ) ->
-            let
-                params =
-                    String.words imageData |> imageParameters settings
-
-                desc =
-                    case qArgs.caption of
-                        Just caption ->
-                            caption
-
-                        _ ->
-                            ""
-            in
-            Element.column
-                ([ Element.spacing 8
-                 , Element.width (Element.px settings.width)
-                 ]
-                    ++ attrs
-                    ++ Render.Sync.attributes settings block
-                )
-                [ Element.image [ Element.width qArgs.width, params.placement ]
-                    { src = params.url, description = desc }
-                , Element.el
-                    (Render.Sync.highlighter block.args
-                        [ params.placement, params.placement, Element.paddingXY 12 4, Render.Utility.elementAttribute "id" block.meta.id ]
-                    )
-                    (Element.text desc)
-                ]
 
 
 argumentsFromAST : List Expression -> List String

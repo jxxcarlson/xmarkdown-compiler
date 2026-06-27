@@ -1,6 +1,5 @@
 module Render.Utility exposing
-    ( elementAttribute
-    , getVerbatimContent
+    ( getVerbatimContent
     , idAttribute
     , idAttributeFromInt
     , internalLink
