@@ -126,17 +126,43 @@ const xmarkdownSyntax = StateField.define({
             }
 
             // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
+            // Track full block regions for inline math detection, but only highlight content
             const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
             const blockMatches = [];
             const mathDecorations = [];
             while ((match = mathBlockRegex.exec(doc)) !== null) {
                 console.log("Math block match:", match[0].slice(0, 50), "at", match.index);
+                // Track full block for inline math detection
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
-                mathDecorations.push({
-                    from: match.index,
-                    to: match.index + match[0].length,
-                    decoration: Decoration.mark({ class: "cm-xmd-math" })
-                });
+
+                // Extract content range (skip $$ and surrounding newlines)
+                const fullText = match[0];
+                const isMultiline = fullText.includes('\n');
+                let contentStart = match.index;
+                let contentEnd = match.index + match[0].length;
+
+                if (isMultiline) {
+                    // Skip opening $$ and following newline
+                    contentStart = match.index + 3; // $$ + \n
+                    // Skip trailing newline(s) before closing $$
+                    let endOffset = match[0].length - 2; // remove closing $$
+                    while (endOffset > 2 && (fullText[endOffset - 1] === '\n' || fullText[endOffset - 1] === '\r')) {
+                        endOffset--;
+                    }
+                    contentEnd = match.index + endOffset;
+                } else {
+                    // Single-line: skip the $$ delimiters
+                    contentStart = match.index + 2; // opening $$
+                    contentEnd = match.index + match[0].length - 2; // before closing $$
+                }
+
+                if (contentStart < contentEnd) {
+                    mathDecorations.push({
+                        from: contentStart,
+                        to: contentEnd,
+                        decoration: Decoration.mark({ class: "cm-xmd-math" })
+                    });
+                }
             }
             console.log("Total block matches:", blockMatches.length);
 
