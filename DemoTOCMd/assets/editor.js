@@ -113,28 +113,32 @@ const xmarkdownSyntax = StateField.define({
     },
     update(deco, tr) {
         try {
-            const decorations = [];
+            const allDecorations = [];
             const doc = tr.state.doc.toString();
+
+            // Collect all decorations with position info
+            const decorationList = [];
 
             // Highlight @[...] macros
             const macroRegex = /@\[[^\]]*\]/g;
             let match;
             while ((match = macroRegex.exec(doc)) !== null) {
-                decorations.push(
-                    Decoration.mark({ class: "cm-xmd-macro" }).range(match.index, match.index + match[0].length)
-                );
+                decorationList.push({
+                    from: match.index,
+                    to: match.index + match[0].length,
+                    decoration: Decoration.mark({ class: "cm-xmd-macro" })
+                });
             }
 
             // Highlight $$...$$ math blocks (both single-line and multi-line)
             const blockMatches = [];
-            const mathDecorations = [];
 
             // Multi-line blocks: $$ + newline, content, then (blank line OR closing $$)
             const multilineBlockRegex = /\$\$\n([\s\S]*?)(?:\n\$\$|\n\n)/g;
             while ((match = multilineBlockRegex.exec(doc)) !== null) {
                 console.log("Math block match:", match[0].slice(0, 50), "at", match.index);
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
-                mathDecorations.push({
+                decorationList.push({
                     from: match.index,
                     to: match.index + match[0].length,
                     decoration: Decoration.mark({ class: "cm-xmd-math" })
@@ -154,7 +158,7 @@ const xmarkdownSyntax = StateField.define({
                 if (!/\w/.test(charBefore) && !/\w/.test(charAfter) && charBefore !== '$' && charAfter !== '$') {
                     console.log("Single-line math block:", match[0].slice(0, 50), "at", match.index);
                     blockMatches.push({ start: match.index, end: match.index + match[0].length });
-                    mathDecorations.push({
+                    decorationList.push({
                         from: match.index,
                         to: match.index + match[0].length,
                         decoration: Decoration.mark({ class: "cm-xmd-math" })
@@ -171,7 +175,7 @@ const xmarkdownSyntax = StateField.define({
                 const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
                 if (!isInBlock) {
                     console.log("Inline math match:", match[0], "at", match.index, "isInBlock:", isInBlock);
-                    mathDecorations.push({
+                    decorationList.push({
                         from: match.index,
                         to: match.index + match[0].length,
                         decoration: Decoration.mark({ class: "cm-xmd-inline-math" })
@@ -181,14 +185,14 @@ const xmarkdownSyntax = StateField.define({
                 }
             }
 
-            // Sort by position and convert to decorations
-            mathDecorations.sort((a, b) => a.from - b.from);
-            for (const d of mathDecorations) {
-                decorations.push(d.decoration.range(d.from, d.to));
+            // Sort ALL decorations by position and convert
+            decorationList.sort((a, b) => a.from - b.from);
+            for (const d of decorationList) {
+                allDecorations.push(d.decoration.range(d.from, d.to));
             }
-            console.log("Total decorations:", decorations.length);
+            console.log("Total decorations:", allDecorations.length);
 
-            return Decoration.set(decorations);
+            return Decoration.set(allDecorations);
         } catch (err) {
             console.error("Error in xmarkdownSyntax:", err);
             return deco;
