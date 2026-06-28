@@ -322,7 +322,7 @@ const lightTheme = EditorView.theme(
         },
         ".cm-md-code": {
             backgroundColor: "#f0f8f0",
-            color: "#1a5a1a",
+            color: "#0d3d0d",
             fontFamily: "monospace",
         },
         ".cm-md-link": {
@@ -362,12 +362,12 @@ const lightTheme = EditorView.theme(
         },
         ".cm-xmd-code-block": {
             backgroundColor: "#f0f8f0",
-            color: "#1a5a1a",
+            color: "#0d3d0d",
             fontFamily: "monospace",
         },
         ".cm-xmd-code": {
             backgroundColor: "#f0f8f0",
-            color: "#1a5a1a",
+            color: "#0d3d0d",
             fontFamily: "monospace",
         },
     },
