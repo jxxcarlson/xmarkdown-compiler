@@ -222,6 +222,28 @@ const xmarkdownSyntax = StateField.define({
                 linePos += line.length + 1; // +1 for newline
             }
 
+            // Highlight code blocks (```...```)
+            const codeBlockRegex = /```[\s\S]*?```/g;
+            while ((match = codeBlockRegex.exec(doc)) !== null) {
+                console.log("Code block match at", match.index);
+                decorationList.push({
+                    from: match.index,
+                    to: match.index + match[0].length,
+                    decoration: Decoration.mark({ class: "cm-xmd-code-block" })
+                });
+            }
+
+            // Highlight inline code `...`
+            const inlineCodeRegex = /`[^`\n]+`/g;
+            while ((match = inlineCodeRegex.exec(doc)) !== null) {
+                console.log("Inline code match:", match[0], "at", match.index);
+                decorationList.push({
+                    from: match.index,
+                    to: match.index + match[0].length,
+                    decoration: Decoration.mark({ class: "cm-xmd-code" })
+                });
+            }
+
             // Highlight $ ... $ inline math (skip if inside a block)
             const inlineMathRegex = /\$[^\$\n]+\$/g;
             while ((match = inlineMathRegex.exec(doc)) !== null) {
@@ -337,6 +359,16 @@ const lightTheme = EditorView.theme(
         ".cm-xmd-table-sep": {
             backgroundColor: "#e8f0ff",
             color: "#6f42c1",
+        },
+        ".cm-xmd-code-block": {
+            backgroundColor: "#f0f8f0",
+            color: "#1a5a1a",
+            fontFamily: "monospace",
+        },
+        ".cm-xmd-code": {
+            backgroundColor: "#f0f8f0",
+            color: "#1a5a1a",
+            fontFamily: "monospace",
         },
     },
     { dark: false }
