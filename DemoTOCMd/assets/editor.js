@@ -128,12 +128,15 @@ const xmarkdownSyntax = StateField.define({
             // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
             const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
             const blockMatches = [];
+            const mathDecorations = [];
             while ((match = mathBlockRegex.exec(doc)) !== null) {
                 console.log("Math block match:", match[0].slice(0, 50), "at", match.index);
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
-                decorations.push(
-                    Decoration.mark({ class: "cm-xmd-math" }).range(match.index, match.index + match[0].length)
-                );
+                mathDecorations.push({
+                    from: match.index,
+                    to: match.index + match[0].length,
+                    decoration: Decoration.mark({ class: "cm-xmd-math" })
+                });
             }
             console.log("Total block matches:", blockMatches.length);
 
@@ -144,12 +147,20 @@ const xmarkdownSyntax = StateField.define({
                 const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
                 if (!isInBlock) {
                     console.log("Inline math match:", match[0], "at", match.index, "isInBlock:", isInBlock);
-                    decorations.push(
-                        Decoration.mark({ class: "cm-xmd-inline-math" }).range(match.index, match.index + match[0].length)
-                    );
+                    mathDecorations.push({
+                        from: match.index,
+                        to: match.index + match[0].length,
+                        decoration: Decoration.mark({ class: "cm-xmd-inline-math" })
+                    });
                 } else {
                     console.log("Skipping inline math inside block:", match[0], "at", match.index);
                 }
+            }
+
+            // Sort by position and convert to decorations
+            mathDecorations.sort((a, b) => a.from - b.from);
+            for (const d of mathDecorations) {
+                decorations.push(d.decoration.range(d.from, d.to));
             }
             console.log("Total decorations:", decorations.length);
 
