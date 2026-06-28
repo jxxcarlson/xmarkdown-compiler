@@ -5,7 +5,6 @@ console.log("editor.js: starting to load dependencies");
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
 import { EditorState, StateField, StateEffect } from "https://esm.sh/@codemirror/state@6";
 import { Decoration, keymap } from "https://esm.sh/@codemirror/view@6";
-import { markdown } from "https://esm.sh/@codemirror/lang-markdown@6";
 console.log("editor.js: dependencies loaded successfully");
 
 // RL sync: a background decoration over the source span the user clicked.
@@ -41,41 +40,46 @@ const xmarkdownSyntax = StateField.define({
         return Decoration.none;
     },
     update(deco, tr) {
-        const decorations = [];
-        const doc = tr.state.doc.toString();
+        try {
+            const decorations = [];
+            const doc = tr.state.doc.toString();
 
-        // Highlight @[...] macros
-        const macroRegex = /@\[[^\]]*\]/g;
-        let match;
-        while ((match = macroRegex.exec(doc)) !== null) {
-            decorations.push(
-                Decoration.mark({ class: "cm-xmd-macro" }).range(match.index, match.index + match[0].length)
-            );
-        }
-
-        // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
-        const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
-        const blockMatches = [];
-        while ((match = mathBlockRegex.exec(doc)) !== null) {
-            blockMatches.push({ start: match.index, end: match.index + match[0].length });
-            decorations.push(
-                Decoration.mark({ class: "cm-xmd-math" }).range(match.index, match.index + match[0].length)
-            );
-        }
-
-        // Highlight $ ... $ inline math (skip if inside a block)
-        const inlineMathRegex = /\$[^\$\n]+\$/g;
-        while ((match = inlineMathRegex.exec(doc)) !== null) {
-            // Check if this match is inside a block math region
-            const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
-            if (!isInBlock) {
+            // Highlight @[...] macros
+            const macroRegex = /@\[[^\]]*\]/g;
+            let match;
+            while ((match = macroRegex.exec(doc)) !== null) {
                 decorations.push(
-                    Decoration.mark({ class: "cm-xmd-inline-math" }).range(match.index, match.index + match[0].length)
+                    Decoration.mark({ class: "cm-xmd-macro" }).range(match.index, match.index + match[0].length)
                 );
             }
-        }
 
-        return Decoration.set(decorations);
+            // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
+            const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
+            const blockMatches = [];
+            while ((match = mathBlockRegex.exec(doc)) !== null) {
+                blockMatches.push({ start: match.index, end: match.index + match[0].length });
+                decorations.push(
+                    Decoration.mark({ class: "cm-xmd-math" }).range(match.index, match.index + match[0].length)
+                );
+            }
+
+            // Highlight $ ... $ inline math (skip if inside a block)
+            const inlineMathRegex = /\$[^\$\n]+\$/g;
+            while ((match = inlineMathRegex.exec(doc)) !== null) {
+                // Check if this match is inside a block math region
+                const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
+                if (!isInBlock) {
+                    decorations.push(
+                        Decoration.mark({ class: "cm-xmd-inline-math" }).range(match.index, match.index + match[0].length)
+                    );
+                }
+            }
+
+            return Decoration.set(decorations);
+        } catch (err) {
+            console.error("Error in xmarkdownSyntax:", err);
+            return deco; // Return previous decorations on error
+        }
     },
     provide: (f) => EditorView.decorations.from(f),
 });
@@ -160,7 +164,6 @@ class CodemirrorEditor extends HTMLElement {
                     extensions: [
                         basicSetup,
                         lightTheme,
-                        markdown(),
                         xmarkdownSyntax,
                         EditorView.lineWrapping,
                         syncHighlightField,
