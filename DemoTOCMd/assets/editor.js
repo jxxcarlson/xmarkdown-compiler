@@ -168,6 +168,30 @@ const xmarkdownSyntax = StateField.define({
 
             console.log("Total block matches:", blockMatches.length);
 
+            // Highlight table rows (lines containing pipes)
+            // Tables have format: | col1 | col2 | ... | and separator rows |---|
+            const lines = doc.split('\n');
+            let linePos = 0;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // Match lines with pipes that look like table rows
+                if (line.includes('|')) {
+                    // Check if it's a separator row (|---|---|) or header/data row (| ... | ... |)
+                    const isSeparator = /^\s*\|[\s\-:|\s]+\|\s*$/.test(line);
+                    const isTableRow = /^\s*\|.+\|\s*$/.test(line);
+
+                    if (isSeparator || isTableRow) {
+                        console.log("Table row:", line.slice(0, 40), "at", linePos);
+                        decorationList.push({
+                            from: linePos,
+                            to: linePos + line.length,
+                            decoration: Decoration.mark({ class: "cm-xmd-table" })
+                        });
+                    }
+                }
+                linePos += line.length + 1; // +1 for newline
+            }
+
             // Highlight $ ... $ inline math (skip if inside a block)
             const inlineMathRegex = /\$[^\$\n]+\$/g;
             while ((match = inlineMathRegex.exec(doc)) !== null) {
@@ -272,6 +296,10 @@ const lightTheme = EditorView.theme(
         ".cm-xmd-inline-math": {
             color: "#d73a49",
             backgroundColor: "#ffe6e6",
+        },
+        ".cm-xmd-table": {
+            backgroundColor: "#f0f7ff",
+            color: "#24292e",
         },
     },
     { dark: false }
