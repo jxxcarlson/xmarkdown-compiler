@@ -1,4 +1,4 @@
-module Scripta.Config exposing
+module XMarkdown.Config exposing
     ( expressionIdPrefix
     , idPrefix
     , indentationQuantum

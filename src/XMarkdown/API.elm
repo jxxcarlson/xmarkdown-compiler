@@ -1,11 +1,11 @@
-module Scripta.API exposing
+module XMarkdown.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
     , compileSimple, compileString, compileStringWithTitle
     , BlockMatch, searchBlocksContainingText
     )
 
-{-| Scripta.API provides the core compilation interface for converting XMarkdown
+{-| XMarkdown.API provides the core compilation interface for converting XMarkdown
 (SMarkdown) source text into renderable elm-ui Elements.
 
 
@@ -33,8 +33,8 @@ navigation panels.
 
 # Usage Example
 
-    import Scripta.API
-    import Scripta.Types exposing (defaultCompilerParameters)
+    import XMarkdown.API
+    import XMarkdown.Types exposing (defaultCompilerParameters)
 
 
     -- Configure compiler
@@ -46,7 +46,7 @@ navigation panels.
 
     -- Compile source text
     output =
-        Scripta.API.compileOutput params
+        XMarkdown.API.compileOutput params
             [ "# Introduction"
             , "This is a document with **bold** text."
             , ""
@@ -56,11 +56,11 @@ navigation panels.
 
     -- Render the document body
     bodyElements =
-        Scripta.API.viewBodyOnly 600 output
+        XMarkdown.API.viewBodyOnly 600 output
 
     -- Render table of contents separately
     tocElements =
-        Scripta.API.viewTOC output
+        XMarkdown.API.viewTOC output
 
 
 # See Also
@@ -74,9 +74,9 @@ For one-step compilation that parses and renders together, use `compileSimple`.
 import Element exposing (Element)
 import Element.Font
 import Render.Settings
-import Scripta.Compiler
-import Scripta.Msg
-import Scripta.Types
+import XMarkdown.Compiler
+import XMarkdown.Msg
+import XMarkdown.Types
 
 
 {-| Compile source text to elm-ui HTML in one step (parse + render). The width of
@@ -85,16 +85,16 @@ document; in a live-editing context, increment it after each edit so the rendere
 text updates correctly.
 
     import Element exposing (Element)
-    import Scripta.API
-    import Scripta.Msg exposing (MarkupMsg)
-    import Scripta.Types exposing (defaultCompilerParameters)
+    import XMarkdown.API
+    import XMarkdown.Msg exposing (MarkupMsg)
+    import XMarkdown.Types exposing (defaultCompilerParameters)
 
 Your `Msg` type should include `| Render MarkupMsg`.
 
 -}
-compileSimple : Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
+compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
 compileSimple params sourceText =
-    Scripta.Compiler.compile params (String.lines sourceText) |> Scripta.Compiler.view params.docWidth
+    XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.view params.docWidth
 
 
 {-| Compile source text into a CompilerOutput structure.
@@ -116,9 +116,9 @@ which can then be displayed using the view functions.
             ]
 
 -}
-compileOutput : Scripta.Types.CompilerParameters -> List String -> Scripta.Compiler.CompilerOutput
+compileOutput : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Compiler.CompilerOutput
 compileOutput params lines =
-    Scripta.Compiler.compile params lines
+    XMarkdown.Compiler.compile params lines
 
 
 {-| Render only the body content from a CompilerOutput.
@@ -133,9 +133,9 @@ This is useful when you want to display the main content separately from other
 document parts like the table of contents or title.
 
 -}
-viewBodyOnly : Int -> Scripta.Compiler.CompilerOutput -> List (Element Scripta.Msg.MarkupMsg)
+viewBodyOnly : Int -> XMarkdown.Compiler.CompilerOutput -> List (Element XMarkdown.Msg.MarkupMsg)
 viewBodyOnly =
-    Scripta.Compiler.viewBodyOnly
+    XMarkdown.Compiler.viewBodyOnly
 
 
 {-| Render the table of contents from a CompilerOutput.
@@ -150,28 +150,28 @@ The table of contents automatically includes links to document sections and
 respects the document hierarchy.
 
 -}
-viewTOC : Scripta.Compiler.CompilerOutput -> List (Element Scripta.Msg.MarkupMsg)
+viewTOC : XMarkdown.Compiler.CompilerOutput -> List (Element XMarkdown.Msg.MarkupMsg)
 viewTOC =
-    Scripta.Compiler.viewTOC
+    XMarkdown.Compiler.viewTOC
 
 
 {-| -}
-compileString : Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
+compileString : XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
 compileString params str =
-    Scripta.Compiler.compile params (String.lines str) |> Scripta.Compiler.view params.docWidth
+    XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
 
 
-compileStringWithTitle : String -> Scripta.Types.CompilerParameters -> String -> List (Element Scripta.Msg.MarkupMsg)
+compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
 compileStringWithTitle title params str =
-    Scripta.Compiler.compile params (String.lines str)
-        |> Scripta.Compiler.viewBodyOnly params.docWidth
+    XMarkdown.Compiler.compile params (String.lines str)
+        |> XMarkdown.Compiler.viewBodyOnly params.docWidth
         |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size (Render.Settings.scaleFont (Render.Settings.defaultRenderSettings params) 24), Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)
 
 
 {-| Re-export BlockMatch type for searching
 -}
 type alias BlockMatch =
-    Scripta.Compiler.BlockMatch
+    XMarkdown.Compiler.BlockMatch
 
 
 {-| Search blocks in the document for text containing the search query.
@@ -183,6 +183,6 @@ The search is case-insensitive.
         searchBlocksContainingText params (String.lines sourceText) "hello"
 
 -}
-searchBlocksContainingText : Scripta.Types.CompilerParameters -> List String -> String -> List BlockMatch
+searchBlocksContainingText : XMarkdown.Types.CompilerParameters -> List String -> String -> List BlockMatch
 searchBlocksContainingText =
-    Scripta.Compiler.searchBlocksContainingText
+    XMarkdown.Compiler.searchBlocksContainingText

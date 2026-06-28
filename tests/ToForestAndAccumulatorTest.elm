@@ -2,9 +2,9 @@ module ToForestAndAccumulatorTest exposing (suite)
 
 import AST.Vector
 import Expect
-import Scripta.API
-import Scripta.Compiler
-import Scripta.Types exposing (CompilerParameters, defaultCompilerParameters)
+import XMarkdown.API
+import XMarkdown.Compiler
+import XMarkdown.Types exposing (CompilerParameters, defaultCompilerParameters)
 import Test exposing (..)
 
 
@@ -22,7 +22,7 @@ suite =
                             [ "This is a test paragraph." ]
 
                         ( _, forest ) =
-                            Scripta.Compiler.parseToForestWithAccumulator params lines
+                            XMarkdown.Compiler.parseToForestWithAccumulator params lines
                     in
                     forest
                         |> List.length
@@ -37,7 +37,7 @@ suite =
                             [ "# Introduction", "", "Some text here." ]
 
                         ( accumulator, _ ) =
-                            Scripta.Compiler.parseToForestWithAccumulator params lines
+                            XMarkdown.Compiler.parseToForestWithAccumulator params lines
                     in
                     AST.Vector.level accumulator.headingIndex
                         |> Expect.greaterThan 0
@@ -50,7 +50,7 @@ suite =
                             "# Introduction\n\nThis is a **bold** word in a paragraph.\n\n- item one\n- item two\n"
 
                         output =
-                            Scripta.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -62,7 +62,7 @@ suite =
                             "```\nlet x = 1\n```\n"
 
                         output =
-                            Scripta.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -74,7 +74,7 @@ suite =
                             "$$\nE = mc^2\n$$\n"
 
                         output =
-                            Scripta.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileSimple defaultCompilerParameters source
                     in
                     output
                         |> List.length

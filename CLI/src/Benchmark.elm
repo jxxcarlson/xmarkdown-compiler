@@ -7,8 +7,8 @@ import Posix.IO as IO exposing (IO, Process)
 import Posix.IO.File as File
 import Posix.IO.Process as Proc
 import ScriptaV2.Msg
-import Scripta.API
-import Scripta.Language
+import XMarkdown.API
+import XMarkdown.Language
 
 
 
@@ -103,12 +103,12 @@ benchMicroLaTeXCompiler repetitions content =
 
 
 benchMicroLaTeXApiInit repetitions content =
-    repeat repetitions content (Scripta.API.init Dict.empty Scripta.Language.MicroLaTeXLang)
+    repeat repetitions content (XMarkdown.API.init Dict.empty XMarkdown.Language.MicroLaTeXLang)
 
 
 compile : String -> List (Element ScriptaV2.Msg.MarkupMsg)
 compile str =
-    Scripta.API.compile displaySettings Scripta.Language.MicroLaTeXLang str
+    XMarkdown.API.compile displaySettings XMarkdown.Language.MicroLaTeXLang str
 
 
 displaySettings =

@@ -5,14 +5,14 @@ import Either exposing (Either(..))
 import Expect
 import AST.Language exposing (Expr(..), Heading(..))
 import Library.Tree
-import Scripta.Compiler
+import XMarkdown.Compiler
 import Test exposing (Test, describe, test)
 
 
 {-| Flatten a parsed table source into (heading, alignments, rowCount, firstCellText). -}
 probe : String -> Maybe ( String, String, ( Int, String ) )
 probe src =
-    Scripta.Compiler.parseFromString src
+    XMarkdown.Compiler.parseFromString src
         |> List.concatMap Library.Tree.flatten
         |> List.head
         |> Maybe.map

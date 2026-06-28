@@ -18,7 +18,7 @@ import Render.Constants
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Scripta.Msg exposing (MarkupMsg)
+import XMarkdown.Msg exposing (MarkupMsg)
 
 
 {-| Register all container block renderers to the registry

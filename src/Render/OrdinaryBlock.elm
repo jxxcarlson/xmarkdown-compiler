@@ -19,7 +19,7 @@ import Render.Indentation
 import Render.List
 import Render.Settings exposing (RenderSettings)
 import Render.GHTable
-import Scripta.Msg exposing (MarkupMsg)
+import XMarkdown.Msg exposing (MarkupMsg)
 
 
 {-| Get attributes for a specific block type by name

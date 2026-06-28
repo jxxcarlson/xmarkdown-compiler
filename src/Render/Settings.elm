@@ -19,7 +19,7 @@ import Element.Background as BackgroundColor
 import Element.Font as Font
 import Render.NewColor exposing (..)
 import Render.Theme
-import Scripta.Types exposing (CompilerParameters)
+import XMarkdown.Types exposing (CompilerParameters)
 
 
 

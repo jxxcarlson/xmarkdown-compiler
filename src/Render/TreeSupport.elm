@@ -21,8 +21,8 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock
-import Scripta.Msg exposing (MarkupMsg)
-import Scripta.Types
+import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types
 
 
 {-| Simplified version of Block.renderAttributes
@@ -54,7 +54,7 @@ syncAttributes settings block =
 
 {-| Simplified version of Block.renderBody
 -}
-renderBody : Scripta.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
+renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
 renderBody params settings acc block =
     let
         isHeading =

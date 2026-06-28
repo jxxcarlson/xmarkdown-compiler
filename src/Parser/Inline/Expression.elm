@@ -8,7 +8,7 @@ module Parser.Inline.Expression exposing
 import AST.Language exposing (Expr(..), Expression)
 import List.Extra
 import Parser.Inline.Core.Expression exposing (parseWithMessages)
-import Scripta.Config as Config
+import XMarkdown.Config as Config
 import Tools.Loop exposing (Step(..), loop)
 import Parser.Inline.ForkLog as Tools
 import Parser.Inline.Match as M

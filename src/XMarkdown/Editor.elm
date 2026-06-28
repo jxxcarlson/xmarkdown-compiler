@@ -1,4 +1,4 @@
-module Scripta.Editor exposing (Config, view, textChangeDecoder, renderedTextId)
+module XMarkdown.Editor exposing (Config, view, textChangeDecoder, renderedTextId)
 
 {-| Reusable wiring for the `<codemirror-editor>` custom element (defined in JS,
 e.g. DemoTOCMd/assets/editor.js).
@@ -11,7 +11,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode as D
-import Scripta.Sync
+import XMarkdown.Sync
 
 
 {-| Configuration for [`view`](#view).
@@ -27,7 +27,7 @@ import Scripta.Sync
 type alias Config msg =
     { source : String
     , onInput : String -> msg
-    , highlight : Maybe Scripta.Sync.SyncHighlight
+    , highlight : Maybe XMarkdown.Sync.SyncHighlight
     , attrs : List (Html.Attribute msg)
     }
 
@@ -38,7 +38,7 @@ view config =
     Html.node "codemirror-editor"
         (Html.Attributes.attribute "load" config.source
             :: Html.Events.on "text-change" (D.map config.onInput textChangeDecoder)
-            :: (Scripta.Sync.highlightAttribute config.highlight ++ config.attrs)
+            :: (XMarkdown.Sync.highlightAttribute config.highlight ++ config.attrs)
         )
         []
 

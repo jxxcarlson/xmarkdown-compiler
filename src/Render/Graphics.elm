@@ -8,7 +8,7 @@ import Either exposing (Either(..))
 import Element exposing (Element, alignLeft, alignRight, centerX, column, el, px, spacing)
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Scripta.Msg exposing (MarkupMsg)
+import XMarkdown.Msg exposing (MarkupMsg)
 import Tools.Utility as Utility
 
 

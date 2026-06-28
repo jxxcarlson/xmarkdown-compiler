@@ -23,7 +23,7 @@ import Macro.PTextMacro
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.ThemeHelpers
-import Scripta.Msg exposing (MarkupMsg)
+import XMarkdown.Msg exposing (MarkupMsg)
 
 
 type DisplayMode

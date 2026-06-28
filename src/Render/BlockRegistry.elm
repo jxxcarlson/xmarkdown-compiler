@@ -18,7 +18,7 @@ import Element exposing (Element)
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
-import Scripta.Msg exposing (MarkupMsg)
+import XMarkdown.Msg exposing (MarkupMsg)
 
 
 {-| Type alias for a block renderer function

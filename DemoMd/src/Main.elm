@@ -15,10 +15,9 @@ import File exposing (File)
 import File.Select as Select
 import Html exposing (Html)
 import Html.Attributes
-import ScriptaV2.APISimple
-import ScriptaV2.Language
-import ScriptaV2.Msg exposing (MarkupMsg)
-import ScriptaV2.Types exposing (Filter(..), defaultCompilerParameters)
+import XMarkdown.API
+import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
 
@@ -99,7 +98,7 @@ update msg model =
 
         Render markupMsg ->
             case markupMsg of
-                ScriptaV2.Msg.SelectId id ->
+                XMarkdown.Msg.SelectId id ->
                     ( { model | selectId = id }, Cmd.none )
 
                 _ ->
@@ -165,10 +164,9 @@ displayRenderedText model =
         , htmlId "rendered-text"
         , scrollbarY
         ]
-        (ScriptaV2.APISimple.compile
+        (XMarkdown.API.compileSimple
             { defaultCompilerParameters
                 | filter = NoFilter
-                , lang = ScriptaV2.Language.SMarkdownLang
                 , docWidth = panelWidth model - 2 * xPadding
                 , editCount = model.count
                 , selectedId = model.selectId

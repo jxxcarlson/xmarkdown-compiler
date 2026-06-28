@@ -4,7 +4,7 @@ import Either exposing (Either(..))
 import Expect
 import AST.Language exposing (Expr(..))
 import Library.Tree
-import Scripta.Compiler
+import XMarkdown.Compiler
 import Test exposing (Test, describe, test)
 
 
@@ -39,7 +39,7 @@ sliceAtTextSpans str =
                 VFun _ _ _ ->
                     []
     in
-    Scripta.Compiler.parseFromString str
+    XMarkdown.Compiler.parseFromString str
         |> List.concatMap Library.Tree.flatten
         |> List.concatMap
             (\b ->

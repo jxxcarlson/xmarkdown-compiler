@@ -9,8 +9,8 @@ import Posix.IO as IO exposing (IO, Process)
 import Posix.IO.File as File
 import Posix.IO.Process as Proc
 import ScriptaV2.Msg
-import Scripta.API
-import Scripta.Language
+import XMarkdown.API
+import XMarkdown.Language
 
 
 
@@ -123,14 +123,14 @@ diffp : Int -> String -> String -> ()
 diffp repetitions content1 content2 =
     let
         editRecord1 =
-            Compiler.DifferentialParser.init Dict.empty Scripta.Language.MicroLaTeXLang content1
+            Compiler.DifferentialParser.init Dict.empty XMarkdown.Language.MicroLaTeXLang content1
     in
     repeat repetitions content2 (\c -> Compiler.DifferentialParser.update editRecord1 c)
 
 
 compile : String -> List (Element ScriptaV2.Msg.MarkupMsg)
 compile str =
-    Scripta.API.compile displaySettings Scripta.Language.MicroLaTeXLang str
+    XMarkdown.API.compile displaySettings XMarkdown.Language.MicroLaTeXLang str
 
 
 displaySettings =

@@ -9,7 +9,7 @@ import List.Extra
 import Parser.Inline.Core.Match as M
 import Parser.Inline.Core.Symbol as Symbol exposing (Symbol(..))
 import Parser.Inline.Core.Tokenizer as Token exposing (Token, TokenType(..), Token_(..))
-import Scripta.Config as Config
+import XMarkdown.Config as Config
 import Tools.Loop exposing (Step(..), loop)
 import Tools.ParserHelpers as Helpers
 

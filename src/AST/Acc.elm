@@ -50,7 +50,7 @@ import Macro.TextMacro exposing (Macro)
 import AST.Vector as Vector exposing (Vector)
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
-import Scripta.Config as Config
+import XMarkdown.Config as Config
 import Tools.String
 import Tools.Utility as Utility
 

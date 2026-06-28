@@ -13,12 +13,12 @@ import Html.Attributes exposing (class, id, style)
 import Html.Events
 import List.Extra
 import Ports
-import Scripta.API
-import Scripta.Compiler
-import Scripta.Editor
-import Scripta.Msg exposing (MarkupMsg)
-import Scripta.Sync
-import Scripta.Types exposing (Filter(..), defaultCompilerParameters)
+import XMarkdown.API
+import XMarkdown.Compiler
+import XMarkdown.Editor
+import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Sync
+import XMarkdown.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
 
@@ -48,10 +48,10 @@ type alias Model =
     , windowHeight : Int
     , selectId : String
     , idsOfOpenNodes : List String
-    , syncHighlight : Maybe Scripta.Sync.SyncHighlight
+    , syncHighlight : Maybe XMarkdown.Sync.SyncHighlight
     , tick : Int
     , fileName : String
-    , lrSyncMatches : List Scripta.API.BlockMatch
+    , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
     , lrSyncText : String
     }
@@ -144,7 +144,7 @@ update msg model =
                     }
 
                 matches =
-                    Scripta.API.searchBlocksContainingText params (String.lines model.sourceText) searchText
+                    XMarkdown.API.searchBlocksContainingText params (String.lines model.sourceText) searchText
 
                 _ =
                     Debug.log "Search matches found" (List.length matches)
@@ -203,13 +203,13 @@ update msg model =
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
         Render msg_ ->
-            case Scripta.Sync.fromMsg (model.tick + 1) msg_ of
+            case XMarkdown.Sync.fromMsg (model.tick + 1) msg_ of
                 Just h ->
                     ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
 
                 Nothing ->
                     case msg_ of
-                        Scripta.Msg.ToggleTOCNodeID nodeId ->
+                        XMarkdown.Msg.ToggleTOCNodeID nodeId ->
                             let
                                 idsOfOpenNodes =
                                     if String.left 2 nodeId == "@-" then
@@ -224,9 +224,9 @@ update msg model =
                             in
                             ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
 
-                        Scripta.Msg.SelectId selId ->
+                        XMarkdown.Msg.SelectId selId ->
                             if selId == "title" then
-                                ( { model | selectId = selId }, jumpToTopOf Scripta.Editor.renderedTextId )
+                                ( { model | selectId = selId }, jumpToTopOf XMarkdown.Editor.renderedTextId )
 
                             else
                                 ( { model | selectId = selId }, Cmd.none )
@@ -286,9 +286,9 @@ view model =
                 , numberToLevel = 2
             }
 
-        compilerOutput : Scripta.Compiler.CompilerOutput
+        compilerOutput : XMarkdown.Compiler.CompilerOutput
         compilerOutput =
-            Scripta.Compiler.compile params (String.lines model.sourceText)
+            XMarkdown.Compiler.compile params (String.lines model.sourceText)
     in
     div [ class "app" ]
         [ div [ class "app-header" ]
@@ -303,7 +303,7 @@ view model =
                 [ editorView model ]
             , div
                 [ class "panel rendered-panel"
-                , id Scripta.Editor.renderedTextId
+                , id XMarkdown.Editor.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
                 [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
@@ -316,7 +316,7 @@ view model =
 
 editorView : Model -> Html Msg
 editorView model =
-    Scripta.Editor.view
+    XMarkdown.Editor.view
         { source = model.initialText
         , onInput = InputText
         , highlight = model.syncHighlight
@@ -358,7 +358,7 @@ jumpToTopOf elementId =
     )
         |> Task.andThen
             (\element ->
-                Browser.Dom.getViewportOf Scripta.Editor.renderedTextId
+                Browser.Dom.getViewportOf XMarkdown.Editor.renderedTextId
                     |> Task.map
                         (\viewport ->
                             let
@@ -390,7 +390,7 @@ jumpToTopOf elementId =
             )
         |> Task.andThen
             (\scrollY ->
-                Browser.Dom.setViewportOf Scripta.Editor.renderedTextId 0 scrollY
+                Browser.Dom.setViewportOf XMarkdown.Editor.renderedTextId 0 scrollY
             )
         |> Task.attempt
             (\result ->
