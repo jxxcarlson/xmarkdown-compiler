@@ -45,7 +45,7 @@
     }, true);
     console.log("Port listener attached");
 
-    // Listen for CSS injection from Elm
+    // Listen for CSS injection from Elm (LR sync)
     app.ports.injectHighlightCSS.subscribe((css) => {
         console.log("Injecting CSS:", css);
 
@@ -60,6 +60,12 @@
         style.id = 'lr-sync-highlight-style';
         style.textContent = css;
         document.head.appendChild(style);
+    });
+
+    // Listen for editor highlight color changes from Elm (RL sync)
+    app.ports.setEditorHighlightColor.subscribe((colorStr) => {
+        console.log("Setting editor highlight color:", colorStr);
+        document.documentElement.style.setProperty('--cm-sync-highlight-bg', colorStr);
     });
 
 </script>

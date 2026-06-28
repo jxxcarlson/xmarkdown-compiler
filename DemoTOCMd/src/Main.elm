@@ -89,7 +89,7 @@ init flags =
       , lrSyncIndex = 0
       , lrSyncText = ""
       }
-    , Cmd.none
+    , Ports.setEditorHighlightColor defaultCompilerParameters.highlightColor
     )
 
 
