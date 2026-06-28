@@ -168,7 +168,7 @@ const xmarkdownSyntax = StateField.define({
 
             console.log("Total block matches:", blockMatches.length);
 
-            // Highlight table rows (lines containing pipes)
+            // Highlight table syntax: pipes, separators, and cell backgrounds
             // Tables have format: | col1 | col2 | ... | and separator rows |---|
             const lines = doc.split('\n');
             let linePos = 0;
@@ -176,17 +176,47 @@ const xmarkdownSyntax = StateField.define({
                 const line = lines[i];
                 // Match lines with pipes that look like table rows
                 if (line.includes('|')) {
-                    // Check if it's a separator row (|---|---|) or header/data row (| ... | ... |)
                     const isSeparator = /^\s*\|[\s\-:|\s]+\|\s*$/.test(line);
                     const isTableRow = /^\s*\|.+\|\s*$/.test(line);
 
                     if (isSeparator || isTableRow) {
                         console.log("Table row:", line.slice(0, 40), "at", linePos);
-                        decorationList.push({
-                            from: linePos,
-                            to: linePos + line.length,
-                            decoration: Decoration.mark({ class: "cm-xmd-table" })
-                        });
+
+                        if (isSeparator) {
+                            // Highlight entire separator row
+                            decorationList.push({
+                                from: linePos,
+                                to: linePos + line.length,
+                                decoration: Decoration.mark({ class: "cm-xmd-table-sep" })
+                            });
+                        } else {
+                            // For data rows, highlight pipes and cell backgrounds separately
+                            // Highlight pipes
+                            let pipePos = 0;
+                            while ((pipePos = line.indexOf('|', pipePos)) !== -1) {
+                                decorationList.push({
+                                    from: linePos + pipePos,
+                                    to: linePos + pipePos + 1,
+                                    decoration: Decoration.mark({ class: "cm-xmd-table-pipe" })
+                                });
+                                pipePos++;
+                            }
+
+                            // Highlight cell backgrounds (between pipes)
+                            const cells = line.split('|').slice(1, -1); // Remove empty strings from start/end
+                            let cellStart = linePos + line.indexOf('|') + 1;
+                            for (let j = 0; j < cells.length; j++) {
+                                const cellEnd = cellStart + cells[j].length;
+                                if (cellStart < cellEnd) {
+                                    decorationList.push({
+                                        from: cellStart,
+                                        to: cellEnd,
+                                        decoration: Decoration.mark({ class: "cm-xmd-table-cell" })
+                                    });
+                                }
+                                cellStart = cellEnd + 1; // +1 for the pipe
+                            }
+                        }
                     }
                 }
                 linePos += line.length + 1; // +1 for newline
@@ -297,9 +327,16 @@ const lightTheme = EditorView.theme(
             color: "#d73a49",
             backgroundColor: "#ffe6e6",
         },
-        ".cm-xmd-table": {
+        ".cm-xmd-table-pipe": {
+            color: "#6f42c1",
+            fontWeight: "bold",
+        },
+        ".cm-xmd-table-cell": {
             backgroundColor: "#f0f7ff",
-            color: "#24292e",
+        },
+        ".cm-xmd-table-sep": {
+            backgroundColor: "#e8f0ff",
+            color: "#6f42c1",
         },
     },
     { dark: false }
