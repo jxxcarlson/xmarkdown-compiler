@@ -1,5 +1,6 @@
 module Render.Block exposing (renderBody)
 
+import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import AST.Acc exposing (Accumulator)

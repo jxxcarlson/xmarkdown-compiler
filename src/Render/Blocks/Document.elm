@@ -7,11 +7,11 @@ module Render.Blocks.Document exposing (registerRenderers)
 
 -}
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Dict
 import Element exposing (Element)
 import Element.Font as Font
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Expression
 import Render.Helper
@@ -67,13 +67,7 @@ section count acc settings attr block =
             AST.Language.getExpressionContent block
     in
     Element.link
-        (sectionBlockAttributes block
-            settings
-            [ topPadding 20
-            , Font.size fontSize
-            ]
-            ++ Render.Sync.attributes settings block
-        )
+        (sectionBlockAttributes block settings [ Font.size fontSize ] ++ Render.Sync.attributes settings block)
         { url = Render.Utility.internalLink (settings.titlePrefix ++ "title")
         , label = Element.paragraph [] (sectionNumber :: renderWithDefaultWithSize 18 "--" count acc settings attr exprs)
         }
@@ -99,14 +93,9 @@ unnumberedSection count acc settings attr block =
             AST.Language.getExpressionContent block
     in
     Element.link
-        (sectionBlockAttributes block
-            settings
-            [ topPadding 20
-            , Font.size fontSize
-            ]
-        )
+        (sectionBlockAttributes block settings [ Font.size fontSize ] ++ Render.Sync.attributes settings block)
         { url = Render.Utility.internalLink (settings.titlePrefix ++ "title")
-        , label = Element.paragraph (Render.Sync.attributes settings block) (renderWithDefaultWithSize 18 "--" count acc settings attr exprs)
+        , label = Element.paragraph [] (renderWithDefaultWithSize 18 "--" count acc settings attr exprs)
         }
 
 
@@ -119,13 +108,6 @@ sectionBlockAttributes block settings attrs =
     ]
         ++ Render.Sync.highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
         ++ attrs
-
-
-{-| Padding helper
--}
-topPadding : Int -> Element.Attribute msg
-topPadding k =
-    Element.paddingEach { top = k, bottom = 0, left = 0, right = 0 }
 
 
 {-| Helper for rendering with a default and size

@@ -96,7 +96,7 @@ renderTree params settings accumulator tree =
             ]
 
     else
-        Element.column [ style, Element.Font.size settings.fontSize ] [ renderTree_ params settings accumulator tree ]
+        Element.column [ Element.width Element.fill, style, Element.Font.size settings.fontSize ] [ renderTree_ params settings accumulator tree ]
 
 
 renderTree_ :
@@ -129,7 +129,7 @@ renderLeafNode :
     -> ExpressionBlock
     -> Element MarkupMsg
 renderLeafNode params settings accumulator root =
-    Element.column (Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root ++ Render.Settings.unrollTheme params.theme)
+    Element.column (Element.width Element.fill :: Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root ++ Render.Settings.unrollTheme params.theme)
         (Render.TreeSupport.renderBody params settings accumulator root)
 
 
@@ -163,7 +163,7 @@ renderStandardBranch :
     -> List (Tree ExpressionBlock)
     -> Element MarkupMsg
 renderStandardBranch params settings accumulator root children =
-    Element.column (Element.spacing (round settings.interBlockSpacing) :: getBlockAttributes root)
+    Element.column (Element.width Element.fill :: Element.spacing (round settings.interBlockSpacing) :: getBlockAttributes root)
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )

@@ -193,6 +193,9 @@ view model =
                 , selectedId = "selectedId"
                 , idsOfOpenNodes = model.idsOfOpenNodes
                 , filter = NoFilter
+                , interBlockSpacing = 18
+                , paddingAboveHeadings = 18
+                , numberToLevel = 2
             }
 
         compilerOutput : Scripta.Compiler.CompilerOutput
@@ -215,7 +218,8 @@ view model =
                 , id Scripta.Editor.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
-                [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body) ]
+                [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
+                ]
             , div [ class "panel toc-panel", style "width" (px g.tocW) ]
                 [ Html.map Render (renderPanel 18 compilerOutput.toc) ]
             ]

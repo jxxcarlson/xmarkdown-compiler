@@ -7,10 +7,11 @@ to avoid import cycles.
 
 -}
 
-import Either exposing (Either(..))
-import Element exposing (Element)
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
+import Dict
+import Either exposing (Either(..))
+import Element exposing (Element)
 import Render.Expression
 import Render.Helper
 import Render.Indentation
@@ -53,15 +54,25 @@ syncAttributes settings block =
 -}
 renderBody : Scripta.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
 renderBody params settings acc block =
+    let
+        isHeading =
+            Dict.member "level" block.properties
+
+        spacer =
+            if isHeading then
+                [ Element.el [ Element.height (Element.px (round params.paddingAboveHeadings)) ] Element.none ]
+            else
+                []
+    in
     case block.heading of
         Paragraph ->
-            [ Element.column (Render.Sync.attributes settings block) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
+            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
 
         Ordinary _ ->
-            [ Element.column (Render.Sync.attributes settings block) [ Render.OrdinaryBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
+            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ Render.OrdinaryBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
 
         Verbatim _ ->
-            [ Element.column (Render.Sync.attributes settings block) [ VerbatimBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block |> Render.Helper.showError block.meta.error ] ]
+            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ VerbatimBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block |> Render.Helper.showError block.meta.error ] ]
 
 
 {-| Render a paragraph body
