@@ -52,6 +52,7 @@ defaultCompilerParameters =
     , theme = Render.Theme.Light
 
     --
+    , highlightColor = "rgba(200, 200, 255, 0.4)"
     , paddingAboveHeadings = 10
     , interBlockSpacing = 0
     , lineHeight = 1.5
@@ -76,6 +77,7 @@ type alias CompilerParameters =
     , theme : Render.Theme.Theme
 
     --
+    , highlightColor : String
     , paddingAboveHeadings : Float
     , interBlockSpacing : Float
     , lineHeight : Float

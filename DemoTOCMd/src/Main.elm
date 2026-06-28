@@ -128,7 +128,9 @@ update msg model =
 
         LRSync searchText ->
             let
-                _ = Debug.log "LRSync received" searchText
+                _ =
+                    Debug.log "LRSync received" searchText
+
                 params =
                     { defaultCompilerParameters
                         | docWidth = geometry model |> .docWidth
@@ -144,34 +146,47 @@ update msg model =
                 matches =
                     Scripta.API.searchBlocksContainingText params (String.lines model.sourceText) searchText
 
-                _ = Debug.log "Search matches found" (List.length matches)
-                _ = Debug.log "All matches" (List.map (\m -> { id = m.id, lineNumber = m.lineNumber, text = String.left 50 m.sourceText }) matches)
+                _ =
+                    Debug.log "Search matches found" (List.length matches)
+
+                _ =
+                    Debug.log "All matches" (List.map (\m -> { id = m.id, lineNumber = m.lineNumber, text = String.left 50 m.sourceText }) matches)
 
                 newIndex =
                     if searchText == model.lrSyncText && not (List.isEmpty matches) then
                         (model.lrSyncIndex + 1) |> modBy (List.length matches)
+
                     else
                         0
 
-                _ = Debug.log "Index calculation" { prevText = model.lrSyncText, currentText = searchText, prevIndex = model.lrSyncIndex, newIndex = newIndex, isSameText = searchText == model.lrSyncText }
+                _ =
+                    Debug.log "Index calculation" { prevText = model.lrSyncText, currentText = searchText, prevIndex = model.lrSyncIndex, newIndex = newIndex, isSameText = searchText == model.lrSyncText }
 
                 currentMatch =
                     List.drop newIndex matches |> List.head
 
-                _ = Debug.log "Current match" currentMatch
+                _ =
+                    Debug.log "Current match" currentMatch
             in
             case currentMatch of
                 Just match ->
                     let
-                        _ = Debug.log "Jumping to match ID" match.id
+                        _ =
+                            Debug.log "Jumping to match ID" match.id
+
                         -- selectId should be the line number (as string) for highlighting
                         -- but we need the full ID for scrolling
-                        lineNumberStr = String.fromInt match.lineNumber
+                        lineNumberStr =
+                            String.fromInt match.lineNumber
 
                         -- Create CSS rule for highlighting this line number and all descendants
                         css =
-                            "[data-line-number=\"" ++ lineNumberStr ++ "\"] { background-color: rgba(200, 200, 255, 0.4) !important; }\n"
-                            ++ "[data-line-number=\"" ++ lineNumberStr ++ "\"] * { background-color: rgba(200, 200, 255, 0.4) !important; }"
+                            "[data-line-number=\""
+                                ++ lineNumberStr
+                                ++ "\"] { background-color: " ++ params.highlightColor ++ " !important; }\n"
+                                ++ "[data-line-number=\""
+                                ++ lineNumberStr
+                                ++ "\"] * { background-color: " ++ params.highlightColor ++ " !important; }"
                     in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText, selectId = lineNumberStr }
                     , Cmd.batch
@@ -182,7 +197,8 @@ update msg model =
 
                 Nothing ->
                     let
-                        _ = Debug.log "No match found at index" newIndex
+                        _ =
+                            Debug.log "No match found at index" newIndex
                     in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
@@ -331,31 +347,43 @@ jumpToTopOf elementId =
     let
         lineNumberId =
             elementId
-                |> String.dropLeft 2  -- Remove "e-"
+                |> String.dropLeft 2
+                -- Remove "e-"
                 |> String.split "."
                 |> List.head
                 |> Maybe.withDefault elementId
     in
     (Browser.Dom.getElement elementId
-        |> Task.onError (\_ -> Browser.Dom.getElement lineNumberId))
+        |> Task.onError (\_ -> Browser.Dom.getElement lineNumberId)
+    )
         |> Task.andThen
             (\element ->
                 Browser.Dom.getViewportOf Scripta.Editor.renderedTextId
                     |> Task.map
                         (\viewport ->
                             let
-                                elementY = element.element.y
-                                elementHeight = element.element.height
-                                viewportHeight = viewport.viewport.height
-                                currentScroll = viewport.viewport.y
+                                elementY =
+                                    element.element.y
+
+                                elementHeight =
+                                    element.element.height
+
+                                viewportHeight =
+                                    viewport.viewport.height
+
+                                currentScroll =
+                                    viewport.viewport.y
 
                                 -- Element position relative to the container (accounting for current scroll)
-                                elementYInContainer = elementY + currentScroll
+                                elementYInContainer =
+                                    elementY + currentScroll
 
                                 -- Calculate scroll position to center the element in the viewport
-                                newScroll = max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
+                                newScroll =
+                                    max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
 
-                                _ = Debug.log "Scroll calculation" { elementId = elementId, fallbackId = lineNumberId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
+                                _ =
+                                    Debug.log "Scroll calculation" { elementId = elementId, fallbackId = lineNumberId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
                             in
                             newScroll
                         )
@@ -364,4 +392,11 @@ jumpToTopOf elementId =
             (\scrollY ->
                 Browser.Dom.setViewportOf Scripta.Editor.renderedTextId 0 scrollY
             )
-        |> Task.attempt (\result -> let _ = Debug.log "Scroll attempt result" result in NoOp)
+        |> Task.attempt
+            (\result ->
+                let
+                    _ =
+                        Debug.log "Scroll attempt result" result
+                in
+                NoOp
+            )
