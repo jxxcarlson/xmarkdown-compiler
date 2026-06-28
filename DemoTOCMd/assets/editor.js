@@ -321,8 +321,8 @@ const lightTheme = EditorView.theme(
             color: "#666",
         },
         ".cm-md-code": {
-            backgroundColor: "#f0f0f0",
-            color: "#d73a49",
+            backgroundColor: "#f0f8f0",
+            color: "#1a5a1a",
             fontFamily: "monospace",
         },
         ".cm-md-link": {
