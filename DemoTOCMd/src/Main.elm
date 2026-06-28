@@ -318,26 +318,40 @@ px n =
 
 jumpToTopOf : String -> Cmd Msg
 jumpToTopOf elementId =
-    Task.map2
-        (\element viewport ->
-            let
-                elementY = element.element.y
-                elementHeight = element.element.height
-                viewportHeight = viewport.viewport.height
-                currentScroll = viewport.viewport.y
+    -- Try to find element by full ID first, then fall back to lineNumber-based ID
+    -- ID format: "e-205.0" -> extract "205"
+    let
+        lineNumberId =
+            elementId
+                |> String.dropLeft 2  -- Remove "e-"
+                |> String.split "."
+                |> List.head
+                |> Maybe.withDefault elementId
+    in
+    (Browser.Dom.getElement elementId
+        |> Task.onError (\_ -> Browser.Dom.getElement lineNumberId))
+        |> Task.andThen
+            (\element ->
+                Browser.Dom.getViewportOf Scripta.Editor.renderedTextId
+                    |> Task.map
+                        (\viewport ->
+                            let
+                                elementY = element.element.y
+                                elementHeight = element.element.height
+                                viewportHeight = viewport.viewport.height
+                                currentScroll = viewport.viewport.y
 
-                -- Element position relative to the container (accounting for current scroll)
-                elementYInContainer = elementY + currentScroll
+                                -- Element position relative to the container (accounting for current scroll)
+                                elementYInContainer = elementY + currentScroll
 
-                -- Calculate scroll position to center the element in the viewport
-                newScroll = max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
+                                -- Calculate scroll position to center the element in the viewport
+                                newScroll = max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
 
-                _ = Debug.log "Scroll calculation" { elementId = elementId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
-            in
-            newScroll
-        )
-        (Browser.Dom.getElement elementId |> Task.mapError (\err -> let _ = Debug.log "getElement error" (elementId, err) in err))
-        (Browser.Dom.getViewportOf Scripta.Editor.renderedTextId |> Task.mapError (\err -> let _ = Debug.log "getViewportOf error" err in err))
+                                _ = Debug.log "Scroll calculation" { elementId = elementId, fallbackId = lineNumberId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
+                            in
+                            newScroll
+                        )
+            )
         |> Task.andThen
             (\scrollY ->
                 Browser.Dom.setViewportOf Scripta.Editor.renderedTextId 0 scrollY
