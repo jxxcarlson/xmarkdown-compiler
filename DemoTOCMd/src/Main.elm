@@ -167,9 +167,17 @@ update msg model =
                         -- selectId should be the line number (as string) for highlighting
                         -- but we need the full ID for scrolling
                         lineNumberStr = String.fromInt match.lineNumber
+
+                        -- Create CSS rule for highlighting this line number and all descendants
+                        css =
+                            "[data-line-number=\"" ++ lineNumberStr ++ "\"] { background-color: rgba(200, 200, 255, 0.4) !important; }\n"
+                            ++ "[data-line-number=\"" ++ lineNumberStr ++ "\"] * { background-color: rgba(200, 200, 255, 0.4) !important; }"
                     in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText, selectId = lineNumberStr }
-                    , jumpToTopOf match.id
+                    , Cmd.batch
+                        [ jumpToTopOf match.id
+                        , Ports.injectHighlightCSS css
+                        ]
                     )
 
                 Nothing ->

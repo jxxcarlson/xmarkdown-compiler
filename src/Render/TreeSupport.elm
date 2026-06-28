@@ -12,6 +12,7 @@ import AST.Language exposing (ExpressionBlock, Heading(..))
 import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
+import Html.Attributes
 import Render.Expression
 import Render.Helper
 import Render.Indentation
@@ -46,6 +47,7 @@ syncAttributes : RenderSettings -> ExpressionBlock -> List (Element.Attribute Ma
 syncAttributes settings block =
     [ Render.Utility.idAttributeFromInt block.meta.lineNumber
     , Render.Sync.rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
+    , Element.htmlAttribute (Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber))
     ]
         ++ Render.Sync.highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
 

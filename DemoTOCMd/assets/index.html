@@ -45,6 +45,23 @@
     }, true);
     console.log("Port listener attached");
 
+    // Listen for CSS injection from Elm
+    app.ports.injectHighlightCSS.subscribe((css) => {
+        console.log("Injecting CSS:", css);
+
+        // Remove previous highlight style if it exists
+        const oldStyle = document.getElementById('lr-sync-highlight-style');
+        if (oldStyle) {
+            oldStyle.remove();
+        }
+
+        // Create and inject new style
+        const style = document.createElement('style');
+        style.id = 'lr-sync-highlight-style';
+        style.textContent = css;
+        document.head.appendChild(style);
+    });
+
 </script>
 
 </body>
