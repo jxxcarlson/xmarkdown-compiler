@@ -52,7 +52,7 @@ attributes settings block =
 highlightIfIdSelected : String -> Render.Settings.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
 highlightIfIdSelected id settings attrs =
     if id == settings.selectedId then
-        Background.color (Render.Settings.getThemedElementColor .highlight settings.theme) :: Element.padding 8 :: attrs
+        Background.color settings.highlight :: Element.padding 8 :: attrs
 
     else
         attrs
