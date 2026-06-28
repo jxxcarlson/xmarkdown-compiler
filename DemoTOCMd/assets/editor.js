@@ -266,13 +266,12 @@ const lightTheme = EditorView.theme(
             fontWeight: "bold",
         },
         ".cm-xmd-math": {
-            color: "#d73a49 !important",
+            color: "#d73a49",
             backgroundColor: "#f6f8fa",
         },
         ".cm-xmd-inline-math": {
             color: "#d73a49",
-            backgroundColor: "#ffcccc",
-            textDecoration: "underline",
+            backgroundColor: "#ffe6e6",
         },
     },
     { dark: false }
