@@ -131,7 +131,6 @@ const xmarkdownSyntax = StateField.define({
 
             // Multi-line blocks: $$ + newline, content, then (blank line OR closing $$)
             const multilineBlockRegex = /\$\$\n([\s\S]*?)(?:\n\$\$|\n\n)/g;
-            let match;
             while ((match = multilineBlockRegex.exec(doc)) !== null) {
                 console.log("Math block match:", match[0].slice(0, 50), "at", match.index);
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
