@@ -57,10 +57,15 @@ I read the [New York Times](https://nytimes.com) every day.
 
 Pythagoras said that $z^2 = x^2 + y^2$.
 
-Newton said that
+Newton said that inline: $\\int_0^1 x^2 dx = \\frac{1}{3}$.
 
- $$
- \\int_0^1 x^2 dx = \\frac{1}{3}
+Block math single-line: $$\\rho \\propto \\frac{1}{M^2}$$
+
+Block math multi-line:
+
+$$
+\\rho \\propto \\frac{1}{M^2}
+$$
 
 # Code
 
