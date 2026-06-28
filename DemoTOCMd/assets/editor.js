@@ -125,9 +125,10 @@ const xmarkdownSyntax = StateField.define({
                 );
             }
 
-            // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
-            // Track full block regions for inline math detection, but only highlight content
-            const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
+            // Highlight $$...$$ math blocks
+            // Math blocks terminated by either: $$ + newline OR blank line (newline only)
+            // Match: $$ + newline, then content, then either (blank line OR $$ + optional whitespace + newline)
+            const mathBlockRegex = /\$\$\n([\s\S]*?)(?:\n\$\$|\n\n)/g;
             const blockMatches = [];
             const mathDecorations = [];
             while ((match = mathBlockRegex.exec(doc)) !== null) {
@@ -135,34 +136,15 @@ const xmarkdownSyntax = StateField.define({
                 // Track full block for inline math detection
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
 
-                // Extract content range (skip $$ and surrounding newlines)
-                const fullText = match[0];
-                const isMultiline = fullText.includes('\n');
-                let contentStart = match.index;
-                let contentEnd = match.index + match[0].length;
+                // Highlight from opening $$ to end of content (before blank line or closing $$)
+                const contentStart = match.index; // include opening $$
+                const contentEnd = match.index + match[0].length;
 
-                if (isMultiline) {
-                    // Skip opening $$ and following newline
-                    contentStart = match.index + 3; // $$ + \n
-                    // Skip trailing newline(s) before closing $$
-                    let endOffset = match[0].length - 2; // remove closing $$
-                    while (endOffset > 2 && (fullText[endOffset - 1] === '\n' || fullText[endOffset - 1] === '\r')) {
-                        endOffset--;
-                    }
-                    contentEnd = match.index + endOffset;
-                } else {
-                    // Single-line: skip the $$ delimiters
-                    contentStart = match.index + 2; // opening $$
-                    contentEnd = match.index + match[0].length - 2; // before closing $$
-                }
-
-                if (contentStart < contentEnd) {
-                    mathDecorations.push({
-                        from: contentStart,
-                        to: contentEnd,
-                        decoration: Decoration.mark({ class: "cm-xmd-math" })
-                    });
-                }
+                mathDecorations.push({
+                    from: contentStart,
+                    to: contentEnd,
+                    decoration: Decoration.mark({ class: "cm-xmd-math" })
+                });
             }
             console.log("Total block matches:", blockMatches.length);
 
