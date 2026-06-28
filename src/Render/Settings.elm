@@ -181,6 +181,11 @@ makeSettings params =
     let
         titleSize =
             round (toFloat params.fontSize * 32 / referenceFontSize)
+
+        -- Use parameterized highlight color, falling back to theme if parsing fails
+        highlightColor =
+            stringToColor params.highlightColor
+                |> Maybe.withDefault (getThemedElementColor .highlight params.theme)
     in
     { width = round (params.scale * toFloat params.windowWidth)
     , titleSize = titleSize
@@ -196,7 +201,7 @@ makeSettings params =
     , textColor = getThemedElementColor .text params.theme
     , codeColor = getThemedElementColor .codeText params.theme
     , linkColor = getThemedElementColor .link params.theme
-    , highlight = getThemedElementColor .highlight params.theme
+    , highlight = highlightColor
     , codeBackground = getThemedElementColor .codeBackground params.theme
     , titlePrefix = ""
     , isStandaloneDocument = False
@@ -214,3 +219,49 @@ makeSettings params =
     , paddingBottom = 0
     , properties = Dict.singleton "number-to-level" (String.fromInt params.numberToLevel)
     }
+
+
+{-| Parse CSS rgba color string to Element.Color.
+Supports formats like "rgba(200, 200, 255, 0.4)" and "rgb(200, 200, 255)"
+-}
+stringToColor : String -> Maybe Element.Color
+stringToColor colorStr =
+    if String.startsWith "rgba(" colorStr then
+        colorStr
+            |> String.dropLeft 5
+            |> String.dropRight 1
+            |> String.split ","
+            |> List.map String.trim
+            |> (\parts ->
+                case parts of
+                    [ r, g, b, a ] ->
+                        Maybe.map4 Element.rgba
+                            (String.toFloat r |> Maybe.map (\x -> x / 255))
+                            (String.toFloat g |> Maybe.map (\x -> x / 255))
+                            (String.toFloat b |> Maybe.map (\x -> x / 255))
+                            (String.toFloat a)
+
+                    _ ->
+                        Nothing
+               )
+
+    else if String.startsWith "rgb(" colorStr then
+        colorStr
+            |> String.dropLeft 4
+            |> String.dropRight 1
+            |> String.split ","
+            |> List.map String.trim
+            |> (\parts ->
+                case parts of
+                    [ r, g, b ] ->
+                        Maybe.map3 Element.rgb
+                            (String.toFloat r |> Maybe.map (\x -> x / 255))
+                            (String.toFloat g |> Maybe.map (\x -> x / 255))
+                            (String.toFloat b |> Maybe.map (\x -> x / 255))
+
+                    _ ->
+                        Nothing
+               )
+
+    else
+        Nothing
