@@ -66,7 +66,7 @@ renderBody params settings acc block =
     in
     case block.heading of
         Paragraph ->
-            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
+            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block ++ [ Element.padding 8 ]) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
 
         Ordinary _ ->
             spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ Render.OrdinaryBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]

@@ -22,7 +22,7 @@ attributes settings block =
     [ rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
     , Render.Utility.idAttribute block.meta.id
     ]
-        |> highlightIfIdSelected block.meta.id settings
+        ++ highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
 
 
 

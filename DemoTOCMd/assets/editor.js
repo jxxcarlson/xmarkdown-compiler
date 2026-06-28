@@ -1,9 +1,11 @@
 // Minimal CodeMirror 6 custom element for DemoTOCMd.
 // Imports without ?bundle so esm.sh shares one @codemirror/state instance
 // (duplicate state instances cause "unrecognized extension" errors).
+console.log("editor.js: starting to load dependencies");
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
 import { EditorState, StateField, StateEffect } from "https://esm.sh/@codemirror/state@6";
 import { Decoration, keymap } from "https://esm.sh/@codemirror/view@6";
+console.log("editor.js: dependencies loaded successfully");
 
 // RL sync: a background decoration over the source span the user clicked.
 const setSyncHighlight = StateEffect.define();
@@ -88,6 +90,7 @@ class CodemirrorEditor extends HTMLElement {
     }
 
     connectedCallback() {
+        console.log("editor.js: connectedCallback triggered");
         this.style.display = "block";
         this.style.height = "100%";
 
@@ -106,6 +109,24 @@ class CodemirrorEditor extends HTMLElement {
                                 key: "Escape",
                                 run: (view) => {
                                     view.dispatch({ effects: clearSyncHighlight.of(null) });
+                                    return true;
+                                },
+                            },
+                            {
+                                key: "Mod-s",
+                                run: (view) => {
+                                    console.log("Ctrl+S pressed");
+                                    const selection = view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to);
+                                    console.log("Selected text:", selection);
+                                    if (selection) {
+                                        const event = new CustomEvent("lr-sync", {
+                                            detail: { text: selection },
+                                            bubbles: true,
+                                            composed: true,
+                                        });
+                                        console.log("Dispatching lr-sync event with text:", selection);
+                                        view.dom.dispatchEvent(event);
+                                    }
                                     return true;
                                 },
                             },
@@ -181,4 +202,6 @@ class CodemirrorEditor extends HTMLElement {
     }
 }
 
+console.log("editor.js: registering custom element");
 customElements.define("codemirror-editor", CodemirrorEditor);
+console.log("editor.js: custom element registered successfully");

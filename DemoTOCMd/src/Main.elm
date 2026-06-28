@@ -12,6 +12,8 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events
 import List.Extra
+import Ports
+import Scripta.API
 import Scripta.Compiler
 import Scripta.Editor
 import Scripta.Msg exposing (MarkupMsg)
@@ -32,7 +34,10 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Browser.Events.onResize GotNewWindowDimensions
+    Sub.batch
+        [ Browser.Events.onResize GotNewWindowDimensions
+        , Ports.lrSyncRequest LRSync
+        ]
 
 
 type alias Model =
@@ -46,6 +51,9 @@ type alias Model =
     , syncHighlight : Maybe Scripta.Sync.SyncHighlight
     , tick : Int
     , fileName : String
+    , lrSyncMatches : List Scripta.API.BlockMatch
+    , lrSyncIndex : Int
+    , lrSyncText : String
     }
 
 
@@ -58,6 +66,7 @@ type Msg
     | FileSelected File
     | FileLoaded String
     | SaveFileRequested
+    | LRSync String
 
 
 type alias Flags =
@@ -76,6 +85,9 @@ init flags =
       , syncHighlight = Nothing
       , tick = 0
       , fileName = "untitled.md"
+      , lrSyncMatches = []
+      , lrSyncIndex = 0
+      , lrSyncText = ""
       }
     , Cmd.none
     )
@@ -113,6 +125,58 @@ update msg model =
 
         SaveFileRequested ->
             ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
+
+        LRSync searchText ->
+            let
+                _ = Debug.log "LRSync received" searchText
+                params =
+                    { defaultCompilerParameters
+                        | docWidth = geometry model |> .docWidth
+                        , editCount = model.count
+                        , selectedId = "selectedId"
+                        , idsOfOpenNodes = model.idsOfOpenNodes
+                        , filter = NoFilter
+                        , interBlockSpacing = 18
+                        , paddingAboveHeadings = 18
+                        , numberToLevel = 2
+                    }
+
+                matches =
+                    Scripta.API.searchBlocksContainingText params (String.lines model.sourceText) searchText
+
+                _ = Debug.log "Search matches found" (List.length matches)
+                _ = Debug.log "All matches" (List.map (\m -> { id = m.id, lineNumber = m.lineNumber, text = String.left 50 m.sourceText }) matches)
+
+                newIndex =
+                    if searchText == model.lrSyncText && not (List.isEmpty matches) then
+                        (model.lrSyncIndex + 1) |> modBy (List.length matches)
+                    else
+                        0
+
+                _ = Debug.log "Index calculation" { prevText = model.lrSyncText, currentText = searchText, prevIndex = model.lrSyncIndex, newIndex = newIndex, isSameText = searchText == model.lrSyncText }
+
+                currentMatch =
+                    List.drop newIndex matches |> List.head
+
+                _ = Debug.log "Current match" currentMatch
+            in
+            case currentMatch of
+                Just match ->
+                    let
+                        _ = Debug.log "Jumping to match ID" match.id
+                        -- selectId should be the line number (as string) for highlighting
+                        -- but we need the full ID for scrolling
+                        lineNumberStr = String.fromInt match.lineNumber
+                    in
+                    ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText, selectId = lineNumberStr }
+                    , jumpToTopOf match.id
+                    )
+
+                Nothing ->
+                    let
+                        _ = Debug.log "No match found at index" newIndex
+                    in
+                    ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
         Render msg_ ->
             case Scripta.Sync.fromMsg (model.tick + 1) msg_ of
@@ -190,7 +254,7 @@ view model =
             { defaultCompilerParameters
                 | docWidth = g.docWidth
                 , editCount = model.count
-                , selectedId = "selectedId"
+                , selectedId = model.selectId
                 , idsOfOpenNodes = model.idsOfOpenNodes
                 , filter = NoFilter
                 , interBlockSpacing = 18
@@ -254,6 +318,28 @@ px n =
 
 jumpToTopOf : String -> Cmd Msg
 jumpToTopOf elementId =
-    Browser.Dom.getViewportOf elementId
-        |> Task.andThen (\_ -> Browser.Dom.setViewportOf elementId 0 0)
-        |> Task.attempt (\_ -> NoOp)
+    Task.map2
+        (\element viewport ->
+            let
+                elementY = element.element.y
+                elementHeight = element.element.height
+                viewportHeight = viewport.viewport.height
+                currentScroll = viewport.viewport.y
+
+                -- Element position relative to the container (accounting for current scroll)
+                elementYInContainer = elementY + currentScroll
+
+                -- Calculate scroll position to center the element in the viewport
+                newScroll = max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
+
+                _ = Debug.log "Scroll calculation" { elementId = elementId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
+            in
+            newScroll
+        )
+        (Browser.Dom.getElement elementId |> Task.mapError (\err -> let _ = Debug.log "getElement error" (elementId, err) in err))
+        (Browser.Dom.getViewportOf Scripta.Editor.renderedTextId |> Task.mapError (\err -> let _ = Debug.log "getViewportOf error" err in err))
+        |> Task.andThen
+            (\scrollY ->
+                Browser.Dom.setViewportOf Scripta.Editor.renderedTextId 0 scrollY
+            )
+        |> Task.attempt (\result -> let _ = Debug.log "Scroll attempt result" result in NoOp)

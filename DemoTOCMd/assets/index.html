@@ -35,6 +35,16 @@
     });
     init(app);
 
+    // Listen for LR sync events from the editor
+    document.addEventListener('lr-sync', (e) => {
+        console.log("lr-sync event received:", e.detail);
+        if (e.detail && e.detail.text) {
+            console.log("Sending to Elm port:", e.detail.text);
+            app.ports.lrSyncRequest.send(e.detail.text);
+        }
+    }, true);
+    console.log("Port listener attached");
+
 </script>
 
 </body>

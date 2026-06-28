@@ -1,6 +1,7 @@
 module Scripta.Compiler exposing
     ( CompilerOutput, compile, parseFromString, view, viewTOC
     , parseToForestWithAccumulator, viewBodyOnly
+    , BlockMatch, searchBlocksContainingText
     )
 
 {-|
@@ -116,6 +117,16 @@ type alias CompilerOutput =
     }
 
 
+{-| A block match result from searching for text in the document
+-}
+type alias BlockMatch =
+    { id : String
+    , lineNumber : Int
+    , numberOfLines : Int
+    , sourceText : String
+    }
+
+
 {-| -}
 filterForest : Filter -> Forest ExpressionBlock -> Forest ExpressionBlock
 filterForest filter forest =
@@ -196,5 +207,48 @@ renderForest params settings accumulator forest =
     List.map (Render.Tree.renderTree params settings accumulator) forest
 
 
+{-| Search blocks in the document for text containing the search query.
+Returns a list of matching blocks with their metadata.
+-}
+searchBlocksContainingText : CompilerParameters -> List String -> String -> List BlockMatch
+searchBlocksContainingText params lines searchQuery =
+    let
+        forest =
+            filterForest params.filter (parse Config.idPrefix params.editCount lines)
 
---
+        allBlocks =
+            forestToBlockList forest
+
+        searchLower =
+            String.toLower searchQuery
+    in
+    allBlocks
+        |> List.filter (\block -> String.contains searchLower (String.toLower block.meta.sourceText))
+        |> List.map (\block ->
+            { id = "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
+            , lineNumber = block.meta.lineNumber
+            , numberOfLines = block.meta.numberOfLines
+            , sourceText = block.meta.sourceText
+            }
+        )
+
+
+{-| Flatten a forest of blocks into a list by traversing depth-first
+-}
+forestToBlockList : Forest ExpressionBlock -> List ExpressionBlock
+forestToBlockList forest =
+    List.concatMap treeToBlockList forest
+
+
+{-| Flatten a tree of blocks into a list by traversing depth-first
+-}
+treeToBlockList : RoseTree.Tree.Tree ExpressionBlock -> List ExpressionBlock
+treeToBlockList tree =
+    let
+        root =
+            RoseTree.Tree.value tree
+
+        children =
+            RoseTree.Tree.children tree
+    in
+    root :: List.concatMap treeToBlockList children

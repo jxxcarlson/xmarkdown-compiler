@@ -2,6 +2,7 @@ module Scripta.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
     , compileSimple, compileString, compileStringWithTitle
+    , BlockMatch, searchBlocksContainingText
     )
 
 {-| Scripta.API provides the core compilation interface for converting XMarkdown
@@ -165,3 +166,23 @@ compileStringWithTitle title params str =
     Scripta.Compiler.compile params (String.lines str)
         |> Scripta.Compiler.viewBodyOnly params.docWidth
         |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size (Render.Settings.scaleFont (Render.Settings.defaultRenderSettings params) 24), Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)
+
+
+{-| Re-export BlockMatch type for searching
+-}
+type alias BlockMatch =
+    Scripta.Compiler.BlockMatch
+
+
+{-| Search blocks in the document for text containing the search query.
+
+Returns a list of matching blocks with their metadata (id, lineNumber, numberOfLines, sourceText).
+The search is case-insensitive.
+
+    matches =
+        searchBlocksContainingText params (String.lines sourceText) "hello"
+
+-}
+searchBlocksContainingText : Scripta.Types.CompilerParameters -> List String -> String -> List BlockMatch
+searchBlocksContainingText =
+    Scripta.Compiler.searchBlocksContainingText
