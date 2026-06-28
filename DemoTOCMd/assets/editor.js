@@ -34,6 +34,128 @@ const syncHighlightField = StateField.define({
     provide: (f) => EditorView.decorations.from(f),
 });
 
+// Markdown syntax highlighting: headings, bold, italic, code, links, quotes, lists
+const markdownSyntax = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(deco, tr) {
+        try {
+            const decorations = [];
+            const doc = tr.state.doc.toString();
+            const lines = doc.split('\n');
+            let pos = 0;
+
+            for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+                const line = lines[lineNum];
+                const lineStart = pos;
+
+                // Headings: # ## ### at start of line
+                const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+                if (headingMatch) {
+                    const level = headingMatch[1].length;
+                    const levelClass = `cm-md-h${level}`;
+                    decorations.push(Decoration.mark({ class: levelClass }).range(lineStart, lineStart + headingMatch[0].length));
+                }
+
+                // Block quotes: lines starting with >
+                if (line.match(/^\s*>\s/)) {
+                    decorations.push(Decoration.mark({ class: "cm-md-quote" }).range(lineStart, lineStart + line.length));
+                }
+
+                // Lists: lines starting with - * + or digits.
+                if (line.match(/^\s*([*\-+]|\d+\.)\s+/)) {
+                    decorations.push(Decoration.mark({ class: "cm-md-list" }).range(lineStart, lineStart + line.length));
+                }
+
+                // Inline patterns: bold, italic, code, links (within the line)
+                // Bold: **text** or __text__
+                let boldRegex = /(\*\*|__)(.+?)\1/g;
+                let match;
+                while ((match = boldRegex.exec(line)) !== null) {
+                    decorations.push(Decoration.mark({ class: "cm-md-strong" }).range(lineStart + match.index, lineStart + match.index + match[0].length));
+                }
+
+                // Italic: *text* or _text_ (but not inside bold)
+                let italicRegex = /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g;
+                while ((match = italicRegex.exec(line)) !== null) {
+                    decorations.push(Decoration.mark({ class: "cm-md-em" }).range(lineStart + match.index, lineStart + match.index + match[0].length));
+                }
+
+                // Code: `text`
+                let codeRegex = /`([^`]+)`/g;
+                while ((match = codeRegex.exec(line)) !== null) {
+                    decorations.push(Decoration.mark({ class: "cm-md-code" }).range(lineStart + match.index, lineStart + match.index + match[0].length));
+                }
+
+                // Links: [text](url)
+                let linkRegex = /\[([^\]]+)\]\(([^\)]+)\)/g;
+                while ((match = linkRegex.exec(line)) !== null) {
+                    decorations.push(Decoration.mark({ class: "cm-md-link" }).range(lineStart + match.index, lineStart + match.index + match[0].length));
+                }
+
+                pos += line.length + 1; // +1 for newline
+            }
+
+            return Decoration.set(decorations);
+        } catch (err) {
+            console.error("Error in markdownSyntax:", err);
+            return deco;
+        }
+    },
+    provide: (f) => EditorView.decorations.from(f),
+});
+
+// XMarkdown-specific syntax: @[...] macros, $$...$$ math blocks, and $ ... $ inline math
+const xmarkdownSyntax = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(deco, tr) {
+        try {
+            const decorations = [];
+            const doc = tr.state.doc.toString();
+
+            // Highlight @[...] macros
+            const macroRegex = /@\[[^\]]*\]/g;
+            let match;
+            while ((match = macroRegex.exec(doc)) !== null) {
+                decorations.push(
+                    Decoration.mark({ class: "cm-xmd-macro" }).range(match.index, match.index + match[0].length)
+                );
+            }
+
+            // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
+            const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
+            const blockMatches = [];
+            while ((match = mathBlockRegex.exec(doc)) !== null) {
+                blockMatches.push({ start: match.index, end: match.index + match[0].length });
+                decorations.push(
+                    Decoration.mark({ class: "cm-xmd-math" }).range(match.index, match.index + match[0].length)
+                );
+            }
+
+            // Highlight $ ... $ inline math (skip if inside a block)
+            const inlineMathRegex = /\$[^\$\n]+\$/g;
+            while ((match = inlineMathRegex.exec(doc)) !== null) {
+                // Check if this match is inside a block math region
+                const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
+                if (!isInBlock) {
+                    decorations.push(
+                        Decoration.mark({ class: "cm-xmd-inline-math" }).range(match.index, match.index + match[0].length)
+                    );
+                }
+            }
+
+            return Decoration.set(decorations);
+        } catch (err) {
+            console.error("Error in xmarkdownSyntax:", err);
+            return deco;
+        }
+    },
+    provide: (f) => EditorView.decorations.from(f),
+});
+
 const lightTheme = EditorView.theme(
     {
         "&": {
@@ -60,6 +182,51 @@ const lightTheme = EditorView.theme(
         },
         ".cm-sync-highlight": {
             backgroundColor: "var(--cm-sync-highlight-bg, #fff3b0)",
+        },
+        // Markdown elements
+        ".cm-md-h1, .cm-md-h2, .cm-md-h3, .cm-md-h4, .cm-md-h5, .cm-md-h6": {
+            color: "#0066cc",
+            fontWeight: "bold",
+        },
+        ".cm-md-h1": { fontSize: "120%" },
+        ".cm-md-h2": { fontSize: "110%" },
+        ".cm-md-h3": { fontSize: "105%" },
+        ".cm-md-strong": {
+            fontWeight: "bold",
+            color: "#333",
+        },
+        ".cm-md-em": {
+            fontStyle: "italic",
+            color: "#666",
+        },
+        ".cm-md-code": {
+            backgroundColor: "#f0f0f0",
+            color: "#d73a49",
+            fontFamily: "monospace",
+        },
+        ".cm-md-link": {
+            color: "#0066cc",
+            textDecoration: "underline",
+        },
+        ".cm-md-quote": {
+            color: "#6a737d",
+            fontStyle: "italic",
+        },
+        ".cm-md-list": {
+            color: "#6a737d",
+        },
+        // XMarkdown elements
+        ".cm-xmd-macro": {
+            color: "#6f42c1",
+            fontWeight: "bold",
+        },
+        ".cm-xmd-math": {
+            color: "#d73a49",
+            backgroundColor: "#f6f8fa",
+        },
+        ".cm-xmd-inline-math": {
+            color: "#d73a49",
+            backgroundColor: "#fffbea",
         },
     },
     { dark: false }
@@ -102,6 +269,8 @@ class CodemirrorEditor extends HTMLElement {
                     extensions: [
                         basicSetup,
                         lightTheme,
+                        markdownSyntax,
+                        xmarkdownSyntax,
                         EditorView.lineWrapping,
                         syncHighlightField,
                         keymap.of([
