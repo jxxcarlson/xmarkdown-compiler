@@ -270,8 +270,9 @@ const lightTheme = EditorView.theme(
             backgroundColor: "#f6f8fa",
         },
         ".cm-xmd-inline-math": {
-            color: "#d73a49 !important",
-            backgroundColor: "#fffbea",
+            color: "#d73a49",
+            backgroundColor: "#ffcccc",
+            textDecoration: "underline",
         },
     },
     { dark: false }
