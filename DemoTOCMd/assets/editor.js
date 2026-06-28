@@ -125,27 +125,44 @@ const xmarkdownSyntax = StateField.define({
                 );
             }
 
-            // Highlight $$...$$ math blocks
-            // Math blocks terminated by either: $$ + newline OR blank line (newline only)
-            // Match: $$ + newline, then content, then either (blank line OR $$ + optional whitespace + newline)
-            const mathBlockRegex = /\$\$\n([\s\S]*?)(?:\n\$\$|\n\n)/g;
+            // Highlight $$...$$ math blocks (both single-line and multi-line)
             const blockMatches = [];
             const mathDecorations = [];
-            while ((match = mathBlockRegex.exec(doc)) !== null) {
+
+            // Multi-line blocks: $$ + newline, content, then (blank line OR closing $$)
+            const multilineBlockRegex = /\$\$\n([\s\S]*?)(?:\n\$\$|\n\n)/g;
+            let match;
+            while ((match = multilineBlockRegex.exec(doc)) !== null) {
                 console.log("Math block match:", match[0].slice(0, 50), "at", match.index);
-                // Track full block for inline math detection
                 blockMatches.push({ start: match.index, end: match.index + match[0].length });
-
-                // Highlight from opening $$ to end of content (before blank line or closing $$)
-                const contentStart = match.index; // include opening $$
-                const contentEnd = match.index + match[0].length;
-
                 mathDecorations.push({
-                    from: contentStart,
-                    to: contentEnd,
+                    from: match.index,
+                    to: match.index + match[0].length,
                     decoration: Decoration.mark({ class: "cm-xmd-math" })
                 });
             }
+
+            // Single-line blocks: $$content$$ (not followed by content on same line, or at end of line)
+            const singlelineBlockRegex = /\$\$([^\n]*?)\$\$(?=\s*$|\s+[^$])/gm;
+            while ((match = singlelineBlockRegex.exec(doc)) !== null) {
+                // Make sure this isn't part of inline math (check context)
+                const beforeIdx = Math.max(0, match.index - 1);
+                const afterIdx = match.index + match[0].length;
+                const charBefore = beforeIdx > 0 ? doc[beforeIdx] : ' ';
+                const charAfter = afterIdx < doc.length ? doc[afterIdx] : ' ';
+
+                // Only treat as block if not surrounded by word characters or other $
+                if (!/\w/.test(charBefore) && !/\w/.test(charAfter) && charBefore !== '$' && charAfter !== '$') {
+                    console.log("Single-line math block:", match[0].slice(0, 50), "at", match.index);
+                    blockMatches.push({ start: match.index, end: match.index + match[0].length });
+                    mathDecorations.push({
+                        from: match.index,
+                        to: match.index + match[0].length,
+                        decoration: Decoration.mark({ class: "cm-xmd-math" })
+                    });
+                }
+            }
+
             console.log("Total block matches:", blockMatches.length);
 
             // Highlight $ ... $ inline math (skip if inside a block)
