@@ -4,7 +4,9 @@
 console.log("editor.js: starting to load dependencies");
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
 import { EditorState, StateField, StateEffect } from "https://esm.sh/@codemirror/state@6";
-import { Decoration, keymap } from "https://esm.sh/@codemirror/view@6";
+import { Decoration, keymap, syntaxHighlighting, HighlightStyle } from "https://esm.sh/@codemirror/view@6";
+import { markdown } from "https://esm.sh/@codemirror/lang-markdown@6";
+import { tags } from "https://esm.sh/@lezer/highlight@1";
 console.log("editor.js: dependencies loaded successfully");
 
 // RL sync: a background decoration over the source span the user clicked.
@@ -30,6 +32,64 @@ const syncHighlightField = StateField.define({
             return Decoration.none;
         }
         return deco.map(tr.changes);
+    },
+    provide: (f) => EditorView.decorations.from(f),
+});
+
+// XMarkdown syntax highlighting
+const xmarkdownHighlight = HighlightStyle.define([
+    { tag: tags.heading1, class: "cm-xmd-h1" },
+    { tag: tags.heading2, class: "cm-xmd-h2" },
+    { tag: tags.heading3, class: "cm-xmd-h3" },
+    { tag: tags.emphasis, class: "cm-xmd-em" },
+    { tag: tags.strong, class: "cm-xmd-strong" },
+    { tag: tags.link, class: "cm-xmd-link" },
+    { tag: tags.monospace, class: "cm-xmd-code" },
+    { tag: tags.quote, class: "cm-xmd-quote" },
+    { tag: tags.list, class: "cm-xmd-list" },
+]);
+
+// XMarkdown-specific syntax: @[...] macros, $$...$$ math blocks, and $ ... $ inline math
+const xmarkdownSyntax = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(deco, tr) {
+        const decorations = [];
+        const doc = tr.state.doc.toString();
+
+        // Highlight @[...] macros
+        const macroRegex = /@\[[^\]]*\]/g;
+        let match;
+        while ((match = macroRegex.exec(doc)) !== null) {
+            decorations.push(
+                Decoration.mark({ class: "cm-xmd-macro" }).range(match.index, match.index + match[0].length)
+            );
+        }
+
+        // Highlight $$...$$ math blocks (process these first to avoid matching inline math inside blocks)
+        const mathBlockRegex = /\$\$[\s\S]*?\$\$/g;
+        const blockMatches = [];
+        while ((match = mathBlockRegex.exec(doc)) !== null) {
+            blockMatches.push({ start: match.index, end: match.index + match[0].length });
+            decorations.push(
+                Decoration.mark({ class: "cm-xmd-math" }).range(match.index, match.index + match[0].length)
+            );
+        }
+
+        // Highlight $ ... $ inline math (skip if inside a block)
+        const inlineMathRegex = /\$[^\$\n]+\$/g;
+        while ((match = inlineMathRegex.exec(doc)) !== null) {
+            // Check if this match is inside a block math region
+            const isInBlock = blockMatches.some(b => match.index >= b.start && match.index + match[0].length <= b.end);
+            if (!isInBlock) {
+                decorations.push(
+                    Decoration.mark({ class: "cm-xmd-inline-math" }).range(match.index, match.index + match[0].length)
+                );
+            }
+        }
+
+        return Decoration.set(decorations);
     },
     provide: (f) => EditorView.decorations.from(f),
 });
@@ -60,6 +120,49 @@ const lightTheme = EditorView.theme(
         },
         ".cm-sync-highlight": {
             backgroundColor: "var(--cm-sync-highlight-bg, #fff3b0)",
+        },
+        ".cm-xmd-h1, .cm-xmd-h2, .cm-xmd-h3": {
+            color: "#0066cc",
+            fontWeight: "bold",
+        },
+        ".cm-xmd-h1": { fontSize: "120%" },
+        ".cm-xmd-h2": { fontSize: "110%" },
+        ".cm-xmd-h3": { fontSize: "105%" },
+        ".cm-xmd-strong": {
+            fontWeight: "bold",
+            color: "#333",
+        },
+        ".cm-xmd-em": {
+            fontStyle: "italic",
+            color: "#666",
+        },
+        ".cm-xmd-code": {
+            backgroundColor: "#f0f0f0",
+            color: "#d73a49",
+            fontFamily: "monospace",
+        },
+        ".cm-xmd-link": {
+            color: "#0066cc",
+            textDecoration: "underline",
+        },
+        ".cm-xmd-quote": {
+            color: "#6a737d",
+            fontStyle: "italic",
+        },
+        ".cm-xmd-list": {
+            color: "#6a737d",
+        },
+        ".cm-xmd-macro": {
+            color: "#6f42c1",
+            fontWeight: "bold",
+        },
+        ".cm-xmd-math": {
+            color: "#d73a49",
+            backgroundColor: "#f6f8fa",
+        },
+        ".cm-xmd-inline-math": {
+            color: "#d73a49",
+            backgroundColor: "#fffbea",
         },
     },
     { dark: false }
@@ -102,6 +205,9 @@ class CodemirrorEditor extends HTMLElement {
                     extensions: [
                         basicSetup,
                         lightTheme,
+                        markdown(),
+                        syntaxHighlighting(xmarkdownHighlight),
+                        xmarkdownSyntax,
                         EditorView.lineWrapping,
                         syncHighlightField,
                         keymap.of([
