@@ -1,10 +1,9 @@
 module Render.Block exposing (renderBody)
 
-import Dict
-import Either exposing (Either(..))
-import Element exposing (Element)
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
+import Either exposing (Either(..))
+import Element exposing (Element)
 import Render.Expression
 import Render.Helper
 import Render.OrdinaryBlock
