@@ -39,8 +39,7 @@ module AST.Acc exposing
 -}
 
 import Dict exposing (Dict)
-import ETeX.MathMacros
-import ETeX.Transform
+import ETeX.Transform exposing (MathMacroDict, makeMacroDict)
 import Either exposing (Either(..))
 import AST.ASTTools
 import AST.BlockUtilities
@@ -77,7 +76,7 @@ type alias Accumulator =
     , reference : Dict String { id : String, numRef : String }
     , footnotes : Dict String TermLoc2
     , footnoteNumbers : Dict String Int
-    , mathMacroDict : ETeX.MathMacros.MathMacroDict
+    , mathMacroDict : MathMacroDict
     , textMacroDict : Dict String Macro
     , keyValueDict : Dict String String
     }
@@ -823,7 +822,7 @@ updateWithMathMacros content accumulator =
 
         mathMacroDict =
             --Macro.MathMacro.makeMacroDict (String.trim definitions)
-            ETeX.Transform.makeMacroDict (String.trim definitions)
+            makeMacroDict (String.trim definitions)
     in
     { accumulator | mathMacroDict = mathMacroDict }
 

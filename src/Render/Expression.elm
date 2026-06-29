@@ -4,8 +4,7 @@ import AST.ASTTools as ASTTools
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), Expression)
 import Dict exposing (Dict)
-import ETeX.MathMacros
-import ETeX.Transform
+import ETeX.Transform exposing (MathMacroDict, evalStr)
 import Element exposing (Element, el, newTabLink, spacing)
 import Element.Background as Background
 import Element.Border
@@ -113,7 +112,7 @@ render generation acc settings attrs expr =
                 ]
 
 
-renderVerbatim : String -> Int -> { a | mathMacroDict : ETeX.MathMacros.MathMacroDict } -> RenderSettings -> { b | id : String } -> String -> Element msg
+renderVerbatim : String -> Int -> { a | mathMacroDict : MathMacroDict } -> RenderSettings -> { b | id : String } -> String -> Element msg
 renderVerbatim name generation acc settings meta str =
     case Dict.get name verbatimDict of
         Nothing ->
@@ -333,14 +332,14 @@ code s m str =
     verbatimElement s (codeStyle s) m str
 
 
-math : Int -> { a | mathMacroDict : ETeX.MathMacros.MathMacroDict } -> Render.Settings.RenderSettings -> { b | id : String } -> String -> Element msg
+math : Int -> { a | mathMacroDict : MathMacroDict } -> Render.Settings.RenderSettings -> { b | id : String } -> String -> Element msg
 math g a s m str =
     Element.el
         (Render.Sync.highlightIfIdSelected m.id s [])
         (mathElement g a s m str)
 
 
-chem : Int -> { a | mathMacroDict : ETeX.MathMacros.MathMacroDict } -> Render.Settings.RenderSettings -> { b | id : String } -> String -> Element msg
+chem : Int -> { a | mathMacroDict : MathMacroDict } -> Render.Settings.RenderSettings -> { b | id : String } -> String -> Element msg
 chem g a s m str =
     Element.el
         (Render.Sync.highlightIfIdSelected m.id s [])
@@ -540,7 +539,7 @@ errorText_ str =
 
 
 mathElement generation acc s meta str =
-    Render.Math.mathText (Render.ThemeHelpers.themeAsStringFromSettings s) generation meta.id Render.Math.InlineMathMode (ETeX.Transform.evalStr acc.mathMacroDict str)
+    Render.Math.mathText (Render.ThemeHelpers.themeAsStringFromSettings s) generation meta.id Render.Math.InlineMathMode (evalStr acc.mathMacroDict str)
 
 
 

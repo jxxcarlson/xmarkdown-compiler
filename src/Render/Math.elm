@@ -11,7 +11,7 @@ module Render.Math exposing
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Dict
-import ETeX.Transform
+import ETeX.Transform exposing (evalStr)
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Font as Font
@@ -57,7 +57,7 @@ displayedMath count acc settings attrs_ block =
                 |> List.filter (\line -> not (String.left 2 (String.trim line) == "$$"))
                 |> List.filter (\line -> not (String.left 6 line == "[label"))
                 |> List.filter (\line -> line /= "")
-                |> List.map (ETeX.Transform.evalStr acc.mathMacroDict)
+                |> List.map (evalStr acc.mathMacroDict)
     in
     Element.column attrs
         [ Element.el (Render.Sync.highlighter block.args [ Element.centerX ])
@@ -105,7 +105,7 @@ equation_ count acc settings block =
             String.lines (getContent block)
                 |> List.map String.trimRight
                 |> List.filter (\line -> not (String.left 2 line == "$$") && not (String.left 6 line == "[label") && not (line == "end"))
-                |> List.map (ETeX.Transform.evalStr acc.mathMacroDict)
+                |> List.map (evalStr acc.mathMacroDict)
 
         content =
             String.join "\n" filteredLines
@@ -176,7 +176,7 @@ aligned count acc settings attrs block =
 
         adjustedLines_ =
             -- delete trailing slashes before evaluating macros
-            List.map (deleteTrailingSlashes >> ETeX.Transform.evalStr acc.mathMacroDict) filteredLines
+            List.map (deleteTrailingSlashes >> evalStr acc.mathMacroDict) filteredLines
                 -- remove bank lines
                 |> List.filter (\line -> String.trim line /= "")
 
@@ -237,7 +237,7 @@ array count acc settings attrs block =
         adjustedLines_ : List String
         adjustedLines_ =
             -- delete trailing slashes before evaluating macros
-            List.map (deleteTrailingSlashes >> ETeX.Transform.evalStr acc.mathMacroDict) filteredLines
+            List.map (deleteTrailingSlashes >> evalStr acc.mathMacroDict) filteredLines
                 -- remove bank lines
                 |> List.filter (\line -> line /= "")
 
