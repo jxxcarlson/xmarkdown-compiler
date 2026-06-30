@@ -1,7 +1,6 @@
 module XMarkdown.Compiler exposing
     ( CompilerOutput, compile, parseFromString, view, viewTOC
-    , parseToForestWithAccumulator, viewBodyOnly
-    , BlockMatch, searchBlocksContainingText
+    , BlockMatch, parse, parseToForestWithAccumulator, searchBlocksContainingText, viewBodyOnly
     )
 
 {-|
@@ -10,14 +9,16 @@ module XMarkdown.Compiler exposing
 
 -}
 
-import Element exposing (Element)
-import Element.Font as Font
 import AST.ASTTools
 import AST.Acc exposing (Accumulator)
 import AST.Forest exposing (Forest)
-import Parser.Block.ForestTransform
 import AST.Language exposing (ExpressionBlock)
+import Element exposing (Element)
+import Element.Font as Font
+import Parser.Block.ForestTransform
 import Parser.Block.Pipeline
+import Parser.Block.PrimitiveBlock
+import Parser.Inline.Expression
 import Render.Block
 import Render.Settings
 import Render.TOCTree
@@ -26,8 +27,6 @@ import RoseTree.Tree
 import XMarkdown.Config as Config
 import XMarkdown.Msg exposing (MarkupMsg)
 import XMarkdown.Types exposing (CompilerParameters, Filter(..))
-import Parser.Inline.Expression
-import Parser.Block.PrimitiveBlock
 
 
 {-| -}
@@ -224,13 +223,14 @@ searchBlocksContainingText params lines searchQuery =
     in
     allBlocks
         |> List.filter (\block -> String.contains searchLower (String.toLower block.meta.sourceText))
-        |> List.map (\block ->
-            { id = "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
-            , lineNumber = block.meta.lineNumber
-            , numberOfLines = block.meta.numberOfLines
-            , sourceText = block.meta.sourceText
-            }
-        )
+        |> List.map
+            (\block ->
+                { id = "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
+                , lineNumber = block.meta.lineNumber
+                , numberOfLines = block.meta.numberOfLines
+                , sourceText = block.meta.sourceText
+                }
+            )
 
 
 {-| Flatten a forest of blocks into a list by traversing depth-first
