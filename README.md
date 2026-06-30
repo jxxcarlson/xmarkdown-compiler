@@ -1,17 +1,39 @@
 # XMarkdown Compiler
 
-A standalone compiler for **XMarkdown** (Scientific Markdown / SMarkdown), which
-compiles XMarkdown source text into elm-ui HTML elements.
+A standalone compiler for **XMarkdown**.  XMarkdown is an extended version of markdown with 
+support for rending mathematics presented either as TeX or ETeX (ergonomic TeX).
+Consider the text for a standard calculus formula:
 
-## What is XMarkdown?
+```
+$$
+\int_0^1 x^n dx = \frac{1}{n+1}
+$$
+```
 
-XMarkdown is a scientific-flavored Markdown dialect. It supports:
+That is the TeX version. ETeX looks like this:
 
-- Standard Markdown: headings (`#`, `##`, ...) and emphasis (`**bold**`, `*italic*`)
-- Fenced code blocks (`` ``` ``)
-- Math: inline math (`$...$`) and display math (`$$\n...\n$$`)
-- Tables (GFM-style)
-- Automatic table of contents generation
+```
+$$
+int_0^1 x^n dx = frac(1,n+1)
+$$
+```
+
+XMarkdown accepts both forms.
+Note that the double dollar signs occupy lines by themselves.  This
+is good style in TeX but in XMarkdown it is required.  You can 
+find the ETeX package [here](https://package.elm-lang.org/packages/jxxcarlson/etex/latest/).
+
+## What else?
+
+XMarkdown is pretty much like standard markdown, with 
+the usual`**bold**` and`*italic*` text. It also has
+tables, better handling of images, automatic section 
+numbering, and automatic generation of a live table of 
+contents. Perhaps the most important feature, illustrated by
+XXX, is synchronization of edited an rendered text:
+
+- click on rendered text to highlight and scroll into view the corresponding source text
+- select source text and highlight and scroll into view the corresponding rendered text
 
 
 ## Usage
@@ -44,8 +66,6 @@ int_0^1 x^n dx = frac(1,n+1)
 $$
 """
 ```
-You can also use standard TeX notation with lots of backslashes and curly braces:
-`\\int_0^1 x^n dx = \\frac{1}{n+1)}`. See the [ETeX](https://package.elm-lang.org/packages/jxxcarlson/etex/latest/) package.
 
 ## Example Apps
 
@@ -55,6 +75,8 @@ active table of contents which in addition enables the user to
 
   - click on rendered text to highlight and scroll into view the corresponding source text
   - select source text and highlight and scroll into view the corresponding rendered text
+
+See also XXX
 
 ## License
 
