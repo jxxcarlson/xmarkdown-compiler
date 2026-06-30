@@ -18,8 +18,7 @@ import Element
 import Element.Background as BackgroundColor
 import Element.Font as Font
 import Render.NewColor exposing (..)
-import Render.Theme
-import XMarkdown.Types exposing (CompilerParameters)
+import XMarkdown.Types exposing (CompilerParameters, Theme(..))
 
 
 
@@ -58,7 +57,7 @@ type alias RenderSettings =
     , redColor : Element.Color
     , topMarginForChildren : Int
     , data : Dict String String
-    , theme : Render.Theme.Theme
+    , theme : Theme
     , paddingTop : Int
     , paddingBottom : Int
     , properties : Dict String String
@@ -78,26 +77,26 @@ type alias ThemedStyles =
     }
 
 
-getThemedColor : (ThemedStyles -> Color) -> Render.Theme.Theme -> Color
+getThemedColor : (ThemedStyles -> Color) -> Theme -> Color
 getThemedColor keyAccess theme =
     keyAccess
         (case theme of
-            Render.Theme.Dark ->
+            Dark ->
                 darkTheme
 
-            Render.Theme.Light ->
+            Light ->
                 lightTheme
         )
 
 
-getThemedElementColor : (ThemedStyles -> Color) -> Render.Theme.Theme -> Element.Color
+getThemedElementColor : (ThemedStyles -> Color) -> Theme -> Element.Color
 getThemedElementColor keyAccess theme =
     toElementColor (getThemedColor keyAccess theme)
 
 
 {-| Unrolls the theme into a list of Element styles.
 -}
-unrollTheme : Render.Theme.Theme -> List (Element.Attr decorative msg)
+unrollTheme : Theme -> List (Element.Attr decorative msg)
 unrollTheme theme =
     [ BackgroundColor.color (getThemedElementColor .background theme)
     , Font.color (getThemedElementColor .text theme)
@@ -233,16 +232,16 @@ stringToColor colorStr =
             |> String.split ","
             |> List.map String.trim
             |> (\parts ->
-                case parts of
-                    [ r, g, b, a ] ->
-                        Maybe.map4 Element.rgba
-                            (String.toFloat r |> Maybe.map (\x -> x / 255))
-                            (String.toFloat g |> Maybe.map (\x -> x / 255))
-                            (String.toFloat b |> Maybe.map (\x -> x / 255))
-                            (String.toFloat a)
+                    case parts of
+                        [ r, g, b, a ] ->
+                            Maybe.map4 Element.rgba
+                                (String.toFloat r |> Maybe.map (\x -> x / 255))
+                                (String.toFloat g |> Maybe.map (\x -> x / 255))
+                                (String.toFloat b |> Maybe.map (\x -> x / 255))
+                                (String.toFloat a)
 
-                    _ ->
-                        Nothing
+                        _ ->
+                            Nothing
                )
 
     else if String.startsWith "rgb(" colorStr then
@@ -252,15 +251,15 @@ stringToColor colorStr =
             |> String.split ","
             |> List.map String.trim
             |> (\parts ->
-                case parts of
-                    [ r, g, b ] ->
-                        Maybe.map3 Element.rgb
-                            (String.toFloat r |> Maybe.map (\x -> x / 255))
-                            (String.toFloat g |> Maybe.map (\x -> x / 255))
-                            (String.toFloat b |> Maybe.map (\x -> x / 255))
+                    case parts of
+                        [ r, g, b ] ->
+                            Maybe.map3 Element.rgb
+                                (String.toFloat r |> Maybe.map (\x -> x / 255))
+                                (String.toFloat g |> Maybe.map (\x -> x / 255))
+                                (String.toFloat b |> Maybe.map (\x -> x / 255))
 
-                    _ ->
-                        Nothing
+                        _ ->
+                            Nothing
                )
 
     else

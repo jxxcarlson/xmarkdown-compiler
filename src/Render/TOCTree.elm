@@ -4,26 +4,25 @@ module Render.TOCTree exposing
     , view
     )
 
+import AST.ASTTools
+import AST.Acc exposing (Accumulator)
+import AST.Forest exposing (Forest)
+import AST.Language exposing (ExpressionBlock)
 import Dict
 import Either exposing (Either(..))
 import Element exposing (Element)
 import Element.Background
 import Element.Events as Events
 import Element.Font as Font
-import AST.ASTTools
-import AST.Acc exposing (Accumulator)
-import AST.Forest exposing (Forest)
-import AST.Language exposing (ExpressionBlock)
 import Library.Forest
 import Library.Tree
 import Render.Expression
 import Render.Settings
-import Render.Theme
 import Render.Utility
 import RoseTree.Tree exposing (Tree)
-import XMarkdown.Config as Config
-import XMarkdown.Types exposing (MarkupMsg(..))
 import String.Extra
+import XMarkdown.Config as Config
+import XMarkdown.Types exposing (MarkupMsg(..), Theme(..))
 
 
 type alias ViewParameters =
@@ -35,7 +34,7 @@ type alias ViewParameters =
     }
 
 
-view : Render.Theme.Theme -> ViewParameters -> Accumulator -> Forest ExpressionBlock -> List (Element MarkupMsg)
+view : Theme -> ViewParameters -> Accumulator -> Forest ExpressionBlock -> List (Element MarkupMsg)
 view theme viewParameters acc documentAst =
     let
         tocAST : List ExpressionBlock
@@ -77,18 +76,18 @@ view theme viewParameters acc documentAst =
 
 style_ theme_ =
     case theme_ of
-        Render.Theme.Dark ->
+        Dark ->
             [ Element.Background.color (Render.Settings.getThemedElementColor .background theme_)
             , Font.color (Render.Settings.getThemedElementColor .text theme_)
             ]
 
-        Render.Theme.Light ->
+        Light ->
             [ Element.Background.color (Render.Settings.getThemedElementColor .background theme_)
             , Font.color (Render.Settings.getThemedElementColor .text theme_)
             ]
 
 
-viewTOCTree : Render.Theme.Theme -> ViewParameters -> Accumulator -> Int -> Tree TOCNodeValue -> Element MarkupMsg
+viewTOCTree : Theme -> ViewParameters -> Accumulator -> Int -> Tree TOCNodeValue -> Element MarkupMsg
 viewTOCTree theme viewParameters acc depth tocTree =
     let
         val : TOCNodeValue
@@ -125,7 +124,7 @@ viewTOCTree theme viewParameters acc depth tocTree =
             )
 
 
-viewNodeWithChildren : Render.Theme.Theme -> ViewParameters -> Accumulator -> TOCNodeValue -> Bool -> Element MarkupMsg
+viewNodeWithChildren : Theme -> ViewParameters -> Accumulator -> TOCNodeValue -> Bool -> Element MarkupMsg
 viewNodeWithChildren theme viewParameters acc node hasChildren =
     viewTocItem_ theme viewParameters acc hasChildren node.block
 
@@ -146,7 +145,7 @@ makeNodeValue block =
     { block = newBlock, visible = True }
 
 
-viewTocItem_ : Render.Theme.Theme -> ViewParameters -> Accumulator -> Bool -> ExpressionBlock -> Element MarkupMsg
+viewTocItem_ : Theme -> ViewParameters -> Accumulator -> Bool -> ExpressionBlock -> Element MarkupMsg
 viewTocItem_ theme viewParameters acc hasChildren ({ body, properties } as block) =
     case body of
         Left _ ->

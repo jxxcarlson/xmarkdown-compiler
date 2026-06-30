@@ -17,7 +17,7 @@ import List.Extra
 import Ports
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
-import XMarkdown.Types exposing (Filter(..), MarkupMsg(..), SyncHighlight)
+import XMarkdown.Types exposing (Filter(..), MarkupMsg(..), SyncHighlight, Theme(..))
 
 
 main : Program Flags Model Msg
@@ -48,6 +48,7 @@ type alias Model =
     , idsOfOpenNodes : List String
     , syncHighlight : Maybe SyncHighlight
     , tick : Int
+    , theme : Theme
     , fileName : String
     , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
@@ -81,6 +82,7 @@ init flags =
       , selectId = "@InitID"
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
+      , theme = Light
       , tick = 0
       , fileName = "untitled.md"
       , lrSyncMatches = []

@@ -14,10 +14,9 @@ import Render.Helper
 import Render.Math
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import Render.Theme
 import Render.Utility
-import XMarkdown.Types exposing (MarkupMsg)
 import SyntaxHighlight exposing (toBlockHtml)
+import XMarkdown.Types exposing (MarkupMsg, Theme(..))
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
@@ -88,11 +87,11 @@ renderCode _ _ settings _ block =
         -- TODO:  compute in terms of the theme without magic numbers
         bgColor =
             case settings.theme of
-                Render.Theme.Dark ->
+                Dark ->
                     -- Element.rgb 0.298 0.314 0.329
                     Render.Settings.toElementColor Render.Settings.darkTheme.codeBackground
 
-                Render.Theme.Light ->
+                Light ->
                     Render.Settings.toElementColor Render.Settings.lightTheme.codeBackground
     in
     Element.column
@@ -111,10 +110,10 @@ renderCode _ _ settings _ block =
 viewCodeWithHighlight : RenderSettings -> String -> String -> List (Element msg)
 viewCodeWithHighlight settings language code =
     [ case settings.theme of
-        Render.Theme.Dark ->
+        Dark ->
             darkCSS2
 
-        Render.Theme.Light ->
+        Light ->
             lightCSS2
     , viewCodeWithHighlight_ language code |> Element.html
     ]

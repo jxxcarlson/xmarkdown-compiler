@@ -1,7 +1,7 @@
 module Render.ThemeHelpers exposing (..)
 
 import Render.Settings
-import Render.Theme exposing (Theme(..))
+import XMarkdown.Types exposing (Theme(..))
 
 
 themeAsStringFromSettings : Render.Settings.RenderSettings -> String

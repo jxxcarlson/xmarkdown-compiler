@@ -1,10 +1,7 @@
 module Render.Theme exposing
-    ( Theme(..)
-    , ActualTheme
-    , getColor
-    , getElementColor
-    , lightTheme
-    , darkTheme
+    ( ActualTheme
+    , getColor, getElementColor
+    , lightTheme, darkTheme
     )
 
 {-| Theme support for Scripta rendering.
@@ -32,13 +29,7 @@ with support for both raw Color values and elm-ui Element.Color.
 import Color
 import Element
 import Render.NewColor exposing (..)
-
-
-{-| Represents the available themes.
--}
-type Theme
-    = Light
-    | Dark
+import XMarkdown.Types exposing (Theme(..))
 
 
 {-| A theme's color palette, containing colors for various UI elements.

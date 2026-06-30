@@ -6,20 +6,18 @@ module Render.Tree exposing (renderTree)
 
 -}
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Dict
 import Element exposing (Element)
 import Element.Background
 import Element.Border
 import Element.Font
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock)
 import Render.Attributes
 import Render.Settings exposing (RenderSettings)
-import Render.Theme
 import Render.TreeSupport
 import RoseTree.Tree exposing (Tree)
-import XMarkdown.Types exposing (MarkupMsg)
-import XMarkdown.Types
+import XMarkdown.Types exposing (MarkupMsg, Theme(..))
 
 
 {-| Render a tree of expression blocks
@@ -64,10 +62,10 @@ renderTree params settings accumulator tree =
         --blockAttrs : List (Element.Attribute MarkupMsg)
         borderColor =
             case params.theme of
-                Render.Theme.Light ->
+                Light ->
                     Element.rgba 0.7 0.8 0.9 1
 
-                Render.Theme.Dark ->
+                Dark ->
                     Element.rgba 0.6 0.6 0.6 0.5
 
         width2 =

@@ -20,3 +20,5 @@ DemoScriptaLive/assets/main-tauri.js
 Benchmark/main.js
 **/.claude/settings.local.json
 xmarkdown.iml
+DemoMd/index.html
+DemoTOCMd/index.html

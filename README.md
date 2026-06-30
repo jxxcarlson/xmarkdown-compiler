@@ -7,12 +7,10 @@ compiles XMarkdown source text into elm-ui HTML elements.
 
 XMarkdown is a scientific-flavored Markdown dialect. It supports:
 
-- Standard Markdown: headings (`#`, `##`, ...) and emphasis (`**bold**`, `_italic_`)
+- Standard Markdown: headings (`#`, `##`, ...) and emphasis (`**bold**`, `*italic*`)
 - Fenced code blocks (`` ``` ``)
-- Math: inline math (`$...$`) and display math (`$$...$$`)
-- Named blocks (`| theorem`, `| equation`, `| code`, ...)
+- Math: inline math (`$...$`) and display math (`$$\n...\n$$`)
 - Tables (GFM-style)
-- `@[...]` inline expressions for custom elements
 - Automatic table of contents generation
 
 ## Quick Start
@@ -30,7 +28,7 @@ For simple use cases, compile and render in one step:
 ```elm
 import Element exposing (Element)
 import XMarkdown.API exposing (compileSimple, defaultCompilerParameters)
-import XMarkdown.Types exposing (MarkupMsg(..), Filter(..))
+import XMarkdown.Types exposing (MarkupMsg(..))
 
 source : String
 source = """
@@ -96,7 +94,6 @@ params =
         , editCount = 0                     -- increment on each edit for live contexts
         , selectedId = ""                   -- highlight a specific block
         , idsOfOpenNodes = []               -- keep sections expanded/collapsed
-        , filter = NoFilter                 -- NoFilter or SuppressDocumentBlocks
         , theme = Render.Theme.Light        -- Light or Dark
         , fontSize = 16                     -- base font size
         , numberToLevel = 2                 -- heading levels for table of contents

@@ -1,8 +1,8 @@
 module XMarkdown.API exposing
     ( compileOutput
-    , viewBodyOnly, viewTOC
+    , viewBodyOnly, viewTOC, BlockMatch, compile, fromMsg, renderedTextId, searchBlocksContainingText
+    , viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters, editorView
     , compileSimple
-    , BlockMatch, compile, compileString, compileStringWithTitle, defaultCompilerParameters, editorView, fromMsg, renderedTextId, searchBlocksContainingText, viewEditor
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
@@ -28,7 +28,8 @@ navigation panels.
 
 # Viewing
 
-@docs viewBodyOnly, viewTOC
+@docs viewBodyOnly, viewTOC, BlockMatch, compile, fromMsg, renderedTextId, searchBlocksContainingText
+@docs viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters, editorView
 
 
 # Usage Example
@@ -73,33 +74,46 @@ For one-step compilation that parses and renders together, use `compileSimple`.
 
 import Element exposing (Element)
 import Element.Font
+import Html exposing (Html)
 import Render.Settings
 import XMarkdown.Compiler
 import XMarkdown.Editor
 import XMarkdown.Sync
-import XMarkdown.Types exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg, SyncHighlight)
 
 
+{-| -}
+compile : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Types.CompilerOutput
 compile =
     XMarkdown.Compiler.compile
 
 
+{-| -}
+defaultCompilerParameters : XMarkdown.Types.CompilerParameters
 defaultCompilerParameters =
     XMarkdown.Types.defaultCompilerParameters
 
 
+{-| -}
+editorView : XMarkdown.Editor.Config msg -> Html msg
 editorView =
     XMarkdown.Editor.view
 
 
+{-| -}
+fromMsg : Int -> MarkupMsg -> Maybe SyncHighlight
 fromMsg =
     XMarkdown.Sync.fromMsg
 
 
+{-| -}
+renderedTextId : String
 renderedTextId =
     XMarkdown.Editor.renderedTextId
 
 
+{-| -}
+viewEditor : XMarkdown.Editor.Config msg -> Html msg
 viewEditor =
     XMarkdown.Editor.view
 
@@ -184,6 +198,7 @@ compileString params str =
     XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
 
 
+{-| -}
 compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
 compileStringWithTitle title params str =
     XMarkdown.Compiler.compile params (String.lines str)

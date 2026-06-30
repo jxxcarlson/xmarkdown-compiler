@@ -15,9 +15,9 @@ import File exposing (File)
 import File.Select as Select
 import Html exposing (Html)
 import Html.Attributes
-import XMarkdown.API exposing (defaultCompilerParameters)
-import XMarkdown.Types exposing (MarkupMsg(..), Filter(..))
 import Task
+import XMarkdown.API exposing (defaultCompilerParameters)
+import XMarkdown.Types exposing (MarkupMsg(..))
 
 
 main : Program Flags Model Msg
@@ -165,8 +165,7 @@ displayRenderedText model =
         ]
         (XMarkdown.API.compileSimple
             { defaultCompilerParameters
-                | filter = NoFilter
-                , docWidth = panelWidth model - 2 * xPadding
+                | docWidth = panelWidth model - 2 * xPadding
                 , editCount = model.count
                 , selectedId = model.selectId
                 , idsOfOpenNodes = []

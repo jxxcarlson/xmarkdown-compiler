@@ -1,6 +1,6 @@
 module XMarkdown.Types exposing
     ( CompilerParameters, defaultCompilerParameters, Filter(..)
-    , CompilerOutput, Handling(..), MarkupMsg(..), SyncHighlight
+    , CompilerOutput, Handling(..), MarkupMsg(..), SyncHighlight, Theme(..)
     )
 
 {-| This module defines the core types used for configuring the Scripta compiler.
@@ -31,11 +31,19 @@ For simple use cases, start with `defaultCompilerParameters` and override the fi
         , editCount = model.editCount
     }
 
+@docs CompilerOutput, Handling, MarkupMsg, SyncHighlight, Theme
+
 -}
 
 import Dict exposing (Dict)
 import Element exposing (Element)
-import Render.Theme
+
+
+{-| Represents the available themes.
+-}
+type Theme
+    = Light
+    | Dark
 
 
 {-| -}
@@ -53,7 +61,7 @@ defaultCompilerParameters =
     , selectedSlug = Nothing
     , idsOfOpenNodes = []
     , filter = NoFilter
-    , theme = Render.Theme.Light
+    , theme = Light
 
     --
     , highlightColor = "rgba(200, 200, 255, 0.4)"
@@ -88,7 +96,7 @@ type alias CompilerParameters =
     , selectedSlug : Maybe String
     , idsOfOpenNodes : List String
     , filter : Filter
-    , theme : Render.Theme.Theme
+    , theme : Theme
 
     --
     , highlightColor : String
