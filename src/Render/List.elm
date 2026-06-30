@@ -43,7 +43,7 @@ item count acc settings attr block =
             indentationScale * level_
     in
     Element.row
-        ([ Element.moveRight 20
+        ([ Element.moveRight 10
          , Element.moveRight (indentation |> toFloat)
          , Element.alignTop
          , Render.Utility.idAttribute block.meta.id
@@ -54,9 +54,9 @@ item count acc settings attr block =
         )
         [ Element.el
             [ Font.size (Render.Settings.scaleFont settings 24)
-            , Element.centerY
+            , Element.alignTop
             , Element.moveRight 12
-            , Element.width (Element.px 40)
+            , Element.width (Element.px 32)
             , Render.Utility.leftPadding settings.leftIndentation
             ]
             (Element.text label_)
@@ -115,7 +115,7 @@ numbered count acc settings attr block =
             indentationScale * level
     in
     Element.row
-        [ Element.moveRight 20
+        [ Element.moveRight 10
         , Element.moveRight (indentation |> toFloat)
         , Element.alignTop
         , Render.Utility.idAttribute block.meta.id
@@ -123,10 +123,10 @@ numbered count acc settings attr block =
         , Element.width (Element.px <| settings.width - 50)
         ]
         [ Element.el
-            [ Font.size (Render.Settings.scaleFont settings 24)
-            , Element.centerY
+            [ Font.size (Render.Settings.scaleFont settings 20)
+            , Element.alignTop
             , Element.moveRight 12
-            , Element.width (Element.px 40)
+            , Element.width (Element.px 32)
             , Render.Utility.leftPadding settings.leftIndentation
             ]
             (Element.text (label_ ++ ". "))
