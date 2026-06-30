@@ -6,13 +6,14 @@ compiles XMarkdown source text into elm-ui HTML elements.
 ## What is XMarkdown?
 
 XMarkdown is a scientific-flavored Markdown dialect. It supports:
-- Standard Markdown headings (`#`, `##`, ...) and emphasis (`**bold**`, `_italic_`)
+
+- Standard Markdown: headings (`#`, `##`, ...) and emphasis (`**bold**`, `_italic_`)
 - Fenced code blocks (`` ``` ``)
-- Math blocks (`$$`) and inline math
+- Math: inline math (`$...$`) and display math (`$$...$$`)
 - Named blocks (`| theorem`, `| equation`, `| code`, ...)
-- Tables
-- `@[...]` inline syntax for cells, rows, and custom inline elements
-- Table of contents generation
+- Tables (GFM-style)
+- `@[...]` inline expressions for custom elements
+- Automatic table of contents generation
 
 ## Quick Start
 
@@ -22,43 +23,127 @@ Add the package:
 elm install jxxcarlson/xmarkdown-compiler
 ```
 
-Compile source text:
+### One-step compilation
+
+For simple use cases, compile and render in one step:
 
 ```elm
-import ScriptaV2.APISimple exposing (compile)
-import ScriptaV2.Language exposing (Language(..))
-import ScriptaV2.Types exposing (defaultCompilerParameters)
-import ScriptaV2.Msg exposing (MarkupMsg)
 import Element exposing (Element)
+import XMarkdown.API exposing (compileSimple, defaultCompilerParameters)
+import XMarkdown.Types exposing (MarkupMsg(..), Filter(..))
 
 source : String
 source = """
 # Introduction
 
-This is a **bold** introduction.
+This is **bold** text.
 
-| theorem
-There are infinitely many prime numbers.
+## Math
 
 $$
 \\int_0^1 x^n dx = \\frac{1}{n+1}
 $$
 """
 
-output : List (Element MarkupMsg)
-output = compile defaultCompilerParameters source
+params = 
+    { defaultCompilerParameters
+        | docWidth = 600
+        , filter = NoFilter
+    }
+
+view : Element MarkupMsg
+view = 
+    Element.column [] 
+        (compileSimple params source)
+```
+
+### Two-step compilation (for advanced use)
+
+Compile once and render different parts separately:
+
+```elm
+import XMarkdown.API exposing (compileOutput, viewBodyOnly, viewTOC)
+
+output = 
+    compileOutput params (String.lines source)
+
+-- Render just the body
+body = viewBodyOnly 600 output.body
+
+-- Render just the table of contents
+toc = viewTOC output.toc
 ```
 
 ## Public API
 
 | Module | Purpose |
 |---|---|
-| `ScriptaV2.APISimple` | High-level `compile` entry point |
-| `ScriptaV2.API` | Full compiler API |
-| `ScriptaV2.Types` | `CompilerParameters`, `defaultCompilerParameters`, `Filter` |
-| `ScriptaV2.Msg` | `MarkupMsg` type for elm-ui |
-| `ScriptaV2.Language` | `Language` type (`SMarkdownLang`) |
-| `Render.Theme` | Light/Dark theme |
+| `XMarkdown.API` | Compilation and rendering functions; re-exports convenience values |
+| `XMarkdown.Types` | `CompilerParameters`, `defaultCompilerParameters`, `Filter`, `MarkupMsg`, `SyncHighlight`, `Handling` |
+| `XMarkdown.Editor` | Codemirror editor integration |
+| `XMarkdown.Sync` | Rendered-to-source synchronization for live editing |
+| `Render.Theme` | Light/Dark theme configuration |
+
+## Configuration
+
+All compilation requires a `CompilerParameters` record. Use `defaultCompilerParameters` 
+and override fields as needed:
+
+```elm
+params = 
+    { defaultCompilerParameters
+        | docWidth = 800                    -- width in pixels
+        , editCount = 0                     -- increment on each edit for live contexts
+        , selectedId = ""                   -- highlight a specific block
+        , idsOfOpenNodes = []               -- keep sections expanded/collapsed
+        , filter = NoFilter                 -- NoFilter or SuppressDocumentBlocks
+        , theme = Render.Theme.Light        -- Light or Dark
+        , fontSize = 16                     -- base font size
+        , numberToLevel = 2                 -- heading levels for table of contents
+    }
+```
+
+## Message Handling
+
+When using the editor integration, handle `MarkupMsg` in your update function:
+
+```elm
+type Msg
+    = Render MarkupMsg
+    | ... other messages
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Render markupMsg ->
+            -- Handle MarkupMsg (e.g., synchronize with editor, toggle sections)
+            ( model, Cmd.none )
+        ...
+```
+
+## Editor Integration
+
+For live editing with the Codemirror editor, use `XMarkdown.Editor`:
+
+```elm
+import XMarkdown.Editor
+import XMarkdown.Types exposing (SyncHighlight)
+
+type alias Model =
+    { editorText : String
+    , syncHighlight : Maybe SyncHighlight
+    , ... 
+    }
+
+editorConfig =
+    { source = model.editorText
+    , onInput = InputText
+    , highlight = model.syncHighlight
+    , attrs = []
+    }
+
+view = XMarkdown.Editor.view editorConfig
+```
 
 ## License
 

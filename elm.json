@@ -7,7 +7,6 @@
     "exposed-modules": [
         "XMarkdown.API",
         "XMarkdown.Types",
-        "XMarkdown.Msg",
         "Render.Theme",
         "XMarkdown.Editor",
         "XMarkdown.Sync"

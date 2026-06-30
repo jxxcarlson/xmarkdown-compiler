@@ -71,16 +71,6 @@ For one-step compilation that parses and renders together, use `compileSimple`.
 
 -}
 
---4. XMarkdown.Msg exposing (MarkupMsg) — used for:
---  - Type: MarkupMsg (line 19 in type signature)
---  - Pattern matching: XMarkdown.Msg.ToggleTOCNodeID and XMarkdown.Msg.SelectId (lines 212, 227)
---5. XMarkdown.Sync — used for:
---  - Type: XMarkdown.Sync.SyncHighlight (line 51)
---  - Function: XMarkdown.Sync.fromMsg (line 206)
---6. XMarkdown.Types exposing (Filter(..), defaultCompilerParameters) — used for:
---  - Type: Filter (line 21 exposing, NoFilter at line 283)
---  - Value: defaultCompilerParameters (lines 92, 135, 278)
-
 import Element exposing (Element)
 import Element.Font
 import Render.Settings
@@ -90,32 +80,28 @@ import XMarkdown.Sync
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-editorView =
-    XMarkdown.Editor.view
+compile =
+    XMarkdown.Compiler.compile
 
 
 defaultCompilerParameters =
     XMarkdown.Types.defaultCompilerParameters
 
 
+editorView =
+    XMarkdown.Editor.view
+
+
 fromMsg =
     XMarkdown.Sync.fromMsg
-
-
-compile =
-    XMarkdown.Compiler.compile
-
-
-viewEditor =
-    XMarkdown.Editor.view
 
 
 renderedTextId =
     XMarkdown.Editor.renderedTextId
 
 
-
---Pattern matching: XMarkdown.Msg.ToggleTOCNodeID and XMarkdown.Msg.SelectId
+viewEditor =
+    XMarkdown.Editor.view
 
 
 {-| Compile source text to elm-ui HTML in one step (parse + render). The width of
