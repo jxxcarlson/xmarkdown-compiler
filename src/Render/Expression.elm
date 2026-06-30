@@ -514,7 +514,7 @@ simpleElement formatList g acc s attr exprList =
 
 
 verbatimElement settings formatList meta str =
-    Element.el (Font.size (Render.Settings.scaleFont settings 13) :: htmlId meta.id :: Element.height (Element.px 11) :: Background.color settings.codeBackground :: formatList) (Element.text str)
+    Element.el (Font.size (Render.Settings.scaleFont settings 14) :: htmlId meta.id :: Element.height (Element.px 12) :: Background.color settings.codeBackground :: formatList) (Element.text str)
 
 
 {-| A click handler that does NOT bubble, so an inline expression click reports

@@ -99,7 +99,7 @@ renderCode _ _ settings _ block =
          , Element.paddingXY 18 12
          , Element.width (Element.px settings.width)
          , Element.scrollbarX
-         , Font.size (Render.Settings.scaleFont settings 13)
+         , Font.size (Render.Settings.scaleFont settings 14)
          ]
             ++ Render.Sync.attributes settings block
             ++ [ Background.color bgColor ]
