@@ -118,7 +118,7 @@ lightTheme : ThemedStyles
 lightTheme =
     { background = Color.rgba 1 1 1 1
     , text = gray950
-    , codeBackground = Color.rgba 0.835 0.847 0.882 1 --- 0.8 0 0 0.2 -- 0.835 0.847 0.882 1
+    , codeBackground = Color.rgba 0.90 0.90 0.94 1
     , codeText = gray900
     , offsetBackground = Color.rgb 1 1 1 --indigo300 |> Render.NewColor.setOpacity 0.25
     , offsetText = gray950
@@ -132,7 +132,7 @@ darkTheme : ThemedStyles
 darkTheme =
     { background = gray900
     , text = Color.rgba 0.835 0.847 0.882 1 -- gray100
-    , codeBackground = Color.rgba 0.298 0.314 0.329 1 --
+    , codeBackground = Color.rgba 0.35 0.37 0.42 1
     , codeText = gray100
     , offsetBackground = gray900
     , offsetText = Color.rgba 0.835 0.847 0.882 1 -- gray200 |> Render.NewColor.setOpacity 0.25

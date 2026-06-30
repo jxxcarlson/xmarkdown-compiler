@@ -95,14 +95,13 @@ renderCode _ _ settings _ block =
                     Render.Settings.toElementColor Render.Settings.lightTheme.codeBackground
     in
     Element.column
-        ([ Background.color Constants.syncHighlightColor
-         , Element.paddingXY 18 12
+        ([ Element.paddingXY 18 12
          , Element.width (Element.px settings.width)
          , Element.scrollbarX
-         , Font.size (Render.Settings.scaleFont settings 14)
+         , Font.size (Render.Settings.scaleFont settings 16)
+         , Background.color bgColor
          ]
             ++ Render.Sync.attributes settings block
-            ++ [ Background.color bgColor ]
         )
         (viewCodeWithHighlight settings language (Render.Utility.getVerbatimContent block))
 
@@ -120,7 +119,7 @@ viewCodeWithHighlight settings language code =
 
 
 ghTheme3 =
-    ".elmsh {color: #1f2328;background: #d5d8e1;line-height: 1.5;}.elmsh-hl {background: #c0c5d1;}.elmsh-add {background: #bfdbc3;}.elmsh-del{background: #dcc7ca;}.elmsh-comm {color: #5f6770;}.elmsh1 {color: #0049a5;}.elmsh2 {color: #bc4000;}.elmsh3 {color: #b6293b;}.elmsh4 {color:#006d92;}.elmsh5 {color: #50854a;}.elmsh6 {color: #0049a5;}.elmsh7 {color: #644b88;}"
+    ".elmsh {color: #1f2328;background: transparent;line-height: 1.5;}.elmsh-hl {background: transparent;}.elmsh-add {background: #bfdbc3;}.elmsh-del{background: #dcc7ca;}.elmsh-comm {color: #5f6770;}.elmsh1 {color: #0049a5;}.elmsh2 {color: #bc4000;}.elmsh3 {color: #b6293b;}.elmsh4 {color:#006d92;}.elmsh5 {color: #50854a;}.elmsh6 {color: #0049a5;}.elmsh7 {color: #644b88;}"
 
 
 
@@ -131,7 +130,7 @@ ghTheme3 =
 
 
 darkTheme =
-    ".elmsh {color: #e7eaec;background: #4c5054;line-height: 1.5;}.elmsh-hl {background: #5c5f63;}.elmsh-add {background: #5cba73;}.elmsh-del{background: #e16e77;}.elmsh-comm {color: #8c9399;}.elmsh1 {color: #a1cdff;}.elmsh2 {color: #ffbf8a;}.elmsh3 {color: #fb9fa7;}.elmsh4 {color:#a1cdff;}.elmsh5 {color: #a5f0b8;}.elmsh6 {color: #a1cdff;}.elmsh7 {color: #cbb0f6;}"
+    ".elmsh {color: #e7eaec;background: transparent;line-height: 1.5;}.elmsh-hl {background: transparent;}.elmsh-add {background: #5cba73;}.elmsh-del{background: #e16e77;}.elmsh-comm {color: #8c9399;}.elmsh1 {color: #a1cdff;}.elmsh2 {color: #ffbf8a;}.elmsh3 {color: #fb9fa7;}.elmsh4 {color:#a1cdff;}.elmsh5 {color: #a5f0b8;}.elmsh6 {color: #a1cdff;}.elmsh7 {color: #cbb0f6;}"
 
 
 lightCSS2 : Element msg

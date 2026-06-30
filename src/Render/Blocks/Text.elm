@@ -6,8 +6,10 @@ module Render.Blocks.Text exposing (registerRenderers)
 
 -}
 
+import Dict
 import Element exposing (Element)
 import Element.Font as Font
+import Element.Background
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
@@ -31,14 +33,19 @@ registerRenderers registry =
 -}
 quotation : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
 quotation count acc settings attrs block =
-    Element.column
-        ([ Element.spacing 8
-         , Element.width (Element.px (settings.width - 2 * 24))
-         ]
-            ++ Render.Sync.attributes settings block
-        )
-        [ Render.Helper.noteFromPropertyKey "title" [ Font.bold ] block
+    let
+        content =
+            Dict.get "firstLine" block.properties
+                |> Maybe.map (\text -> [ Element.text text ])
+                |> Maybe.withDefault []
+    in
+    Element.row
+        [ Element.width Element.fill
+        , Render.Helper.htmlId block.meta.id
+        ]
+        [ Element.el [ Element.width (Element.px 40) ] Element.none
         , Element.paragraph
-            (Element.centerX :: Render.Helper.blockAttributes settings block [])
-            (Render.Helper.renderWithDefault "quotation" count acc settings attrs (AST.Language.getExpressionContent block))
+            [ Font.italic
+            ]
+            content
         ]

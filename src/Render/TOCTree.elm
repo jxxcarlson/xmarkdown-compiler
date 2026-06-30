@@ -117,7 +117,7 @@ viewTOCTree theme viewParameters acc depth tocTree =
         viewNodeWithChildren theme viewParameters acc val hasChildren
 
     else
-        Element.column [ Element.spacing 8 ]
+        Element.column [ Element.spacing 6 ]
             (viewNodeWithChildren theme viewParameters acc val hasChildren
                 :: List.map (viewTOCTree theme viewParameters acc (depth - 1))
                     children
@@ -197,18 +197,18 @@ viewTocItem_ theme viewParameters acc hasChildren ({ body, properties } as block
                     Element.el [ Element.width (Element.px (20 * lvl)) ] Element.none
 
                 content =
-                    Element.row ([ Element.width (Element.px 240), Element.spacing 8 ] ++ style_ theme) (sectionNumber :: List.map (Render.Expression.render viewParameters.counter acc viewParameters.settings viewParameters.attr) exprs2)
+                    Element.row ([ Element.width (Element.px 240), Element.spacing 8 ] ++ style_ theme ++ [ Font.color (Element.rgb 0.2 0.4 0.8) ]) (sectionNumber :: List.map (Render.Expression.render viewParameters.counter acc viewParameters.settings viewParameters.attr) exprs2)
 
                 -- Click handlers based on whether the item has children
                 clickHandlers =
                     if hasChildren then
-                        [ Events.onClick (ToggleTOCNodeID nodeId), Font.size (Render.Settings.scaleFont viewParameters.settings 14) ]
+                        [ Events.onClick (ToggleTOCNodeID nodeId), Font.size (Render.Settings.scaleFont viewParameters.settings 16) ]
 
                     else
-                        [ Events.onClick (SelectId <| id), Font.size (Render.Settings.scaleFont viewParameters.settings 14) ]
+                        [ Events.onClick (SelectId <| id), Font.size (Render.Settings.scaleFont viewParameters.settings 16) ]
             in
             Element.row []
                 [ spacer
                 , Element.el (clickHandlers ++ style_ theme)
-                    (Element.link [ Font.color (Element.rgb 1 0 0) ] { url = Render.Utility.internalLink id, label = content })
+                    (Element.link [] { url = Render.Utility.internalLink id, label = content })
                 ]

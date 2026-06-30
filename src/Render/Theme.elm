@@ -103,7 +103,7 @@ lightTheme : ActualTheme
 lightTheme =
     { background = whiteAlpha100
     , text = gray950
-    , codeBackground = indigo200
+    , codeBackground = Color.rgba 0.90 0.90 0.94 1
     , codeText = gray900
     , offsetBackground = whiteAlpha100
     , offsetText = gray800
@@ -119,7 +119,7 @@ darkTheme : ActualTheme
 darkTheme =
     { background = gray900
     , text = gray100
-    , codeBackground = gray920
+    , codeBackground = Color.rgba 0.35 0.37 0.42 1
     , codeText = gray100
     , offsetBackground = gray700
     , offsetText = gray200
