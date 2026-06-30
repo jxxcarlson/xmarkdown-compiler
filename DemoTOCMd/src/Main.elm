@@ -128,9 +128,6 @@ update msg model =
 
         LRSync searchText ->
             let
-                _ =
-                    Debug.log "LRSync received" searchText
-
                 params =
                     { defaultCompilerParameters
                         | docWidth = geometry model |> .docWidth
@@ -146,12 +143,6 @@ update msg model =
                 matches =
                     XMarkdown.API.searchBlocksContainingText params (String.lines model.sourceText) searchText
 
-                _ =
-                    Debug.log "Search matches found" (List.length matches)
-
-                _ =
-                    Debug.log "All matches" (List.map (\m -> { id = m.id, lineNumber = m.lineNumber, text = String.left 50 m.sourceText }) matches)
-
                 newIndex =
                     if searchText == model.lrSyncText && not (List.isEmpty matches) then
                         (model.lrSyncIndex + 1) |> modBy (List.length matches)
@@ -159,21 +150,12 @@ update msg model =
                     else
                         0
 
-                _ =
-                    Debug.log "Index calculation" { prevText = model.lrSyncText, currentText = searchText, prevIndex = model.lrSyncIndex, newIndex = newIndex, isSameText = searchText == model.lrSyncText }
-
                 currentMatch =
                     List.drop newIndex matches |> List.head
-
-                _ =
-                    Debug.log "Current match" currentMatch
             in
             case currentMatch of
                 Just match ->
                     let
-                        _ =
-                            Debug.log "Jumping to match ID" match.id
-
                         -- selectId should be the line number (as string) for highlighting
                         -- but we need the full ID for scrolling
                         lineNumberStr =
@@ -200,10 +182,6 @@ update msg model =
                     )
 
                 Nothing ->
-                    let
-                        _ =
-                            Debug.log "No match found at index" newIndex
-                    in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
         Render msg_ ->
@@ -385,9 +363,6 @@ jumpToTopOf elementId =
                                 -- Calculate scroll position to center the element in the viewport
                                 newScroll =
                                     max 0 (elementYInContainer - viewportHeight / 2 + elementHeight / 2)
-
-                                _ =
-                                    Debug.log "Scroll calculation" { elementId = elementId, fallbackId = lineNumberId, elementY = elementY, currentScroll = currentScroll, elementYInContainer = elementYInContainer, elementHeight = elementHeight, viewportHeight = viewportHeight, newScroll = newScroll }
                             in
                             newScroll
                         )
@@ -396,11 +371,4 @@ jumpToTopOf elementId =
             (\scrollY ->
                 Browser.Dom.setViewportOf XMarkdown.API.renderedTextId 0 scrollY
             )
-        |> Task.attempt
-            (\result ->
-                let
-                    _ =
-                        Debug.log "Scroll attempt result" result
-                in
-                NoOp
-            )
+        |> Task.attempt (\_ -> NoOp)
