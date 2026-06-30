@@ -58,13 +58,13 @@ itemList count acc settings _ block =
                 level_ =
                     indentation // 2
             in
-            Element.row [ Element.paddingEach { left = 0, right = 0, top = 0, bottom = 4 }, Element.width (Element.px (settings.width - Render.Constants.defaultIndentWidth)) ]
-                [ Element.el [ Element.alignTop, Element.paddingEach { left = 8 * (indentation + 1), right = 12, top = 0, bottom = 0 } ] (Element.text (itemLabel level_))
+            Element.row [ Element.spacing 8, Element.paddingEach { left = 0, right = 0, top = 0, bottom = 4 }, Element.width (Element.px (settings.width - Render.Constants.defaultIndentWidth)) ]
+                [ Element.el [ Font.size (Render.Settings.scaleFont settings 24), Element.alignTop, Element.width (Element.px 12), Element.paddingEach { left = 8 * (indentation + 1), right = 0, top = 0, bottom = 0 } ] (Element.text (itemLabel level_))
                 , Element.paragraph (Render.Sync.attributes settings_ block)
                     (Render.Expression.render count acc settings [] expr :: [])
                 ]
     in
-    Element.column (Element.spacing 2 :: Render.Sync.attributes settings block)
+    Element.column (Element.spacing 2 :: Element.moveRight 20 :: Element.paddingEach { left = 0, right = 0, top = 16, bottom = 0 } :: Render.Sync.attributes settings block)
         (List.map (renderItem settings) listOfExprList)
 
 
@@ -108,7 +108,7 @@ numberedList _ acc settings _ block =
         renderNumberedItem_ : Int -> AST.Language.Expression -> Element MarkupMsg
         renderNumberedItem_ k expr =
             Element.row
-                [ Element.width (Element.px 400)
+                [ Element.width (Element.px (settings.width - Render.Constants.defaultIndentWidth))
                 , Element.paddingEach { left = 9 * (1 + indentation_ expr), right = 0, top = 0, bottom = 0 }
                 ]
                 [ renderNumberedLabel settings (level expr) k
@@ -116,15 +116,15 @@ numberedList _ acc settings _ block =
                     (Render.Expression.render 0 acc settings [] expr :: [])
                 ]
     in
-    Element.column (Element.spacing 2 :: Render.Sync.attributes settings block)
+    Element.column (Element.spacing 2 :: Element.moveRight 20 :: Render.Sync.attributes settings block)
         (List.map2 renderNumberedItem_ (makeLabels listOfExprList) listOfExprList)
 
 
 renderNumberedLabel settings level_ index_ =
     Element.el
-        [ Font.size (Render.Settings.scaleFont settings 14)
+        [ Font.size (Render.Settings.scaleFont settings 20)
         , Element.alignTop
-        , Element.width (Element.px 18)
+        , Element.width (Element.px 24)
 
         --, Render.Utility.leftPadding (settings.leftIndentation + 12)
         , Font.color (Render.Settings.getThemedElementColor .text settings.theme)

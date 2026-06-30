@@ -43,7 +43,8 @@ item count acc settings attr block =
             indentationScale * level_
     in
     Element.row
-        ([ Element.moveRight (indentation |> toFloat)
+        ([ Element.moveRight 20
+         , Element.moveRight (indentation |> toFloat)
          , Element.alignTop
          , Render.Utility.idAttribute block.meta.id
          , Render.Utility.vspace 0 settings.topMarginForChildren
@@ -52,10 +53,10 @@ item count acc settings attr block =
             ++ Render.Sync.attributes settings block
         )
         [ Element.el
-            [ Font.size (Render.Settings.scaleFont settings 14)
-            , Element.alignTop
-            , Element.moveRight 6
-            , Element.width (Element.px 24)
+            [ Font.size (Render.Settings.scaleFont settings 24)
+            , Element.centerY
+            , Element.moveRight 12
+            , Element.width (Element.px 40)
             , Render.Utility.leftPadding settings.leftIndentation
             ]
             (Element.text label_)
@@ -114,17 +115,19 @@ numbered count acc settings attr block =
             indentationScale * level
     in
     Element.row
-        [ Element.moveRight (indentation |> toFloat)
+        [ Element.moveRight 20
+        , Element.moveRight (indentation |> toFloat)
         , Element.alignTop
         , Render.Utility.idAttribute block.meta.id
         , Render.Utility.vspace 0 settings.topMarginForChildren
         , Element.width (Element.px <| settings.width - 50)
         ]
         [ Element.el
-            [ Font.size (Render.Settings.scaleFont settings 14)
-            , Element.alignTop
-            , Element.width (Element.px 24)
-            , Render.Utility.leftPadding settings.leftRightIndentation
+            [ Font.size (Render.Settings.scaleFont settings 24)
+            , Element.centerY
+            , Element.moveRight 12
+            , Element.width (Element.px 40)
+            , Render.Utility.leftPadding settings.leftIndentation
             ]
             (Element.text (label_ ++ ". "))
         , Element.paragraph (Render.Utility.leftPadding settings.leftIndentation :: Render.Sync.attributes settings block)
