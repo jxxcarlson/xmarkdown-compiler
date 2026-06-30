@@ -21,7 +21,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 import XMarkdown.Types
 
 

@@ -12,6 +12,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode as D
 import XMarkdown.Sync
+import XMarkdown.Types exposing (SyncHighlight)
 
 
 {-| Configuration for [`view`](#view).
@@ -27,7 +28,7 @@ import XMarkdown.Sync
 type alias Config msg =
     { source : String
     , onInput : String -> msg
-    , highlight : Maybe XMarkdown.Sync.SyncHighlight
+    , highlight : Maybe SyncHighlight
     , attrs : List (Html.Attribute msg)
     }
 

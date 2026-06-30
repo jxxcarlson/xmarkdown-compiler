@@ -18,7 +18,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Theme
 import Render.TreeSupport
 import RoseTree.Tree exposing (Tree)
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 import XMarkdown.Types
 
 

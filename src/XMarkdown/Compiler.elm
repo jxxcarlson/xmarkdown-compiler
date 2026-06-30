@@ -1,11 +1,11 @@
 module XMarkdown.Compiler exposing
-    ( CompilerOutput, compile, parseFromString, view, viewTOC
-    , BlockMatch, parse, parseToForestWithAccumulator, searchBlocksContainingText, viewBodyOnly
+    ( CompilerOutput, view, viewTOC
+    , BlockMatch, compile, parseFromString, parseToForestWithAccumulator, searchBlocksContainingText, viewBodyOnly
     )
 
 {-|
 
-@docs CompilerOutput, compile, parseFromString, view, viewTOC
+@docs CompilerOutput, compileFromString, view, viewTOC
 
 -}
 
@@ -25,8 +25,7 @@ import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
 import XMarkdown.Config as Config
-import XMarkdown.Msg exposing (MarkupMsg)
-import XMarkdown.Types exposing (CompilerParameters, Filter(..))
+import XMarkdown.Types exposing (CompilerParameters, Filter(..), MarkupMsg)
 
 
 {-| -}

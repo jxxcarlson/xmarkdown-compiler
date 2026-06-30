@@ -9,7 +9,7 @@ import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock)
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg

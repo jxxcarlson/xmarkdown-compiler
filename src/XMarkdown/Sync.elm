@@ -1,4 +1,4 @@
-module XMarkdown.Sync exposing (SyncHighlight, fromMsg, encode, highlightAttribute)
+module XMarkdown.Sync exposing (fromMsg, encode, highlightAttribute)
 
 {-| RL sync (rendered → editor): clicking rendered text highlights and scrolls
 to the corresponding source span in the CodeMirror editor.
@@ -66,32 +66,14 @@ both operate on the same source text (the editor's document is the very string
 the compiler parsed).
 
 
-@docs SyncHighlight, fromMsg, encode, highlightAttribute
+@docs fromMsg, encode, highlightAttribute
 
 -}
 
 import Html
 import Html.Attributes
 import Json.Encode as E
-import XMarkdown.Msg exposing (MarkupMsg(..))
-
-
-{-| A source span to highlight in the editor.
-
-  - `mode = "chars"`: `start`/`end` are document character offsets (`end`
-    exclusive). Used for inline (phrase) clicks.
-  - `mode = "lines"`: `start`/`end` are 1-indexed source lines, both inclusive.
-    Used for block clicks.
-  - `tick` is a monotonic counter so repeat clicks on the same span re-trigger
-    the editor (the attribute value changes, so Elm re-pushes it).
-
--}
-type alias SyncHighlight =
-    { mode : String
-    , start : Int
-    , end : Int
-    , tick : Int
-    }
+import XMarkdown.Types exposing (MarkupMsg(..), SyncHighlight)
 
 
 {-| Map a MarkupMsg to a highlight. `Nothing` for messages that are not RL clicks.

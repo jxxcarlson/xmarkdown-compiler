@@ -22,7 +22,7 @@ import Render.Theme
 import Render.Utility
 import RoseTree.Tree exposing (Tree)
 import XMarkdown.Config as Config
-import XMarkdown.Msg exposing (MarkupMsg(..))
+import XMarkdown.Types exposing (MarkupMsg(..))
 import String.Extra
 
 

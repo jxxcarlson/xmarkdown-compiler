@@ -16,7 +16,7 @@ import Render.Settings exposing (RenderSettings)
 import Render.Sync
 import Render.Theme
 import Render.Utility
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 import SyntaxHighlight exposing (toBlockHtml)
 
 

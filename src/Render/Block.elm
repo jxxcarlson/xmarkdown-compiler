@@ -9,7 +9,7 @@ import Render.Helper
 import Render.OrdinaryBlock
 import Render.Settings exposing (RenderSettings)
 import Render.VerbatimBlock as VerbatimBlock
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 
 
 renderBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> List (Element MarkupMsg)

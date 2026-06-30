@@ -1,7 +1,7 @@
 module SyncTest exposing (suite)
 
 import Expect
-import XMarkdown.Msg exposing (MarkupMsg(..))
+import XMarkdown.Types exposing (MarkupMsg(..))
 import XMarkdown.Sync as Sync
 import Test exposing (Test, describe, test)
 

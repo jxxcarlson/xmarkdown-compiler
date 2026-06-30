@@ -24,7 +24,7 @@ import Render.Sync
 import Render.Theme
 import Render.ThemeHelpers
 import Render.Utility as Utility
-import XMarkdown.Msg exposing (MarkupMsg(..))
+import XMarkdown.Types exposing (MarkupMsg(..))
 
 
 render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> Expression -> Element MarkupMsg

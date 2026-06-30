@@ -1,8 +1,10 @@
 module XMarkdown.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
-    , compileSimple, compileString, compileStringWithTitle
-    , BlockMatch, searchBlocksContainingText
+    , compileSimple
+    , BlockMatch, compile, compileString, compileStringWithTitle, renderedTextId, searchBlocksContainingText, viewEditor
+    , defaultCompilerParameters
+    , fromMsg
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
@@ -71,12 +73,47 @@ For one-step compilation that parses and renders together, use `compileSimple`.
 
 -}
 
+--4. XMarkdown.Msg exposing (MarkupMsg) — used for:
+--  - Type: MarkupMsg (line 19 in type signature)
+--  - Pattern matching: XMarkdown.Msg.ToggleTOCNodeID and XMarkdown.Msg.SelectId (lines 212, 227)
+--5. XMarkdown.Sync — used for:
+--  - Type: XMarkdown.Sync.SyncHighlight (line 51)
+--  - Function: XMarkdown.Sync.fromMsg (line 206)
+--6. XMarkdown.Types exposing (Filter(..), defaultCompilerParameters) — used for:
+--  - Type: Filter (line 21 exposing, NoFilter at line 283)
+--  - Value: defaultCompilerParameters (lines 92, 135, 278)
+
 import Element exposing (Element)
 import Element.Font
 import Render.Settings
 import XMarkdown.Compiler
-import XMarkdown.Msg
-import XMarkdown.Types
+import XMarkdown.Editor
+import XMarkdown.Sync
+import XMarkdown.Types exposing (MarkupMsg)
+
+
+defaultCompilerParameters =
+    XMarkdown.Types.defaultCompilerParameters
+
+
+fromMsg =
+    XMarkdown.Sync.fromMsg
+
+
+compile =
+    XMarkdown.Compiler.compile
+
+
+viewEditor =
+    XMarkdown.Editor.view
+
+
+renderedTextId =
+    XMarkdown.Editor.renderedTextId
+
+
+
+--Pattern matching: XMarkdown.Msg.ToggleTOCNodeID and XMarkdown.Msg.SelectId
 
 
 {-| Compile source text to elm-ui HTML in one step (parse + render). The width of
@@ -85,14 +122,12 @@ document; in a live-editing context, increment it after each edit so the rendere
 text updates correctly.
 
     import Element exposing (Element)
-    import XMarkdown.API
-    import XMarkdown.Msg exposing (MarkupMsg)
-    import XMarkdown.Types exposing (defaultCompilerParameters)
+    import XMarkdown.API exposing (MarkupMsg, defaultCompilerParameters)
 
 Your `Msg` type should include `| Render MarkupMsg`.
 
 -}
-compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
+compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
 compileSimple params sourceText =
     XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.view params.docWidth
 
@@ -133,7 +168,7 @@ This is useful when you want to display the main content separately from other
 document parts like the table of contents or title.
 
 -}
-viewBodyOnly : Int -> XMarkdown.Compiler.CompilerOutput -> List (Element XMarkdown.Msg.MarkupMsg)
+viewBodyOnly : Int -> XMarkdown.Compiler.CompilerOutput -> List (Element MarkupMsg)
 viewBodyOnly =
     XMarkdown.Compiler.viewBodyOnly
 
@@ -150,18 +185,18 @@ The table of contents automatically includes links to document sections and
 respects the document hierarchy.
 
 -}
-viewTOC : XMarkdown.Compiler.CompilerOutput -> List (Element XMarkdown.Msg.MarkupMsg)
+viewTOC : XMarkdown.Compiler.CompilerOutput -> List (Element MarkupMsg)
 viewTOC =
     XMarkdown.Compiler.viewTOC
 
 
 {-| -}
-compileString : XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
+compileString : XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
 compileString params str =
     XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
 
 
-compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Element XMarkdown.Msg.MarkupMsg)
+compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
 compileStringWithTitle title params str =
     XMarkdown.Compiler.compile params (String.lines str)
         |> XMarkdown.Compiler.viewBodyOnly params.docWidth

@@ -15,9 +15,8 @@ import File exposing (File)
 import File.Select as Select
 import Html exposing (Html)
 import Html.Attributes
-import XMarkdown.API
-import XMarkdown.Msg exposing (MarkupMsg)
-import XMarkdown.Types exposing (Filter(..), defaultCompilerParameters)
+import XMarkdown.API exposing (defaultCompilerParameters)
+import XMarkdown.Types exposing (MarkupMsg(..), Filter(..))
 import Task
 
 
@@ -98,7 +97,7 @@ update msg model =
 
         Render markupMsg ->
             case markupMsg of
-                XMarkdown.Msg.SelectId id ->
+                SelectId id ->
                     ( { model | selectId = id }, Cmd.none )
 
                 _ ->

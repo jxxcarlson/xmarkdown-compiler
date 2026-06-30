@@ -1,27 +1,14 @@
-module XMarkdown.Msg exposing (MarkupMsg(..), Handling(..))
+module XMarkdown.Msg exposing (..)
 
-{-| The XMarkdown.Msg.MarkupMsg type is need for synchronization of the source and rendered
-text when using the Codemirror editor.
+{-| This module is deprecated and no longer needed.
 
-@docs MarkupMsg, Handling
+The `MarkupMsg` and `Handling` types have been moved to `XMarkdown.Types`.
+Update your imports:
+
+    -- OLD:
+    import XMarkdown.Msg exposing (MarkupMsg)
+
+    -- NEW:
+    import XMarkdown.Types exposing (MarkupMsg)
 
 -}
-
-
-{-| -}
-type MarkupMsg
-    = SendMeta { begin : Int, end : Int, index : Int, id : String }
-    | SendLineNumber { begin : Int, end : Int }
-    | SelectId String
-    | ToggleTOCNodeID String
-    | HighlightId String
-      --| RequestAnchorOffset_
-      --| ReceiveAnchorOffset_ (Maybe Int)
-    | JumpToTop
-    | MMNoOp
-
-
-{-| -}
-type Handling
-    = MHStandard
-    | MHAsCheatSheet

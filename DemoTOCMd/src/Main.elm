@@ -13,12 +13,11 @@ import Html.Attributes exposing (class, id, style)
 import Html.Events
 import List.Extra
 import Ports
-import XMarkdown.API
+import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
 import XMarkdown.Compiler
 import XMarkdown.Editor
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg(..), Filter(..), SyncHighlight)
 import XMarkdown.Sync
-import XMarkdown.Types exposing (Filter(..), defaultCompilerParameters)
 import Task
 
 
@@ -48,7 +47,7 @@ type alias Model =
     , windowHeight : Int
     , selectId : String
     , idsOfOpenNodes : List String
-    , syncHighlight : Maybe XMarkdown.Sync.SyncHighlight
+    , syncHighlight : Maybe SyncHighlight
     , tick : Int
     , fileName : String
     , lrSyncMatches : List XMarkdown.API.BlockMatch
@@ -203,13 +202,13 @@ update msg model =
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
         Render msg_ ->
-            case XMarkdown.Sync.fromMsg (model.tick + 1) msg_ of
+            case fromMsg (model.tick + 1) msg_ of
                 Just h ->
                     ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
 
                 Nothing ->
                     case msg_ of
-                        XMarkdown.Msg.ToggleTOCNodeID nodeId ->
+                        ToggleTOCNodeID nodeId ->
                             let
                                 idsOfOpenNodes =
                                     if String.left 2 nodeId == "@-" then
@@ -224,7 +223,7 @@ update msg model =
                             in
                             ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
 
-                        XMarkdown.Msg.SelectId selId ->
+                        SelectId selId ->
                             if selId == "title" then
                                 ( { model | selectId = selId }, jumpToTopOf XMarkdown.Editor.renderedTextId )
 

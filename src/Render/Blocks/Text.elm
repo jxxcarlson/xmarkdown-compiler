@@ -14,7 +14,7 @@ import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 import Render.Sync
-import XMarkdown.Msg exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg)
 
 
 {-| Register all text block renderers to the registry

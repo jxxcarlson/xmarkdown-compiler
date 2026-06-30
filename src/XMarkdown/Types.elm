@@ -1,4 +1,4 @@
-module XMarkdown.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..))
+module XMarkdown.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..), MarkupMsg(..), Handling(..), SyncHighlight)
 
 {-| This module defines the core types used for configuring the Scripta compiler.
 The main type is `CompilerParameters`, which controls how XMarkdown source text
@@ -84,4 +84,40 @@ type alias CompilerParameters =
     , fontSize : Int
     , numberToLevel : Int
     , data : Dict String String
+    }
+
+
+{-| Messages from rendered markup for synchronization with the editor.
+Used for rendered-to-source syncing (e.g., clicking rendered text highlights source).
+-}
+type MarkupMsg
+    = SendMeta { begin : Int, end : Int, index : Int, id : String }
+    | SendLineNumber { begin : Int, end : Int }
+    | SelectId String
+    | ToggleTOCNodeID String
+    | HighlightId String
+    | JumpToTop
+    | MMNoOp
+
+
+{-| How to handle a MarkupMsg. -}
+type Handling
+    = MHStandard
+    | MHAsCheatSheet
+
+
+{-| A source span to highlight in the editor.
+
+  - `mode = "chars"`: `start`/`end` are document character offsets (`end` exclusive).
+    Used for inline (phrase) clicks.
+  - `mode = "lines"`: `start`/`end` are 1-indexed source lines, both inclusive.
+    Used for block clicks.
+  - `tick` is a monotonic counter so repeat clicks on the same span re-trigger the editor.
+
+-}
+type alias SyncHighlight =
+    { mode : String
+    , start : Int
+    , end : Int
+    , tick : Int
     }
