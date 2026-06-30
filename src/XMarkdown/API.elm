@@ -2,9 +2,7 @@ module XMarkdown.API exposing
     ( compileOutput
     , viewBodyOnly, viewTOC
     , compileSimple
-    , BlockMatch, compile, compileString, compileStringWithTitle, renderedTextId, searchBlocksContainingText, viewEditor
-    , defaultCompilerParameters
-    , fromMsg
+    , BlockMatch, compile, compileString, compileStringWithTitle, defaultCompilerParameters, editorView, fromMsg, renderedTextId, searchBlocksContainingText, viewEditor
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
@@ -92,6 +90,10 @@ import XMarkdown.Sync
 import XMarkdown.Types exposing (MarkupMsg)
 
 
+editorView =
+    XMarkdown.Editor.view
+
+
 defaultCompilerParameters =
     XMarkdown.Types.defaultCompilerParameters
 
@@ -151,7 +153,7 @@ which can then be displayed using the view functions.
             ]
 
 -}
-compileOutput : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Compiler.CompilerOutput
+compileOutput : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Types.CompilerOutput
 compileOutput params lines =
     XMarkdown.Compiler.compile params lines
 
@@ -168,7 +170,7 @@ This is useful when you want to display the main content separately from other
 document parts like the table of contents or title.
 
 -}
-viewBodyOnly : Int -> XMarkdown.Compiler.CompilerOutput -> List (Element MarkupMsg)
+viewBodyOnly : Int -> XMarkdown.Types.CompilerOutput -> List (Element MarkupMsg)
 viewBodyOnly =
     XMarkdown.Compiler.viewBodyOnly
 
@@ -185,7 +187,7 @@ The table of contents automatically includes links to document sections and
 respects the document hierarchy.
 
 -}
-viewTOC : XMarkdown.Compiler.CompilerOutput -> List (Element MarkupMsg)
+viewTOC : XMarkdown.Types.CompilerOutput -> List (Element MarkupMsg)
 viewTOC =
     XMarkdown.Compiler.viewTOC
 

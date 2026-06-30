@@ -1,5 +1,5 @@
 module XMarkdown.Compiler exposing
-    ( CompilerOutput, view, viewTOC
+    ( view, viewTOC
     , BlockMatch, compile, parseFromString, parseToForestWithAccumulator, searchBlocksContainingText, viewBodyOnly
     )
 
@@ -25,7 +25,7 @@ import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
 import XMarkdown.Config as Config
-import XMarkdown.Types exposing (CompilerParameters, Filter(..), MarkupMsg)
+import XMarkdown.Types exposing (CompilerOutput, CompilerParameters, Filter(..), MarkupMsg)
 
 
 {-| -}
@@ -103,16 +103,6 @@ parse idPrefix outerCount lines =
 
 
 -- M compiler
-
-
-{-| -}
-type alias CompilerOutput =
-    { body : List (Element MarkupMsg)
-    , banner : Maybe (Element MarkupMsg)
-    , toc : List (Element MarkupMsg)
-    , title : Element MarkupMsg
-    , interBlockSpacing : Float
-    }
 
 
 {-| A block match result from searching for text in the document

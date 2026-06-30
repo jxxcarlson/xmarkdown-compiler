@@ -1,4 +1,7 @@
-module XMarkdown.Types exposing (CompilerParameters, defaultCompilerParameters, Filter(..), MarkupMsg(..), Handling(..), SyncHighlight)
+module XMarkdown.Types exposing
+    ( CompilerParameters, defaultCompilerParameters, Filter(..)
+    , CompilerOutput, Handling(..), MarkupMsg(..), SyncHighlight
+    )
 
 {-| This module defines the core types used for configuring the Scripta compiler.
 The main type is `CompilerParameters`, which controls how XMarkdown source text
@@ -31,6 +34,7 @@ For simple use cases, start with `defaultCompilerParameters` and override the fi
 -}
 
 import Dict exposing (Dict)
+import Element exposing (Element)
 import Render.Theme
 
 
@@ -61,6 +65,16 @@ defaultCompilerParameters =
     , scale = 1
     , numberToLevel = 0
     , data = Dict.empty
+    }
+
+
+{-| -}
+type alias CompilerOutput =
+    { body : List (Element MarkupMsg)
+    , banner : Maybe (Element MarkupMsg)
+    , toc : List (Element MarkupMsg)
+    , title : Element MarkupMsg
+    , interBlockSpacing : Float
     }
 
 
@@ -100,7 +114,8 @@ type MarkupMsg
     | MMNoOp
 
 
-{-| How to handle a MarkupMsg. -}
+{-| How to handle a MarkupMsg.
+-}
 type Handling
     = MHStandard
     | MHAsCheatSheet

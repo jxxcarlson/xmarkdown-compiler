@@ -1,5 +1,7 @@
 module Main exposing (main)
 
+--import XMarkdown.Compiler
+
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -13,12 +15,9 @@ import Html.Attributes exposing (class, id, style)
 import Html.Events
 import List.Extra
 import Ports
-import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
-import XMarkdown.Compiler
-import XMarkdown.Editor
-import XMarkdown.Types exposing (MarkupMsg(..), Filter(..), SyncHighlight)
-import XMarkdown.Sync
 import Task
+import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
+import XMarkdown.Types exposing (Filter(..), MarkupMsg(..), SyncHighlight)
 
 
 main : Program Flags Model Msg
@@ -182,10 +181,14 @@ update msg model =
                         css =
                             "[data-line-number=\""
                                 ++ lineNumberStr
-                                ++ "\"] { background-color: " ++ params.highlightColor ++ " !important; }\n"
+                                ++ "\"] { background-color: "
+                                ++ params.highlightColor
+                                ++ " !important; }\n"
                                 ++ "[data-line-number=\""
                                 ++ lineNumberStr
-                                ++ "\"] * { background-color: " ++ params.highlightColor ++ " !important; }"
+                                ++ "\"] * { background-color: "
+                                ++ params.highlightColor
+                                ++ " !important; }"
                     in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText, selectId = lineNumberStr }
                     , Cmd.batch
@@ -225,7 +228,7 @@ update msg model =
 
                         SelectId selId ->
                             if selId == "title" then
-                                ( { model | selectId = selId }, jumpToTopOf XMarkdown.Editor.renderedTextId )
+                                ( { model | selectId = selId }, jumpToTopOf XMarkdown.API.renderedTextId )
 
                             else
                                 ( { model | selectId = selId }, Cmd.none )
@@ -285,9 +288,9 @@ view model =
                 , numberToLevel = 2
             }
 
-        compilerOutput : XMarkdown.Compiler.CompilerOutput
+        compilerOutput : XMarkdown.Types.CompilerOutput
         compilerOutput =
-            XMarkdown.Compiler.compile params (String.lines model.sourceText)
+            XMarkdown.API.compile params (String.lines model.sourceText)
     in
     div [ class "app" ]
         [ div [ class "app-header" ]
@@ -302,7 +305,7 @@ view model =
                 [ editorView model ]
             , div
                 [ class "panel rendered-panel"
-                , id XMarkdown.Editor.renderedTextId
+                , id XMarkdown.API.renderedTextId
                 , style "width" (px g.renderedW)
                 ]
                 [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
@@ -315,7 +318,7 @@ view model =
 
 editorView : Model -> Html Msg
 editorView model =
-    XMarkdown.Editor.view
+    XMarkdown.API.editorView
         { source = model.initialText
         , onInput = InputText
         , highlight = model.syncHighlight
@@ -357,7 +360,7 @@ jumpToTopOf elementId =
     )
         |> Task.andThen
             (\element ->
-                Browser.Dom.getViewportOf XMarkdown.Editor.renderedTextId
+                Browser.Dom.getViewportOf XMarkdown.API.renderedTextId
                     |> Task.map
                         (\viewport ->
                             let
@@ -389,7 +392,7 @@ jumpToTopOf elementId =
             )
         |> Task.andThen
             (\scrollY ->
-                Browser.Dom.setViewportOf XMarkdown.Editor.renderedTextId 0 scrollY
+                Browser.Dom.setViewportOf XMarkdown.API.renderedTextId 0 scrollY
             )
         |> Task.attempt
             (\result ->
