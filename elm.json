@@ -3,7 +3,7 @@
     "name": "jxxcarlson/xmarkdown-compiler",
     "summary": "A compiler for XMarkdown (Scientific Markdown)",
     "license": "MIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exposed-modules": [
         "XMarkdown.API",
         "XMarkdown.Types"
