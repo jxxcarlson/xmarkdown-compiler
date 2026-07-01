@@ -9,10 +9,9 @@ module Render.Tree exposing (renderTree)
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Dict
-import Element exposing (Element)
-import Element.Background
-import Element.Border
-import Element.Font
+import Html exposing (Html)
+import Html.Attributes
+import Html.Events
 import Render.Attributes
 import Render.Settings exposing (RenderSettings)
 import Render.TreeSupport
@@ -20,14 +19,14 @@ import RoseTree.Tree exposing (Tree)
 import XMarkdown.Types exposing (MarkupMsg, Theme(..))
 
 
-{-| Render a tree of expression blocks
+{-| Render a tree of expression blocks (returns Html)
 -}
 renderTree :
     XMarkdown.Types.CompilerParameters
     -> Render.Settings.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
-    -> Element MarkupMsg
+    -> Html MarkupMsg
 renderTree params settings accumulator tree =
     let
         root : ExpressionBlock
@@ -43,58 +42,47 @@ renderTree params settings accumulator tree =
                 Just name ->
                     name == "box"
 
-        backgroundColor =
-            Render.Settings.getThemedElementColor .offsetBackground params.theme
-
-        style =
+        fontStyle =
             case Dict.get "style" root.properties of
                 Just "italic" ->
-                    Element.Font.italic
-
+                    "italic"
                 _ ->
-                    Element.Font.unitalicized
+                    "normal"
 
-        bgColorAttr : Element.Color
-        bgColorAttr =
-            Render.Settings.getThemedElementColor .offsetBackground params.theme
-
-        -- Determine if the root bloc`k is a box-like block
-        --blockAttrs : List (Element.Attribute MarkupMsg)
         borderColor =
             case params.theme of
                 Light ->
-                    Element.rgba 0.7 0.8 0.9 1
+                    "rgba(179, 204, 230, 1)"
 
                 Dark ->
-                    Element.rgba 0.6 0.6 0.6 0.5
-
-        width2 =
-            Element.width <| Element.px (settings.width - 60)
+                    "rgba(153, 153, 153, 0.5)"
 
         blockAttrs =
-            style :: Element.Font.size settings.fontSize :: (Element.width <| Element.px settings.width) :: Element.Background.color bgColorAttr :: []
+            [ Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
+            , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
+            , Html.Attributes.style "font-style" fontStyle
+            ]
     in
     if isBoxLike root then
-        Element.column blockAttrs
-            [ Element.column
-                [ Element.paddingEach { left = 0, right = 0, top = 0, bottom = 18 }
-                , Element.Border.color borderColor
-                , Element.Border.width 4
-                , Element.centerX
-                , width2
+        Html.div blockAttrs
+            [ Html.div
+                [ Html.Attributes.style "padding-bottom" "18px"
+                , Html.Attributes.style "border" ("4px solid " ++ borderColor)
+                , Html.Attributes.style "margin-left" "auto"
+                , Html.Attributes.style "margin-right" "auto"
+                , Html.Attributes.style "width" (String.fromInt (settings.width - 60) ++ "px")
                 ]
-                [ renderTree_ params
-                    { settings
-                        | width = settings.width - 24
-                        , backgroundColor = backgroundColor
-                    }
-                    accumulator
-                    tree
+                [ renderTree_ params settings accumulator tree
                 ]
             ]
 
     else
-        Element.column [ Element.width Element.fill, style, Element.Font.size settings.fontSize ] [ renderTree_ params settings accumulator tree ]
+        Html.div
+            [ Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "font-style" fontStyle
+            , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
+            ]
+            [ renderTree_ params settings accumulator tree ]
 
 
 renderTree_ :
@@ -102,7 +90,7 @@ renderTree_ :
     -> Render.Settings.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
-    -> Element MarkupMsg
+    -> Html MarkupMsg
 renderTree_ params settings accumulator tree =
     let
         root =
@@ -118,20 +106,20 @@ renderTree_ params settings accumulator tree =
             renderBranchNode params settings accumulator root children
 
 
-{-| Render a leaf node (a block with no children)
+{-| Render a leaf node (a block with no children) - returns Html
 -}
 renderLeafNode :
     XMarkdown.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
     -> ExpressionBlock
-    -> Element MarkupMsg
+    -> Html MarkupMsg
 renderLeafNode params settings accumulator root =
-    Element.column (Element.width Element.fill :: Render.TreeSupport.renderAttributes settings root ++ getBlockAttributes root ++ Render.Settings.unrollTheme params.theme)
+    Html.div (Render.TreeSupport.renderAttributes settings root)
         (Render.TreeSupport.renderBody params settings accumulator root)
 
 
-{-| Render a branch node (a block with children)
+{-| Render a branch node (a block with children) - returns Html
 -}
 renderBranchNode :
     XMarkdown.Types.CompilerParameters
@@ -139,7 +127,7 @@ renderBranchNode :
     -> Accumulator
     -> ExpressionBlock
     -> List (Tree ExpressionBlock)
-    -> Element MarkupMsg
+    -> Html MarkupMsg
 renderBranchNode params settings accumulator root children =
     renderStandardBranch params settings accumulator root children
 
@@ -159,16 +147,15 @@ renderStandardBranch :
     -> Accumulator
     -> ExpressionBlock
     -> List (Tree ExpressionBlock)
-    -> Element MarkupMsg
+    -> Html MarkupMsg
 renderStandardBranch params settings accumulator root children =
-    Element.column (Element.width Element.fill :: Element.spacing (round settings.interBlockSpacing) :: getBlockAttributes root)
+    Html.div
+        (Render.TreeSupport.renderAttributes settings root ++
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "flex-direction" "column"
+            , Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "gap" (String.fromFloat settings.interBlockSpacing ++ "px")
+            ])
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )
-
-
-{-| Get attributes for a block using the consolidated Attributes module
--}
-getBlockAttributes : ExpressionBlock -> List (Element.Attribute MarkupMsg)
-getBlockAttributes block =
-    Render.Attributes.getBlockAttributes block

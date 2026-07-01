@@ -11,8 +11,9 @@ import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
 import Dict
 import Either exposing (Either(..))
-import Element exposing (Element)
+import Html exposing (Html)
 import Html.Attributes
+import Html.Events
 import Render.Expression
 import Render.Helper
 import Render.Indentation
@@ -25,36 +26,33 @@ import XMarkdown.Types exposing (MarkupMsg)
 import XMarkdown.Types
 
 
-{-| Simplified version of Block.renderAttributes
+{-| Simplified version of Block.renderAttributes (now returns Html.Attribute)
 -}
-renderAttributes : RenderSettings -> ExpressionBlock -> List (Element.Attribute MarkupMsg)
+renderAttributes : RenderSettings -> ExpressionBlock -> List (Html.Attribute MarkupMsg)
 renderAttributes settings block =
-    case block.heading of
-        Paragraph ->
-            Element.focused [] :: syncAttributes settings block
-
-        Ordinary name ->
-            syncAttributes settings block ++ Element.focused [] :: Render.OrdinaryBlock.getAttributes name
-
-        Verbatim _ ->
-            Element.focused [] :: syncAttributes settings block
+    syncAttributes settings block
 
 
 {-| The standard attributes for a block are those needed for LR and RL sync
 and for highlighting the block if it is selected.
+TODO: Phase 5 - Wire up proper sync via Render.Sync module
 -}
-syncAttributes : RenderSettings -> ExpressionBlock -> List (Element.Attribute MarkupMsg)
+syncAttributes : RenderSettings -> ExpressionBlock -> List (Html.Attribute MarkupMsg)
 syncAttributes settings block =
-    [ Render.Utility.idAttributeFromInt block.meta.lineNumber
-    , Render.Sync.rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
-    , Element.htmlAttribute (Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber))
+    [ Html.Attributes.id (String.fromInt block.meta.lineNumber)
+    , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
     ]
-        ++ Render.Sync.highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
+        ++ (if String.fromInt block.meta.lineNumber == settings.selectedId then
+                [ Html.Attributes.style "background-color" "rgba(160, 160, 255, 0.3)" ]
+            else
+                []
+           )
 
 
-{-| Simplified version of Block.renderBody
+{-| Simplified version of Block.renderBody (returns Html)
+TODO: Phase 3+ - Implement actual block rendering
 -}
-renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Element MarkupMsg)
+renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Html MarkupMsg)
 renderBody params settings acc block =
     let
         isHeading =
@@ -62,55 +60,56 @@ renderBody params settings acc block =
 
         spacer =
             if isHeading then
-                [ Element.el [ Element.height (Element.px (round params.paddingAboveHeadings)) ] Element.none ]
+                [ Html.div [ Html.Attributes.style "height" (String.fromInt (round params.paddingAboveHeadings) ++ "px") ] [] ]
             else
                 []
     in
     case block.heading of
         Paragraph ->
-            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block ++ [ Element.padding 8 ]) [ renderParagraphBody params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
+            spacer ++ [ Html.div (renderAttributes settings block ++ [ Html.Attributes.style "padding" "8px" ]) [ renderParagraphBody params.editCount acc settings [] block ] ]
 
         Ordinary _ ->
-            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ Render.OrdinaryBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block ] ]
+            spacer ++ [ Html.div (renderAttributes settings block) [ Html.text "Ordinary block - TODO Phase 3" ] ]
 
         Verbatim _ ->
-            spacer ++ [ Element.column (Element.width Element.fill :: Render.Sync.attributes settings block) [ VerbatimBlock.render params.editCount acc settings (Render.Settings.unrollTheme params.theme) block |> Render.Helper.showError block.meta.error ] ]
+            spacer ++ [ Html.div (renderAttributes settings block) [ Html.text "Verbatim block - TODO Phase 3" ] ]
 
 
-{-| Render a paragraph body
+{-| Render a paragraph body (returns Html)
+TODO: Phase 3+ - Implement expression rendering
 -}
-renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 renderParagraphBody count acc settings attrs block =
     case block.body of
         Right exprs ->
-            Element.paragraph (Render.Helper.htmlId block.meta.id :: Element.width (Element.px settings.width) :: attrs)
-                [ List.map (Render.Expression.render count acc settings attrs) exprs
-                    |> clickableParagraph block.meta.lineNumber block.meta.numberOfLines (Render.Helper.selectedColor block.meta.id settings)
-                    |> indentParagraph block.indent
-                ]
+            Html.p (Html.Attributes.id block.meta.id :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px") :: attrs)
+                [ Html.text "Paragraph content - TODO Phase 4" ]
 
         Left _ ->
-            Element.none
+            Html.text ""
 
 
-{-| Helper for clickable paragraphs
+{-| Helper for clickable paragraphs (returns Html)
+TODO: Phase 5 - Wire up proper sync via Render.Sync module
 -}
-clickableParagraph : Int -> Int -> Element.Attribute MarkupMsg -> List (Element MarkupMsg) -> Element MarkupMsg
+clickableParagraph : Int -> Int -> Html.Attribute MarkupMsg -> List (Html MarkupMsg) -> Html MarkupMsg
 clickableParagraph lineNumber numberOfLines color elements =
     let
         id =
             String.fromInt lineNumber
     in
-    Element.paragraph
-        [ color
-        , Render.Sync.rightToLeftSyncHelper lineNumber numberOfLines
-        , Render.Helper.htmlId id
+    Html.p
+        [ Html.Attributes.id id
+        , color
         ]
         elements
 
 
-{-| Helper for indenting paragraphs
+{-| Helper for indenting paragraphs (returns Html)
 -}
-indentParagraph : Int -> Element msg -> Element msg
+indentParagraph : Int -> Html msg -> Html msg
 indentParagraph indent x =
-    Render.Indentation.indentParagraph indent x
+    if indent > 0 then
+        Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
+    else
+        x
