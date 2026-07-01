@@ -7,7 +7,8 @@ module Render.OrdinaryBlock exposing (getAttributes, render)
 -}
 
 import Either exposing (Either(..))
-import Element exposing (Element)
+import Html exposing (Html)
+import Html.Attributes
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.BlockRegistry exposing (BlockRegistry)
@@ -22,9 +23,9 @@ import Render.GHTable
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-{-| Get attributes for a specific block type by name
+{-| Get attributes for a specific block type by name (now returns Html.Attribute)
 -}
-getAttributes : String -> List (Element.Attribute MarkupMsg)
+getAttributes : String -> List (Html.Attribute MarkupMsg)
 getAttributes name =
     let
         blockType =
@@ -51,9 +52,9 @@ initRegistry =
             ]
 
 
-{-| Render an ordinary block using the registry
+{-| Render an ordinary block using the registry (returns Html)
 -}
-render : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 render count acc settings attr block =
     let
         registry =
@@ -61,7 +62,7 @@ render count acc settings attr block =
     in
     case block.body of
         Left _ ->
-            Element.none
+            Html.text ""
 
         Right _ ->
             case block.heading of
@@ -75,7 +76,7 @@ render count acc settings attr block =
                                         -- Find the env renderer as our fallback
                                         envRenderer =
                                             Render.BlockRegistry.lookup "env" registry
-                                                |> Maybe.withDefault (\_ _ _ _ _ -> Element.none)
+                                                |> Maybe.withDefault (\_ _ _ _ _ -> Html.text "")
                                     in
                                     envRenderer count acc settings attr block
 
@@ -95,11 +96,14 @@ render count acc settings attr block =
                     indentOrdinaryBlock block.indent (String.fromInt block.meta.lineNumber) settings renderedBlock
 
                 _ ->
-                    Element.none
+                    Html.text ""
 
 
-{-| Apply indentation to an ordinary block
+{-| Apply indentation to an ordinary block (returns Html)
 -}
-indentOrdinaryBlock : Int -> String -> RenderSettings -> Element msg -> Element msg
+indentOrdinaryBlock : Int -> String -> RenderSettings -> Html msg -> Html msg
 indentOrdinaryBlock indent id settings x =
-    Render.Indentation.indentOrdinaryBlock indent id settings x
+    if indent > 0 then
+        Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
+    else
+        x

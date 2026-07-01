@@ -7,9 +7,8 @@ module Render.Blocks.Text exposing (registerRenderers)
 -}
 
 import Dict
-import Element exposing (Element)
-import Element.Font as Font
-import Element.Background
+import Html exposing (Html)
+import Html.Attributes
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
@@ -29,23 +28,24 @@ registerRenderers registry =
         registry
 
 
-{-| Render a quotation block
+{-| Render a quotation block (returns Html)
 -}
-quotation : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+quotation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 quotation count acc settings attrs block =
     let
         content =
             Dict.get "firstLine" block.properties
-                |> Maybe.map (\text -> [ Element.text text ])
+                |> Maybe.map (\text -> [ Html.text text ])
                 |> Maybe.withDefault []
     in
-    Element.row
-        [ Element.width Element.fill
-        , Render.Helper.htmlId block.meta.id
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "width" "100%"
+        , Html.Attributes.id block.meta.id
         ]
-        [ Element.el [ Element.width (Element.px 40) ] Element.none
-        , Element.paragraph
-            [ Font.italic
+        [ Html.div [ Html.Attributes.style "width" "40px" ] []
+        , Html.p
+            [ Html.Attributes.style "font-style" "italic"
             ]
             content
         ]

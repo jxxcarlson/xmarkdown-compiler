@@ -1,148 +1,54 @@
 module Render.List exposing (desc, item, numbered)
 
-import Dict
-import Element exposing (Element)
-import Element.Font as Font
+import Html exposing (Html)
+import Html.Attributes
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
-import List.Extra
-import Render.Helper
 import Render.Settings exposing (RenderSettings)
-import Render.Sync
-import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-
--- LISTS
-
-
-indentationScale =
-    15
-
-
-item : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+{-| Render a list item
+-}
+item : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 item count acc settings attr block =
     let
-        level_ =
-            block.indent // 2
-
-        label_ =
-            case modBy 3 level_ of
-                0 ->
-                    String.fromChar '•'
-
-                1 ->
-                    String.fromChar '○'
-
-                _ ->
-                    "◊"
-
-        indentation : Int
-        indentation =
-            indentationScale * level_
+        level = block.indent // 2
+        indentation = 15 * level
     in
-    Element.row
-        ([ Element.moveRight 10
-         , Element.moveRight (indentation |> toFloat)
-         , Element.alignTop
-         , Render.Utility.idAttribute block.meta.id
-         , Render.Utility.vspace 0 settings.topMarginForChildren
-         , Element.width (Element.px <| settings.width - 50)
+    Html.li
+        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
+         , Html.Attributes.id block.meta.id
          ]
-            ++ Render.Sync.attributes settings block
+            ++ attr
         )
-        [ Element.el
-            [ Font.size (Render.Settings.scaleFont settings 24)
-            , Element.alignTop
-            , Element.moveRight 12
-            , Element.width (Element.px 32)
-            , Render.Utility.leftPadding settings.leftIndentation
-            ]
-            (Element.text label_)
-        , Element.paragraph
-            (Render.Utility.leftPadding settings.leftIndentation
-                :: Render.Sync.attributes settings block
-            )
-            (Render.Helper.renderWithDefault "| item" count acc { settings | width = settings.width - indentation } attr (AST.Language.getExpressionContent block))
-        ]
+        [ Html.text "• list item" ]
 
 
-
---Render.Utility.idAttribute block.meta.id
-
-
-numbered : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+{-| Render a numbered list item
+-}
+numbered : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 numbered count acc settings attr block =
     let
-        id =
-            block.meta.id
-
-        alphabet =
-            [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" ]
-
-        romanNumerals =
-            [ "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx", "xi", "xxii", "xxiii", "xxiv", "xxv", "vi" ]
-
-        alpha k =
-            List.Extra.getAt (modBy 26 (k - 1)) alphabet |> Maybe.withDefault "a"
-
-        roman k =
-            List.Extra.getAt (modBy 26 (k - 1)) romanNumerals |> Maybe.withDefault "i"
-
-        val =
-            Dict.get id acc.numberedItemDict
-
-        index_ =
-            val |> Maybe.map .index |> Maybe.withDefault 1
-
-        level =
-            val |> Maybe.map .level |> Maybe.withDefault 0
-
-        label_ =
-            case modBy 3 level of
-                1 ->
-                    alpha index_
-
-                2 ->
-                    roman index_
-
-                _ ->
-                    String.fromInt index_
-
-        indentation : Int
-        indentation =
-            indentationScale * level
+        level = block.indent // 2
+        indentation = 15 * level
     in
-    Element.row
-        [ Element.moveRight 10
-        , Element.moveRight (indentation |> toFloat)
-        , Element.alignTop
-        , Render.Utility.idAttribute block.meta.id
-        , Render.Utility.vspace 0 settings.topMarginForChildren
-        , Element.width (Element.px <| settings.width - 50)
-        ]
-        [ Element.el
-            [ Font.size (Render.Settings.scaleFont settings 20)
-            , Element.alignTop
-            , Element.moveRight 12
-            , Element.width (Element.px 32)
-            , Render.Utility.leftPadding settings.leftIndentation
-            ]
-            (Element.text (label_ ++ ". "))
-        , Element.paragraph (Render.Utility.leftPadding settings.leftIndentation :: Render.Sync.attributes settings block)
-            (Render.Helper.renderWithDefault "| numbered" count acc { settings | width = settings.width - indentation } attr (AST.Language.getExpressionContent block))
-        ]
+    Html.li
+        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
+         , Html.Attributes.id block.meta.id
+         ]
+            ++ attr
+        )
+        [ Html.text "1. list item" ]
 
 
-desc : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+{-| Render a description list item
+-}
+desc : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 desc count acc settings attr block =
-    let
-        label =
-            String.join " " block.args
-    in
-    Element.row ([ Element.alignTop, Render.Utility.idAttribute block.meta.id, Render.Utility.vspace 0 settings.topMarginForChildren ] ++ Render.Sync.attributes settings block)
-        [ Element.el [ Font.bold, Element.alignTop, Element.width (Element.px 100) ] (Element.text label)
-        , Element.paragraph (Render.Utility.leftPadding settings.leftIndentation :: Render.Sync.attributes settings block)
-            (Render.Helper.renderWithDefault "| desc" count acc settings attr (AST.Language.getExpressionContent block))
-        ]
+    Html.dd
+        ([ Html.Attributes.id block.meta.id
+         ]
+            ++ attr
+        )
+        [ Html.text "description item" ]
