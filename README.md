@@ -23,6 +23,8 @@ Note that the double dollar signs occupy lines by themselves.  This
 is good style in TeX but in XMarkdown it is required.  You can 
 find the ETeX package [here](https://package.elm-lang.org/packages/jxxcarlson/etex/latest/).
 
+Here is an [online demo](https://xmarkdowndemo.netlify.app/) of XMarkdown.
+
 ## What else?
 
 XMarkdown is pretty much like standard markdown, with 
@@ -68,7 +70,7 @@ $$
 ```
 
 ## Example Apps
-
+ 
 See the `DemoMd` and `DemoTOCMd` folders for more complete examples.
 The second of these shows how to construct an automatically updated
 active table of contents which in addition enables the user to 
@@ -76,7 +78,7 @@ active table of contents which in addition enables the user to
   - click on rendered text to highlight and scroll into view the corresponding source text
   - select source text and highlight and scroll into view the corresponding rendered text
 
-See also XXX
+See also [this online demo](https://xmarkdowndemo.netlify.app/)
 
 ## License
 
