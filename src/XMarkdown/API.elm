@@ -6,7 +6,7 @@ module XMarkdown.API exposing
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
-(SMarkdown) source text into renderable elm-ui Elements.
+(SMarkdown) source text into renderable Html.
 
 
 # Overview
@@ -72,10 +72,8 @@ For one-step compilation that parses and renders together, use `compileSimple`.
 
 -}
 
-import Element exposing (Element)
-import Element.Font
 import Html exposing (Html)
-import Render.Settings
+import Html.Attributes
 import XMarkdown.Compiler
 import XMarkdown.Editor
 import XMarkdown.Sync
@@ -118,18 +116,18 @@ viewEditor =
     XMarkdown.Editor.view
 
 
-{-| Compile source text to elm-ui HTML in one step (parse + render). The width of
+{-| Compile source text to Html in one step (parse + render). The width of
 the rendered text in pixels is `docWidth`. Use `editCount = 0` for a static
 document; in a live-editing context, increment it after each edit so the rendered
 text updates correctly.
 
-    import Element exposing (Element)
+    import Html exposing (Html)
     import XMarkdown.API exposing (MarkupMsg, defaultCompilerParameters)
 
 Your `Msg` type should include `| Render MarkupMsg`.
 
 -}
-compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
+compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileSimple params sourceText =
     XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.view params.docWidth
 
@@ -160,7 +158,7 @@ compileOutput params lines =
 
 {-| Render only the body content from a CompilerOutput.
 
-Takes a width parameter (in pixels) and returns a list of elm-ui Elements
+Takes a width parameter (in pixels) and returns a list of Html elements
 representing the document body without the title or banner.
 
     bodyElements =
@@ -170,7 +168,7 @@ This is useful when you want to display the main content separately from other
 document parts like the table of contents or title.
 
 -}
-viewBodyOnly : Int -> XMarkdown.Types.CompilerOutput -> List (Element MarkupMsg)
+viewBodyOnly : Int -> XMarkdown.Types.CompilerOutput -> List (Html MarkupMsg)
 viewBodyOnly =
     XMarkdown.Compiler.viewBodyOnly
 
@@ -187,23 +185,23 @@ The table of contents automatically includes links to document sections and
 respects the document hierarchy.
 
 -}
-viewTOC : XMarkdown.Types.CompilerOutput -> List (Element MarkupMsg)
+viewTOC : XMarkdown.Types.CompilerOutput -> List (Html MarkupMsg)
 viewTOC =
     XMarkdown.Compiler.viewTOC
 
 
 {-| -}
-compileString : XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
+compileString : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileString params str =
     XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
 
 
 {-| -}
-compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Element MarkupMsg)
+compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileStringWithTitle title params str =
     XMarkdown.Compiler.compile params (String.lines str)
         |> XMarkdown.Compiler.viewBodyOnly params.docWidth
-        |> (\x -> Element.el [ Element.height (Element.px 130), Element.Font.size (Render.Settings.scaleFont (Render.Settings.defaultRenderSettings params) 24), Element.paddingEach { left = 0, right = 0, top = 8, bottom = 24 } ] (Element.text title) :: x)
+        |> (\x -> Html.div [ Html.Attributes.style "height" "130px", Html.Attributes.style "font-size" "24px", Html.Attributes.style "padding" "8px 0 24px 0" ] [ Html.text title ] :: x)
 
 
 {-| Re-export BlockMatch type for searching

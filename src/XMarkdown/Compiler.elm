@@ -13,8 +13,8 @@ import AST.ASTTools
 import AST.Acc exposing (Accumulator)
 import AST.Forest exposing (Forest)
 import AST.Language exposing (ExpressionBlock)
-import Element exposing (Element)
-import Element.Font as Font
+import Html exposing (Html)
+import Html.Attributes
 import Parser.Block.ForestTransform
 import Parser.Block.Pipeline
 import Parser.Block.PrimitiveBlock
@@ -29,52 +29,57 @@ import XMarkdown.Types exposing (CompilerOutput, CompilerParameters, Filter(..),
 
 
 {-| -}
-view : Int -> CompilerOutput -> List (Element MarkupMsg)
+view : Int -> CompilerOutput -> List (Html MarkupMsg)
 view width_ compiled =
-    [ Element.column [ Element.width (Element.px (width_ - 60)) ]
+    [ Html.div [ Html.Attributes.style "width" (String.fromInt (width_ - 60) ++ "px") ]
         (header compiled)
     , body compiled
     ]
 
 
-viewBodyOnly : Int -> CompilerOutput -> List (Element MarkupMsg)
+viewBodyOnly : Int -> CompilerOutput -> List (Html MarkupMsg)
 viewBodyOnly width_ compiled =
-    [ Element.column [ Element.width (Element.px (width_ - 60)) ]
+    [ Html.div [ Html.Attributes.style "width" (String.fromInt (width_ - 60) ++ "px") ]
         [ body compiled ]
     ]
 
 
 {-| -}
-header : CompilerOutput -> List (Element MarkupMsg)
+header : CompilerOutput -> List (Html MarkupMsg)
 header compiled =
     case compiled.banner of
         Nothing ->
-            Element.el [ bottomPadding 18 ] compiled.title
-                :: Element.column [ Element.spacing 8, bottomPadding 72 ] compiled.toc
+            Html.div [ Html.Attributes.style "padding-bottom" "18px" ] [ compiled.title ]
+                :: Html.div [ Html.Attributes.style "spacing" "8", Html.Attributes.style "padding-bottom" "72px" ] compiled.toc
                 :: []
 
         Just banner ->
-            Element.el [] banner
-                :: (Element.el [ bottomPadding 18 ] compiled.title
-                        :: Element.column [ Element.spacing 8, bottomPadding 36 ] compiled.toc
+            Html.div [] [ banner ]
+                :: (Html.div [ Html.Attributes.style "padding-bottom" "18px" ] [ compiled.title ]
+                        :: Html.div [ Html.Attributes.style "spacing" "8", Html.Attributes.style "padding-bottom" "36px" ] compiled.toc
                         :: []
                    )
 
 
 {-| -}
-body : CompilerOutput -> Element MarkupMsg
+body : CompilerOutput -> Html MarkupMsg
 body compiled =
-    Element.column [ Element.spacing (round compiled.interBlockSpacing), Element.alignTop ] compiled.body
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" (String.fromFloat compiled.interBlockSpacing ++ "px")
+        ]
+        compiled.body
 
 
 {-| -}
-viewTOC : CompilerOutput -> List (Element MarkupMsg)
+viewTOC : CompilerOutput -> List (Html MarkupMsg)
 viewTOC compiled =
     compiled.toc
 
 
 bottomPadding k =
-    Element.paddingEach { left = 0, right = 0, top = 0, bottom = k }
+    Html.Attributes.style "padding-bottom" (String.fromInt k ++ "px")
 
 
 {-| Compile XMarkdown source lines into renderable output (body, banner, TOC, title).
@@ -144,8 +149,6 @@ render params ( accumulator_, forest_ ) =
         renderSettings =
             Render.Settings.defaultRenderSettings params
 
-        --( accumulator, forest ) =
-        --    AST.Acc.transformAccumulate AST.Acc.initialData forest_
         viewParameters =
             { idsOfOpenNodes = params.idsOfOpenNodes
             , selectedId = params.selectedId
@@ -154,22 +157,19 @@ render params ( accumulator_, forest_ ) =
             , settings = renderSettings
             }
 
-        toc : List (Element MarkupMsg)
+        toc : List (Html MarkupMsg)
         toc =
-            -- this value is used in DemoTOC for the document TOC
-            -- it is NOT used for the documentTOC in Lamdera
-            --Render.TOCTree.view viewParameters accumulator forest_
             Render.TOCTree.view params.theme viewParameters accumulator_ forest_
 
-        banner : Maybe (Element MarkupMsg)
+        banner : Maybe (Html MarkupMsg)
         banner =
             AST.ASTTools.banner forest_
-                |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [ Font.color (Element.rgb 1 0 0) ])
-                |> Maybe.map (Element.row [ Element.height (Element.px 40) ])
+                |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [])
+                |> Maybe.map (\elem -> Html.div [ Html.Attributes.style "height" "40px" ] [ elem ])
 
-        title : Element MarkupMsg
+        title : Html MarkupMsg
         title =
-            Element.paragraph [ Font.size renderSettings.titleSize ] [ Element.text <| AST.ASTTools.title forest_ ]
+            Html.p [ Html.Attributes.style "font-size" (String.fromInt renderSettings.titleSize ++ "px") ] [ Html.text <| AST.ASTTools.title forest_ ]
     in
     { body =
         renderForest params renderSettings accumulator_ forest_
@@ -190,7 +190,7 @@ renderForest :
     -> Render.Settings.RenderSettings
     -> AST.Acc.Accumulator
     -> List (RoseTree.Tree.Tree ExpressionBlock)
-    -> List (Element MarkupMsg)
+    -> List (Html MarkupMsg)
 renderForest params settings accumulator forest =
     List.map (Render.Tree.renderTree params settings accumulator) forest
 

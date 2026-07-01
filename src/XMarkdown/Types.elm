@@ -36,7 +36,7 @@ For simple use cases, start with `defaultCompilerParameters` and override the fi
 -}
 
 import Dict exposing (Dict)
-import Element exposing (Element)
+import Html exposing (Html)
 
 
 {-| Represents the available themes.
@@ -78,10 +78,10 @@ defaultCompilerParameters =
 
 {-| -}
 type alias CompilerOutput =
-    { body : List (Element MarkupMsg)
-    , banner : Maybe (Element MarkupMsg)
-    , toc : List (Element MarkupMsg)
-    , title : Element MarkupMsg
+    { body : List (Html MarkupMsg)
+    , banner : Maybe (Html MarkupMsg)
+    , toc : List (Html MarkupMsg)
+    , title : Html MarkupMsg
     , interBlockSpacing : Float
     }
 
