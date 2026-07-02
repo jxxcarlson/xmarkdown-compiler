@@ -18,6 +18,7 @@ import Render.Blocks.Document as DocumentBlocks
 import Render.Blocks.Text as TextBlocks
 import Render.Indentation
 import Render.List
+import Render.Math
 import Render.Settings exposing (RenderSettings)
 import Render.GHTable
 import XMarkdown.Types exposing (MarkupMsg)
@@ -49,6 +50,10 @@ initRegistry =
             , ( "item", Render.List.item )
             , ( "desc", Render.List.desc )
             , ( "numbered", Render.List.numbered )
+            , ( "equation", Render.Math.equation )
+            , ( "aligned", Render.Math.aligned )
+            , ( "array", Render.Math.array )
+            , ( "chem", Render.Math.chem )
             ]
 
 

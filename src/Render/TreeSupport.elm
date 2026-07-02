@@ -14,6 +14,7 @@ import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
+import Render.Block
 import Render.Expression
 import Render.Helper
 import Render.Indentation
@@ -49,8 +50,7 @@ syncAttributes settings block =
            )
 
 
-{-| Simplified version of Block.renderBody (returns Html)
-TODO: Phase 3+ - Implement actual block rendering
+{-| Render block body using the real block renderer
 -}
 renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Html MarkupMsg)
 renderBody params settings acc block =
@@ -64,15 +64,7 @@ renderBody params settings acc block =
             else
                 []
     in
-    case block.heading of
-        Paragraph ->
-            spacer ++ [ Html.div (renderAttributes settings block ++ [ Html.Attributes.style "padding" "8px" ]) [ renderParagraphBody params.editCount acc settings [] block ] ]
-
-        Ordinary _ ->
-            spacer ++ [ Html.div (renderAttributes settings block) [ Html.text "Ordinary block - TODO Phase 3" ] ]
-
-        Verbatim _ ->
-            spacer ++ [ Html.div (renderAttributes settings block) [ Html.text "Verbatim block - TODO Phase 3" ] ]
+    spacer ++ Render.Block.renderBody params.editCount acc settings (renderAttributes settings block) block
 
 
 {-| Render a paragraph body (returns Html)

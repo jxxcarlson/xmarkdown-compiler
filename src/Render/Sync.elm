@@ -6,10 +6,11 @@ module Render.Sync exposing
     , rightToLeftSyncHelper
     )
 
-import Element
-import Element.Background as Background
-import Element.Events as Events
 import AST.Language
+import Color exposing (Color)
+import Html
+import Html.Attributes
+import Html.Events as Events
 import Render.Settings
 import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg(..))
@@ -17,7 +18,7 @@ import XMarkdown.Types exposing (MarkupMsg(..))
 
 {-| Use this function to add all needed properties to an element for LR sync
 -}
-attributes : Render.Settings.RenderSettings -> AST.Language.ExpressionBlock -> List (Element.Attribute MarkupMsg)
+attributes : Render.Settings.RenderSettings -> AST.Language.ExpressionBlock -> List (Html.Attribute MarkupMsg)
 attributes settings block =
     [ rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
     , Render.Utility.idAttribute block.meta.id
@@ -47,42 +48,44 @@ attributes settings block =
     The mismatch between what's being sent (line numbers) and what's being compared (meta.id) prevents both highlighting and scrolling from working
     correctly.
 -}
+--highlightIfIdSelected : String -> Render.Settings.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
 
 
-highlightIfIdSelected : String -> Render.Settings.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
+highlightIfIdSelected : b -> { a | selectedId : b, highlight : Color } -> List (Html.Attribute msg) -> List (Html.Attribute msg)
 highlightIfIdSelected id settings attrs =
     if id == settings.selectedId then
-        Background.color settings.highlight :: Element.padding 8 :: attrs
+        -- Background.color settings.highlight :: Html.padding 8 :: attrs
+        Html.Attributes.style "background-color" (Color.toCssString settings.highlight) :: attrs
 
     else
         attrs
 
 
-highlightIfIdIsSelected : Int -> Int -> Render.Settings.RenderSettings -> List (Element.Attribute MarkupMsg)
+highlightIfIdIsSelected : Int -> Int -> Render.Settings.RenderSettings -> List (Html.Attribute MarkupMsg)
 highlightIfIdIsSelected firstLineNumber numberOfLines settings =
     if String.fromInt firstLineNumber == settings.selectedId then
         [ rightToLeftSyncHelper firstLineNumber (firstLineNumber + numberOfLines)
-        , Background.color (Element.rgb 0.8 0.8 1.0)
+        , Html.Attributes.style "background-color" (Color.toCssString (Color.rgb 0.8 0.8 1.0))
         ]
 
     else
         []
 
 
-rightToLeftSyncHelper : Int -> Int -> Element.Attribute MarkupMsg
+rightToLeftSyncHelper : Int -> Int -> Html.Attribute MarkupMsg
 rightToLeftSyncHelper firstLineNumber numberOfLines =
     Events.onClick (SendLineNumber { begin = firstLineNumber, end = firstLineNumber + numberOfLines })
 
 
-highlighter : List String -> List (Element.Attr () msg) -> List (Element.Attr () msg)
+highlighter : List String -> List (Html.Attribute msg) -> List (Html.Attribute msg)
 highlighter args attrs =
     if List.member "highlight" args then
-        Background.color selectedColor :: attrs
+        Html.Attributes.style "background-color" (Color.toCssString selectedColor) :: attrs
 
     else
         attrs
 
 
-selectedColor : Element.Color
+selectedColor : Color
 selectedColor =
-    Element.rgba 0.1 0.1 0.8 0.5
+    Color.rgba 0.1 0.1 0.8 0.5

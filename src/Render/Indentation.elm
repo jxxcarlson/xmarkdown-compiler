@@ -1,18 +1,11 @@
 module Render.Indentation exposing (indentParagraph, indentOrdinaryBlock)
 
-{-| This module provides unified indentation helpers to eliminate code duplication.
-
-@docs indentParagraph, indentOrdinaryBlock
-
--}
-
-import Element exposing (Element)
+import Html exposing (Html)
+import Html.Attributes
 import Render.Helper
 import Render.Settings exposing (RenderSettings)
 
 
-{-| Standard top padding for indented elements
--}
 topPaddingForIndentedElements : Int
 topPaddingForIndentedElements =
     Render.Helper.topPaddingForIndentedElements
@@ -20,25 +13,21 @@ topPaddingForIndentedElements =
 
 {-| Indent a paragraph based on indent level
 -}
-indentParagraph : Int -> Element msg -> Element msg
+indentParagraph : Int -> Html msg -> Html msg
 indentParagraph indent x =
     if indent > 0 then
-        Element.el [ Element.paddingEach { top = topPaddingForIndentedElements, bottom = 0, left = 0, right = 0 } ] x
-
+        Html.div [ Html.Attributes.style "padding-top" (String.fromInt topPaddingForIndentedElements ++ "px") ] [ x ]
     else
         x
 
 
 {-| Indent an ordinary block based on indent level and id
 -}
-indentOrdinaryBlock : Int -> String -> RenderSettings -> Element msg -> Element msg
+indentOrdinaryBlock : Int -> String -> RenderSettings -> Html msg -> Html msg
 indentOrdinaryBlock indent id settings x =
     if indent > 0 then
-        Element.el
-            [ Render.Helper.selectedColor id settings
-            , Element.paddingEach { top = topPaddingForIndentedElements, bottom = 0, left = 0, right = 0 }
-            ]
-            x
-
+        Html.div
+            [ Html.Attributes.style "padding-top" (String.fromInt topPaddingForIndentedElements ++ "px") ]
+            [ x ]
     else
         x

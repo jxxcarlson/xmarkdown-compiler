@@ -1,6 +1,6 @@
 module Render.Settings exposing
     ( RenderSettings
-    , Display, ThemedStyles, darkTheme, defaultRenderSettings, getThemedElementColor, lightTheme, scaleFont, toElementColor, unrollTheme
+    , Display, ThemedStyles, darkTheme, defaultRenderSettings, lightTheme, scaleFont
     )
 
 {-| The Settings record holds information needed to render a
@@ -14,9 +14,6 @@ is to be displayed. This is given by the `.width` field.
 
 import Color
 import Dict exposing (Dict)
-import Element
-import Element.Background as BackgroundColor
-import Element.Font as Font
 import Render.NewColor exposing (..)
 import XMarkdown.Types exposing (CompilerParameters, Theme(..))
 
@@ -40,21 +37,21 @@ type alias RenderSettings =
     , titleSize : Int
     , fontSize : Int
     , width : Int
-    , backgroundColor : Element.Color
-    , textColor : Element.Color
-    , codeColor : Element.Color
-    , linkColor : Element.Color
-    , highlight : Element.Color
-    , codeBackground : Element.Color
+    , backgroundColor : Color
+    , textColor : Color
+    , codeColor : Color
+    , linkColor : Color
+    , highlight : Color
+    , codeBackground : Color
     , titlePrefix : String
     , isStandaloneDocument : Bool
-    , leftIndent : Int
+    , margins : Int
     , leftIndentation : Int
     , leftRightIndentation : Int
     , wideLeftIndentation : Int
     , windowWidthScale : Float
     , maxHeadingFontSize : Float
-    , redColor : Element.Color
+    , redColor : Color
     , topMarginForChildren : Int
     , data : Dict String String
     , theme : Theme
@@ -89,36 +86,13 @@ getThemedColor keyAccess theme =
         )
 
 
-getThemedElementColor : (ThemedStyles -> Color) -> Theme -> Element.Color
-getThemedElementColor keyAccess theme =
-    toElementColor (getThemedColor keyAccess theme)
-
-
-{-| Unrolls the theme into a list of Element styles.
--}
-unrollTheme : Theme -> List (Element.Attr decorative msg)
-unrollTheme theme =
-    [ BackgroundColor.color (getThemedElementColor .background theme)
-    , Font.color (getThemedElementColor .text theme)
-    ]
-
-
-toElementColor : Color -> Element.Color
-toElementColor color =
-    let
-        c =
-            Color.toRgba color
-    in
-    Element.rgba c.red c.green c.blue c.alpha
-
-
 {-| A light theme with a white background and dark text.
 -}
 lightTheme : ThemedStyles
 lightTheme =
-    { background = Color.rgba 1 1 1 1
+    { background = Color.rgba 0.9 0.9 0.9 1.0
     , text = gray950
-    , codeBackground = Color.rgba 0.90 0.90 0.94 1
+    , codeBackground = Color.rgba 0.9 0.9 0.94 1
     , codeText = gray900
     , offsetBackground = Color.rgb 1 1 1 --indigo300 |> Render.NewColor.setOpacity 0.25
     , offsetText = gray950
@@ -184,7 +158,7 @@ makeSettings params =
         -- Use parameterized highlight color, falling back to theme if parsing fails
         highlightColor =
             stringToColor params.highlightColor
-                |> Maybe.withDefault (getThemedElementColor .highlight params.theme)
+                |> Maybe.withDefault (getThemedColor .highlight params.theme)
     in
     { width = round (params.scale * toFloat params.windowWidth)
     , titleSize = titleSize
@@ -196,21 +170,21 @@ makeSettings params =
     , showErrorMessages = False
     , selectedId = params.selectedId
     , selectedSlug = params.selectedSlug
-    , backgroundColor = getThemedElementColor .background params.theme
-    , textColor = getThemedElementColor .text params.theme
-    , codeColor = getThemedElementColor .codeText params.theme
-    , linkColor = getThemedElementColor .link params.theme
+    , backgroundColor = getThemedColor .background params.theme
+    , textColor = getThemedColor .text params.theme
+    , codeColor = getThemedColor .codeText params.theme
+    , linkColor = getThemedColor .link params.theme
     , highlight = highlightColor
-    , codeBackground = getThemedElementColor .codeBackground params.theme
+    , codeBackground = getThemedColor .codeBackground params.theme
     , titlePrefix = ""
     , isStandaloneDocument = False
-    , leftIndent = 0
+    , margins = 0
     , leftIndentation = 18
     , leftRightIndentation = 18
     , wideLeftIndentation = 54
     , windowWidthScale = 0.3
     , maxHeadingFontSize = (titleSize |> toFloat) * 0.72
-    , redColor = Element.rgb 0.7 0 0
+    , redColor = Color.rgb 0.7 0 0
     , topMarginForChildren = 6
     , data = params.data
     , theme = params.theme
@@ -220,10 +194,10 @@ makeSettings params =
     }
 
 
-{-| Parse CSS rgba color string to Element.Color.
+{-| Parse CSS rgba color string to Color.
 Supports formats like "rgba(200, 200, 255, 0.4)" and "rgb(200, 200, 255)"
 -}
-stringToColor : String -> Maybe Element.Color
+stringToColor : String -> Maybe Color
 stringToColor colorStr =
     if String.startsWith "rgba(" colorStr then
         colorStr
@@ -234,7 +208,7 @@ stringToColor colorStr =
             |> (\parts ->
                     case parts of
                         [ r, g, b, a ] ->
-                            Maybe.map4 Element.rgba
+                            Maybe.map4 Color.rgba
                                 (String.toFloat r |> Maybe.map (\x -> x / 255))
                                 (String.toFloat g |> Maybe.map (\x -> x / 255))
                                 (String.toFloat b |> Maybe.map (\x -> x / 255))
@@ -253,7 +227,7 @@ stringToColor colorStr =
             |> (\parts ->
                     case parts of
                         [ r, g, b ] ->
-                            Maybe.map3 Element.rgb
+                            Maybe.map3 Color.rgb
                                 (String.toFloat r |> Maybe.map (\x -> x / 255))
                                 (String.toFloat g |> Maybe.map (\x -> x / 255))
                                 (String.toFloat b |> Maybe.map (\x -> x / 255))

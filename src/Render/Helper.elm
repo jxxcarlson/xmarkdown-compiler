@@ -7,17 +7,17 @@ module Render.Helper exposing
     , noteFromPropertyKey
     , renderNothing
     , renderWithDefault
+    , renderWithDefaultNarrow
     , selectedColor
     , showError
     , topPaddingForIndentedElements
     )
 
-import Dict exposing (Dict)
-import Element exposing (Element)
-import Element.Background as Background
-import Element.Font as Font
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expression, ExpressionBlock)
+import Color
+import Dict exposing (Dict)
+import Html exposing (Html)
 import Html.Attributes
 import Render.Expression
 import Render.Settings exposing (RenderSettings)
@@ -26,96 +26,85 @@ import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-
--- SETTINGS
-
-
 leftPadding k =
-    Element.paddingEach { top = 0, right = 0, bottom = 0, left = k }
+    Html.Attributes.style "padding-left" (String.fromInt k ++ "px")
 
 
 topPaddingForIndentedElements =
     10
 
 
-
--- HELPERS
--- oteFromPropertyKey : String -> ExpressionBlock -> Element MarkupMsg
-
-
+noteFromPropertyKey : String -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 noteFromPropertyKey key attrs block =
     case Dict.get key block.properties of
         Nothing ->
-            Element.none
+            Html.text ""
 
         Just note_ ->
-            Element.paragraph attrs [ Element.text note_ ]
+            Html.p attrs [ Html.text note_ ]
 
 
-{-|
-
-    Used in function env (render generic LaTeX environments)
-
--}
 blockLabel : Dict String String -> String
 blockLabel properties =
     Dict.get "label" properties |> Maybe.withDefault ""
 
 
+blockAttributes : RenderSettings -> ExpressionBlock -> List (Html.Attribute MarkupMsg) -> List (Html.Attribute MarkupMsg)
 blockAttributes settings block attrs =
-    [ Render.Utility.idAttributeFromInt block.meta.lineNumber
+    [ Html.Attributes.id (String.fromInt block.meta.lineNumber)
     ]
-        ++ Render.Sync.attributes settings block
         ++ attrs
 
 
+selectedColor : String -> RenderSettings -> Html.Attribute MarkupMsg
 selectedColor id settings =
     if id == settings.selectedId then
-        Background.color (Element.rgb 0.9 0.9 1.0)
+        Html.Attributes.style "background-color" "rgba(230, 230, 255, 1)"
 
     else
-        Background.color settings.backgroundColor
+        Html.Attributes.style "background-color" "rgba(255, 255, 255, 1)"
 
 
-htmlId : String -> Element.Attribute msg
+htmlId : String -> Html.Attribute MarkupMsg
 htmlId str =
-    Element.htmlAttribute (Html.Attributes.id str)
+    Html.Attributes.id str
 
 
-showError : Maybe String -> Element msg -> Element msg
+showError : Maybe String -> Html MarkupMsg -> Html MarkupMsg
 showError maybeError x =
     case maybeError of
         Nothing ->
             x
 
         Just error ->
-            Element.column []
+            Html.div []
                 [ x
-                , Element.el [ Font.color (Element.rgb 0.7 0 0) ] (Element.text error)
+                , Html.div [ Html.Attributes.style "color" "rgb(179, 0, 0)" ] [ Html.text error ]
                 ]
 
 
-
--- ERRORS.
-
-
-noSuchVerbatimBlock : String -> String -> Element MarkupMsg
+noSuchVerbatimBlock : String -> String -> Html MarkupMsg
 noSuchVerbatimBlock functionName content =
-    Element.column [ Element.spacing 4 ]
-        [ Element.paragraph [ Font.color (Element.rgb255 180 0 0) ] [ Element.text <| "No such block (V): " ++ functionName ]
-        , Element.column [ Element.spacing 4 ] (List.map (\t -> Element.el [] (Element.text t)) (String.lines content))
+    Html.div []
+        [ Html.p [ Html.Attributes.style "color" "rgb(180, 0, 0)" ] [ Html.text <| "No such block (V): " ++ functionName ]
+        , Html.pre [] [ Html.text content ]
         ]
 
 
-renderNothing : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+renderNothing : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 renderNothing _ _ _ _ _ =
-    Element.none
+    Html.text ""
 
 
-renderWithDefault : String -> Int -> AST.Acc.Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> List Expression -> List (Element MarkupMsg)
+renderWithDefault : String -> Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> List Expression -> List (Html MarkupMsg)
 renderWithDefault default count acc settings attr exprs =
     if List.isEmpty exprs then
-        [ Element.el [ Font.color settings.redColor, Font.size (Render.Settings.scaleFont settings 14) ] (Element.text default) ]
+        [ Html.span [ Html.Attributes.style "color" "rgb(150, 0, 0)", Html.Attributes.style "font-size" (String.fromInt (Render.Settings.scaleFont settings 14) ++ "px") ] [ Html.text default ] ]
 
     else
         List.map (Render.Expression.render count acc settings attr) exprs
+
+
+renderWithDefaultNarrow : String -> Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> List Expression -> List (Html MarkupMsg)
+renderWithDefaultNarrow default count acc settings attr exprs =
+    renderWithDefault default count acc settings attr exprs

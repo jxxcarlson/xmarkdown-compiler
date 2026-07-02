@@ -8,15 +8,16 @@ module Render.Utility exposing
     , vspace
     )
 
-import Either
-import Element exposing (paddingEach)
 import AST.ASTTools
 import AST.Language
-import Html.Attributes
+import Either
+import Html
+import Html.Attributes exposing (style)
 
 
+leftPadding : Int -> Html.Attribute msg
 leftPadding p =
-    Element.paddingEach { left = p, right = 0, top = 0, bottom = 0 }
+    style "padding-left" (String.fromInt p)
 
 
 getVerbatimContent : AST.Language.ExpressionBlock -> String
@@ -29,19 +30,19 @@ getVerbatimContent { body } =
             ""
 
 
-idAttributeFromInt : Int -> Element.Attribute msg
+idAttributeFromInt : Int -> Html.Attribute msg
 idAttributeFromInt k =
-    elementAttribute "id" (String.fromInt k)
+    htmlAttribute "id" (String.fromInt k)
 
 
-idAttribute : String -> Element.Attribute msg
+idAttribute : String -> Html.Attribute msg
 idAttribute s =
-    elementAttribute "id" s
+    htmlAttribute "id" s
 
 
-vspace : Int -> Int -> Element.Attribute msg
+vspace : Int -> Int -> List (Html.Attribute msg)
 vspace top bottom =
-    paddingEach { left = 0, right = 0, top = top, bottom = bottom }
+    [ style "padding-top" (String.fromInt top), style "padding-bottoms" (String.fromInt top) ]
 
 
 internalLink : String -> String
@@ -49,9 +50,9 @@ internalLink str =
     "#" ++ str |> makeSlug
 
 
-makeId : List AST.Language.Expression -> Element.Attribute msg
+makeId : List AST.Language.Expression -> Html.Attribute msg
 makeId exprs =
-    elementAttribute "id"
+    htmlAttribute "id"
         (AST.ASTTools.stringValueOfList exprs |> String.trim |> makeSlug)
 
 
@@ -60,6 +61,6 @@ makeSlug str =
     str |> String.toLower |> String.replace " " ""
 
 
-elementAttribute : String -> String -> Element.Attribute msg
-elementAttribute key value =
-    Element.htmlAttribute (Html.Attributes.attribute key value)
+htmlAttribute : String -> String -> Html.Attribute msg
+htmlAttribute key value =
+    Html.Attributes.attribute key value

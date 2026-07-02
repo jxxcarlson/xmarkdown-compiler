@@ -9,16 +9,17 @@ provides a unified approach to determining the attributes for any given block.
 
 -}
 
-import Element
 import AST.BlockUtilities
 import AST.Language exposing (ExpressionBlock)
+import Html
+import Html.Attributes
 import Render.BlockType as BlockType exposing (BlockType(..))
 import Render.Utility
 
 
 {-| Main function to get attributes for a block based on its type
 -}
-getBlockAttributes : ExpressionBlock -> List (Element.Attribute msg)
+getBlockAttributes : ExpressionBlock -> List (Html.Attribute msg)
 getBlockAttributes block =
     let
         blockName =
@@ -37,7 +38,7 @@ getBlockAttributes block =
 
 {-| Get attributes specific to a block type
 -}
-getTypeSpecificAttributes : BlockType -> List (Element.Attribute msg)
+getTypeSpecificAttributes : BlockType -> List (Html.Attribute msg)
 getTypeSpecificAttributes blockType =
     case blockType of
         TextBlock textType ->
@@ -58,7 +59,7 @@ standardLeftPadding =
 
 {-| Get attributes for quotation blocks
 -}
-getQuotationAttributes : List (Element.Attribute msg)
+getQuotationAttributes : List (Html.Attribute msg)
 getQuotationAttributes =
-    [ Element.paddingEach { left = standardLeftPadding, right = 0, top = 0, bottom = 0 }
+    [ Html.Attributes.style "padding-left" (String.fromInt standardLeftPadding)
     ]

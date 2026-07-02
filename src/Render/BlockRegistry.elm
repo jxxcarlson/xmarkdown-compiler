@@ -14,17 +14,18 @@ allows renderers to be registered from various modules and looked up by name.
 -}
 
 import Dict exposing (Dict)
-import Element exposing (Element)
+import Html exposing (Html)
+import Html.Attributes
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.Settings exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-{-| Type alias for a block renderer function
+{-| Type alias for a block renderer function (returns Html)
 -}
 type alias BlockRenderer =
-    Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+    Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 
 
 {-| Type alias for the block registry

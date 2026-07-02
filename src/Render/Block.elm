@@ -3,7 +3,8 @@ module Render.Block exposing (renderBody)
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
 import Either exposing (Either(..))
-import Element exposing (Element)
+import Html exposing (Html)
+import Html.Attributes
 import Render.Expression
 import Render.Helper
 import Render.OrdinaryBlock
@@ -12,12 +13,11 @@ import Render.VerbatimBlock as VerbatimBlock
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-renderBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> List (Element MarkupMsg)
+renderBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
 renderBody count acc settings attrs block =
     case block.heading of
         Paragraph ->
-            Element.column [] [ renderParagraphBody count acc settings attrs block ]
-                |> List.singleton
+            [ renderParagraphBody count acc settings attrs block ]
 
         Ordinary _ ->
             [ Render.OrdinaryBlock.render count acc settings attrs block ]
@@ -26,19 +26,19 @@ renderBody count acc settings attrs block =
             [ VerbatimBlock.render count acc settings attrs block |> Render.Helper.showError block.meta.error ]
 
 
-renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Element.Attribute MarkupMsg) -> ExpressionBlock -> Element MarkupMsg
+renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 renderParagraphBody count acc settings attrs block =
     case block.body of
         Right exprs ->
-            Element.paragraph
+            Html.p
                 (Render.Helper.htmlId block.meta.id
-                    :: Element.width (Element.px settings.width)
+                    :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
                     :: attrs
                 )
                 (List.map (Render.Expression.render count acc settings attrs) exprs)
 
         Left _ ->
-            Element.none
+            Html.text ""
 
 
 

@@ -17,7 +17,7 @@ import List.Extra
 import Ports
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
-import XMarkdown.Types exposing (Filter(..), MarkupMsg(..), SyncHighlight, Theme(..))
+import XMarkdown.Types exposing (MarkupMsg(..), SyncHighlight, Theme(..))
 
 
 main : Program Flags Model Msg
@@ -134,7 +134,6 @@ update msg model =
                         , editCount = model.count
                         , selectedId = "selectedId"
                         , idsOfOpenNodes = model.idsOfOpenNodes
-                        , filter = NoFilter
                         , interBlockSpacing = 18
                         , paddingAboveHeadings = 18
                         , numberToLevel = 2
@@ -262,7 +261,6 @@ view model =
                 , editCount = model.count
                 , selectedId = model.selectId
                 , idsOfOpenNodes = model.idsOfOpenNodes
-                , filter = NoFilter
                 , interBlockSpacing = 18
                 , paddingAboveHeadings = 18
                 , numberToLevel = 2
@@ -306,15 +304,17 @@ editorView model =
         }
 
 
-{-| Bridge the compiler's still-elm-ui output into the html app.
+{-| Render the compiler's Html output into the panel.
 -}
-renderPanel : Int -> List (Element.Element MarkupMsg) -> Html MarkupMsg
+renderPanel : Int -> List (Html MarkupMsg) -> Html MarkupMsg
 renderPanel blockSpacing elements =
-    Element.layout [ Element.width Element.fill ]
-        (Element.column
-            [ Element.spacing blockSpacing, Element.width Element.fill ]
-            elements
-        )
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "flex-direction" "column"
+        , Html.Attributes.style "gap" (String.fromInt blockSpacing ++ "px")
+        , Html.Attributes.style "width" "100%"
+        ]
+        elements
 
 
 px : Int -> String

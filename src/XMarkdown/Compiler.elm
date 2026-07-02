@@ -25,7 +25,7 @@ import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
 import XMarkdown.Config as Config
-import XMarkdown.Types exposing (CompilerOutput, CompilerParameters, Filter(..), MarkupMsg)
+import XMarkdown.Types exposing (CompilerOutput, CompilerParameters, MarkupMsg)
 
 
 {-| -}
@@ -120,26 +120,9 @@ type alias BlockMatch =
     }
 
 
-{-| -}
-filterForest : Filter -> Forest ExpressionBlock -> Forest ExpressionBlock
-filterForest filter forest =
-    case filter of
-        NoFilter ->
-            forest
-
-        SuppressDocumentBlocks ->
-            forest
-                |> AST.ASTTools.filterForestOnLabelNames (\name -> name /= Just "document")
-                |> AST.ASTTools.filterForestOnLabelNames (\name -> name /= Just "title")
-
-
 parseToForestWithAccumulator : CompilerParameters -> List String -> ( Accumulator, Forest ExpressionBlock )
 parseToForestWithAccumulator params lines =
-    let
-        forest =
-            filterForest params.filter (parse Config.idPrefix params.editCount lines)
-    in
-    AST.Acc.transformAccumulate AST.Acc.initialData forest
+    AST.Acc.transformAccumulate AST.Acc.initialData (parse Config.idPrefix params.editCount lines)
 
 
 render : CompilerParameters -> ( Accumulator, Forest ExpressionBlock ) -> CompilerOutput
@@ -165,6 +148,7 @@ render params ( accumulator_, forest_ ) =
         banner =
             AST.ASTTools.banner forest_
                 |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [])
+                |> Maybe.andThen List.head
                 |> Maybe.map (\elem -> Html.div [ Html.Attributes.style "height" "40px" ] [ elem ])
 
         title : Html MarkupMsg
@@ -201,11 +185,8 @@ Returns a list of matching blocks with their metadata.
 searchBlocksContainingText : CompilerParameters -> List String -> String -> List BlockMatch
 searchBlocksContainingText params lines searchQuery =
     let
-        forest =
-            filterForest params.filter (parse Config.idPrefix params.editCount lines)
-
         allBlocks =
-            forestToBlockList forest
+            forestToBlockList (parse Config.idPrefix params.editCount lines)
 
         searchLower =
             String.toLower searchQuery

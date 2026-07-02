@@ -1,5 +1,5 @@
 module XMarkdown.Types exposing
-    ( CompilerParameters, defaultCompilerParameters, Filter(..)
+    ( CompilerParameters, defaultCompilerParameters
     , CompilerOutput, Handling(..), MarkupMsg(..), SyncHighlight, Theme(..)
     )
 
@@ -47,12 +47,6 @@ type Theme
 
 
 {-| -}
-type Filter
-    = NoFilter
-    | SuppressDocumentBlocks
-
-
-{-| -}
 defaultCompilerParameters : CompilerParameters
 defaultCompilerParameters =
     { docWidth = 500
@@ -60,10 +54,8 @@ defaultCompilerParameters =
     , selectedId = ""
     , selectedSlug = Nothing
     , idsOfOpenNodes = []
-    , filter = NoFilter
     , theme = Light
-
-    --
+    , backgroundColor = "rgba(255, 255, 255, 1.0)"
     , highlightColor = "rgba(200, 200, 255, 0.4)"
     , paddingAboveHeadings = 10
     , interBlockSpacing = 0
@@ -95,10 +87,8 @@ type alias CompilerParameters =
     , selectedId : String
     , selectedSlug : Maybe String
     , idsOfOpenNodes : List String
-    , filter : Filter
     , theme : Theme
-
-    --
+    , backgroundColor : String
     , highlightColor : String
     , paddingAboveHeadings : Float
     , interBlockSpacing : Float

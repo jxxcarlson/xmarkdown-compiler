@@ -1,4 +1,4 @@
-module XMarkdown.Msg exposing (..)
+module XMarkdown.Msg exposing (deprecated)
 
 {-| This module is deprecated and no longer needed.
 
@@ -12,3 +12,6 @@ Update your imports:
     import XMarkdown.Types exposing (MarkupMsg)
 
 -}
+
+deprecated : a -> a
+deprecated x = x

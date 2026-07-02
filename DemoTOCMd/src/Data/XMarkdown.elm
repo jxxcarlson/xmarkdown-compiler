@@ -4,7 +4,9 @@ module Data.XMarkdown exposing (text)
 text =
     """
 
+
 # Sample Document
+
 
 This sample document illustrates both the standard and new features of XMarkdown as compared to ordinary Markdown. First of these are math support, e.g.
 
@@ -108,38 +110,38 @@ def factorial(n):
 Multiparagaph blocks as displayed below require a bit more care.  By definition a block in XMarkdown is a sequence of nonempty lines with at least one empty line above and one below.  So put your text between backticks as below, select it, and type `cmd-]` to indent it by two spaces.  Why does this work? It is because a line consisting of two spaces is not empty.  You can see that from the coloring of the text.
 
 ```
-  import math
+    import math
 
-  def first_n_primes(N):
-      if N <= 0:
-          return []
+    def first_n_primes(N):
+        if N <= 0:
+            return []
 
-      primes = [2]
-      candidate = 3
+        primes = [2]
+        candidate = 3
 
-      while len(primes) < N:
-          limit = math.isqrt(candidate)
-          isprime = True
+        while len(primes) < N:
+            limit = math.isqrt(candidate)
+            isprime = True
 
-          for p in primes:
-              if p > limit:
-                  break
-              if candidate % p == 0:
-                  isprime = False
-                  break
+            for p in primes:
+                if p > limit:
+                    break
+                if candidate % p == 0:
+                    isprime = False
+                    break
 
-          if isprime:
-              primes.append(candidate)
+            if isprime:
+                primes.append(candidate)
 
-          candidate += 2
+            candidate += 2
 
-      return primes
+        return primes
 
 
-  if __name__ == "__main__":
-      N = int(input("How many primes? "))
-      for p in first_n_primes(N):
-          print(p)
+    if __name__ == "__main__":
+        N = int(input("How many primes? "))
+        for p in first_n_primes(N):
+            print(p)
 ```
 
 # Math
@@ -150,20 +152,6 @@ The Schwarzschild radius of an uncharged, non-rotating black hole is
 
 $$
 r_s = rac{2GM}{c^2}
-$$
-
-where $G$ is Newton’s gravitational constant, $M$ is the mass, and $c$ is the speed of light.
-
-```
-
-# Math
-
-Pythagoras sez: $a^2 + b^2 = c^2$.
-
-The Schwarzschild radius of an uncharged, non-rotating black hole is
-
-$$
-r_s = \\frac{2GM}{c^2}
 $$
 
 where $G$ is Newton’s gravitational constant, $M$ is the mass, and $c$ is the speed of light.

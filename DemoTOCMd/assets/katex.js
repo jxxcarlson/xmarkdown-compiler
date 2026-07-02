@@ -29,30 +29,49 @@ function loadMhchem() {
 }
 
 function initKatex() {
-  console.log("elm-katex: initializing");
+  console.log("elm-katex: initializing katex");
 
   class MathText extends HTMLElement {
     constructor() {
       super();
+      console.log("elm-katex: MathText constructor called");
     }
 
     connectedCallback() {
-      this.attachShadow({mode: "open"});
-      this.shadowRoot.innerHTML =
-        katex.renderToString(
-          this.content,
-          {
-            throwOnError: false,
-            displayMode: this.display,
-            trust: true // Allows mhchem to be used
-          }
-        );
-      let link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
-      this.shadowRoot.appendChild(link);
+      console.log("elm-katex: MathText connectedCallback triggered");
+      try {
+        const content = this.getAttribute('data-content') || this.textContent || '';
+        const displayMode = this.getAttribute('data-display') === 'true';
+
+        console.log("elm-katex: rendering content:", content.substring(0, 50), "displayMode:", displayMode);
+
+        if (!content || !window.katex) {
+          console.warn("elm-katex: missing content or katex not available", {hasContent: !!content, hasKatex: !!window.katex});
+          return;
+        }
+
+        this.attachShadow({mode: "open"});
+        const rendered = window.katex.renderToString(content, {
+          throwOnError: false,
+          displayMode: displayMode,
+          trust: true // Allows mhchem to be used
+        });
+
+        this.shadowRoot.innerHTML = rendered;
+
+        let link = document.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('href', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
+        this.shadowRoot.appendChild(link);
+
+        console.log("elm-katex: successfully rendered math element");
+      } catch (e) {
+        console.error("elm-katex: error rendering", e);
+      }
     }
   }
 
+  console.log("elm-katex: defining custom element");
   customElements.define('math-text', MathText);
+  console.log("elm-katex: custom element defined");
 }
