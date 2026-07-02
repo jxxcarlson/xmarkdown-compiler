@@ -10,8 +10,8 @@ import Element
 import File exposing (File)
 import File.Download
 import File.Select
-import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, id, style)
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
 import List.Extra
 import Ports
@@ -65,7 +65,10 @@ type Msg
     | FileSelected File
     | FileLoaded String
     | SaveFileRequested
+    | NewFileRequested
+    | FileNameChanged String
     | LRSync String
+    | ToggleTheme
 
 
 type alias Flags =
@@ -125,6 +128,29 @@ update msg model =
 
         SaveFileRequested ->
             ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
+
+        NewFileRequested ->
+            ( { model
+                | initialText = ""
+                , sourceText = ""
+                , count = model.count + 1
+                , syncHighlight = Nothing
+                , fileName = "untitled.md"
+              }
+            , Cmd.none
+            )
+
+        FileNameChanged newFileName ->
+            ( { model | fileName = newFileName }, Cmd.none )
+
+        ToggleTheme ->
+            let
+                newTheme =
+                    case model.theme of
+                        Light -> Dark
+                        Dark -> Light
+            in
+            ( { model | theme = newTheme }, Cmd.none )
 
         LRSync searchText ->
             let
@@ -275,6 +301,36 @@ view model =
             [ div [ class "toolbar" ]
                 [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
                 , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File" ]
+                , button [ class "toolbar-button", Html.Events.onClick NewFileRequested ] [ text "New File" ]
+                , input
+                    [ id "fileName"
+                    , style "margin-left" "8px"
+                    , style "padding" "6px"
+                    , style "border" "1px solid #ccc"
+                    , style "border-radius" "4px"
+                    , style "font-size" "14px"
+                    , value model.fileName
+                    , Html.Events.onInput FileNameChanged
+                    , placeholder "File name..."
+                    ]
+                    []
+                , button
+                    [ class "toolbar-button theme-toggle"
+                    , Html.Events.onClick ToggleTheme
+                    , Html.Attributes.title
+                        (case model.theme of
+                            Light -> "Switch to Dark Mode"
+                            Dark -> "Switch to Light Mode"
+                        )
+                    , style "background-color" "black"
+                    , style "margin-left" "auto"
+                    ]
+                    [ text
+                        (case model.theme of
+                            Light -> "🌙"
+                            Dark -> "☀️"
+                        )
+                    ]
                 ]
             , div [ class "app-title" ] [ text "XMarkdown TOC Demo" ]
             ]

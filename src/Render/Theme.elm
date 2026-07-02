@@ -1,7 +1,8 @@
 module Render.Theme exposing
     ( ActualTheme
-    , getColor, getElementColor
+    , getColor
     , lightTheme, darkTheme
+    , colorFromTheme
     )
 
 {-| Theme support for Scripta rendering.
@@ -27,7 +28,6 @@ with support for both raw Color values and elm-ui Element.Color.
 -}
 
 import Color
-import Element
 import Render.NewColor exposing (..)
 import XMarkdown.Types exposing (Theme(..))
 
@@ -42,7 +42,6 @@ type alias ActualTheme =
     , offsetBackground : Color
     , offsetText : Color
     , link : Color
-    , footnote : Color
     , highlight : Color
     }
 
@@ -67,15 +66,10 @@ getColor theme colorSelector =
     colorSelector actualTheme
 
 
-{-| Get an Element.Color value from the selected theme.
-This is useful when working with elm-ui.
-
-    myBackgroundColor =
-        getElementColor Dark .background
-
+{-| Get Color value from the selected theme.
 -}
-getElementColor : Theme -> (ActualTheme -> Color) -> Element.Color
-getElementColor theme colorSelector =
+colorFromTheme : Theme -> (ActualTheme -> Color) -> Color.Color
+colorFromTheme theme colorSelector =
     let
         actualTheme =
             case theme of
@@ -85,16 +79,7 @@ getElementColor theme colorSelector =
                 Dark ->
                     darkTheme
     in
-    colorSelector actualTheme |> elementColorFromColor
-
-
-elementColorFromColor : Color -> Element.Color
-elementColorFromColor color =
-    let
-        v =
-            Color.toRgba color
-    in
-    Element.rgb v.red v.green v.blue
+    colorSelector actualTheme
 
 
 {-| The predefined light theme with professional, readable colors.
@@ -103,12 +88,11 @@ lightTheme : ActualTheme
 lightTheme =
     { background = whiteAlpha100
     , text = gray950
-    , codeBackground = Color.rgba 0.90 0.90 0.94 1
+    , codeBackground = Color.rgba 0.9 0.9 0.94 1
     , codeText = gray900
     , offsetBackground = whiteAlpha100
     , offsetText = gray800
     , link = indigo600
-    , footnote = gray600
     , highlight = transparentIndigo500
     }
 
@@ -124,6 +108,5 @@ darkTheme =
     , offsetBackground = gray700
     , offsetText = gray200
     , link = indigo600
-    , footnote = gray400
     , highlight = transparentIndigo500
     }
