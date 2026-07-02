@@ -19,7 +19,7 @@ import Render.Expression
 import Render.Helper
 import Render.Indentation
 import Render.OrdinaryBlock
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import Render.VerbatimBlock as VerbatimBlock

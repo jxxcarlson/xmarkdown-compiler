@@ -15,6 +15,7 @@ import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
 import List.Extra
 import Ports
+import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
 import XMarkdown.Types exposing (MarkupMsg(..), SyncHighlight, Theme(..))
@@ -49,6 +50,7 @@ type alias Model =
     , syncHighlight : Maybe SyncHighlight
     , tick : Int
     , theme : Theme
+    , currentTheme : ThemedStyles
     , fileName : String
     , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
@@ -86,6 +88,7 @@ init flags =
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , theme = Light
+      , currentTheme = lightTheme
       , tick = 0
       , fileName = "untitled.md"
       , lrSyncMatches = []
@@ -147,10 +150,21 @@ update msg model =
             let
                 newTheme =
                     case model.theme of
-                        Light -> Dark
-                        Dark -> Light
+                        Light ->
+                            Dark
+
+                        Dark ->
+                            Light
+
+                newActualTheme =
+                    case newTheme of
+                        Light ->
+                            lightTheme
+
+                        Dark ->
+                            darkTheme
             in
-            ( { model | theme = newTheme }, Cmd.none )
+            ( { model | theme = newTheme, currentTheme = newActualTheme }, Cmd.none )
 
         LRSync searchText ->
             let
@@ -319,16 +333,22 @@ view model =
                     , Html.Events.onClick ToggleTheme
                     , Html.Attributes.title
                         (case model.theme of
-                            Light -> "Switch to Dark Mode"
-                            Dark -> "Switch to Light Mode"
+                            Light ->
+                                "Switch to Dark Mode"
+
+                            Dark ->
+                                "Switch to Light Mode"
                         )
                     , style "background-color" "black"
                     , style "margin-left" "auto"
                     ]
                     [ text
                         (case model.theme of
-                            Light -> "🌙"
-                            Dark -> "☀️"
+                            Light ->
+                                "🌙"
+
+                            Dark ->
+                                "☀️"
                         )
                     ]
                 ]

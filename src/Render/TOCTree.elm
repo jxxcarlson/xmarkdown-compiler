@@ -12,7 +12,7 @@ import AST.Language
 import Either
 import Html exposing (Html)
 import Html.Attributes
-import Render.Settings
+import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg(..), Theme(..))
 
 
@@ -21,7 +21,7 @@ type alias ViewParameters =
     , selectedId : String
     , counter : Int
     , attr : List (Html.Attribute MarkupMsg)
-    , settings : Render.Settings.RenderSettings
+    , settings : Render.Theme.RenderSettings
     }
 
 

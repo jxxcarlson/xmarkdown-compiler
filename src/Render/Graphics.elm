@@ -5,13 +5,13 @@ import Html.Attributes
 import Either
 import AST.ASTTools as ASTTools
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock)
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 
 {-| Render an image
 -}
-image : Render.Settings.RenderSettings -> List (Html.Attribute MarkupMsg) -> List Expression -> Html MarkupMsg
+image : Render.Theme.RenderSettings -> List (Html.Attribute MarkupMsg) -> List Expression -> Html MarkupMsg
 image settings attrs body =
     let
         (url, alt) = extractImageData body

@@ -19,7 +19,7 @@ import Render.Blocks.Text as TextBlocks
 import Render.Indentation
 import Render.List
 import Render.Math
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.GHTable
 import XMarkdown.Types exposing (MarkupMsg)
 

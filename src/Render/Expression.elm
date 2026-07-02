@@ -9,7 +9,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Json.Encode
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg(..))
 
 

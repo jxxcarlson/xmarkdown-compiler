@@ -6,7 +6,7 @@ import Either
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.Expression
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 

@@ -6,7 +6,7 @@ import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
 import Render.Math
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 
@@ -32,7 +32,7 @@ render count acc settings attrs block =
                              , Html.Attributes.style "padding" "12px"
                              , Html.Attributes.style "border-radius" "4px"
                              , Html.Attributes.style "overflow-x" "auto"
-                             , Html.Attributes.style "font-size" (String.fromInt (Render.Settings.scaleFont settings 16) ++ "px")
+                             , Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 16) ++ "px")
                              ]
                                 ++ attrs
                             )

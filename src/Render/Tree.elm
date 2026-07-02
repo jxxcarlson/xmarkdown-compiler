@@ -13,7 +13,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Render.Attributes
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.TreeSupport
 import RoseTree.Tree exposing (Tree)
 import XMarkdown.Types exposing (MarkupMsg, Theme(..))
@@ -23,7 +23,7 @@ import XMarkdown.Types exposing (MarkupMsg, Theme(..))
 -}
 renderTree :
     XMarkdown.Types.CompilerParameters
-    -> Render.Settings.RenderSettings
+    -> Render.Theme.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
     -> Html MarkupMsg
@@ -87,7 +87,7 @@ renderTree params settings accumulator tree =
 
 renderTree_ :
     XMarkdown.Types.CompilerParameters
-    -> Render.Settings.RenderSettings
+    -> Render.Theme.RenderSettings
     -> Accumulator
     -> RoseTree.Tree.Tree ExpressionBlock
     -> Html MarkupMsg

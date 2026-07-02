@@ -16,7 +16,7 @@ import ETeX.Transform
 import Html exposing (Html)
 import Html.Attributes
 import Json.Encode
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 

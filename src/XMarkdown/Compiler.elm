@@ -20,7 +20,7 @@ import Parser.Block.Pipeline
 import Parser.Block.PrimitiveBlock
 import Parser.Inline.Expression
 import Render.Block
-import Render.Settings
+import Render.Theme
 import Render.TOCTree
 import Render.Tree
 import RoseTree.Tree
@@ -128,9 +128,9 @@ parseToForestWithAccumulator params lines =
 render : CompilerParameters -> ( Accumulator, Forest ExpressionBlock ) -> CompilerOutput
 render params ( accumulator_, forest_ ) =
     let
-        renderSettings : Render.Settings.RenderSettings
+        renderSettings : Render.Theme.RenderSettings
         renderSettings =
-            Render.Settings.defaultRenderSettings params
+            Render.Theme.defaultRenderSettings params
 
         viewParameters =
             { idsOfOpenNodes = params.idsOfOpenNodes
@@ -171,7 +171,7 @@ render params ( accumulator_, forest_ ) =
 -}
 renderForest :
     XMarkdown.Types.CompilerParameters
-    -> Render.Settings.RenderSettings
+    -> Render.Theme.RenderSettings
     -> AST.Acc.Accumulator
     -> List (RoseTree.Tree.Tree ExpressionBlock)
     -> List (Html MarkupMsg)

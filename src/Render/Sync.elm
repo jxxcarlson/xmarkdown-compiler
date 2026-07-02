@@ -11,14 +11,14 @@ import Color exposing (Color)
 import Html
 import Html.Attributes
 import Html.Events as Events
-import Render.Settings
+import Render.Theme
 import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg(..))
 
 
 {-| Use this function to add all needed properties to an element for LR sync
 -}
-attributes : Render.Settings.RenderSettings -> AST.Language.ExpressionBlock -> List (Html.Attribute MarkupMsg)
+attributes : Render.Theme.RenderSettings -> AST.Language.ExpressionBlock -> List (Html.Attribute MarkupMsg)
 attributes settings block =
     [ rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
     , Render.Utility.idAttribute block.meta.id
@@ -48,7 +48,7 @@ attributes settings block =
     The mismatch between what's being sent (line numbers) and what's being compared (meta.id) prevents both highlighting and scrolling from working
     correctly.
 -}
---highlightIfIdSelected : String -> Render.Settings.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
+--highlightIfIdSelected : String -> Render.Theme.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
 
 
 highlightIfIdSelected : b -> { a | selectedId : b, highlight : Color } -> List (Html.Attribute msg) -> List (Html.Attribute msg)
@@ -61,7 +61,7 @@ highlightIfIdSelected id settings attrs =
         attrs
 
 
-highlightIfIdIsSelected : Int -> Int -> Render.Settings.RenderSettings -> List (Html.Attribute MarkupMsg)
+highlightIfIdIsSelected : Int -> Int -> Render.Theme.RenderSettings -> List (Html.Attribute MarkupMsg)
 highlightIfIdIsSelected firstLineNumber numberOfLines settings =
     if String.fromInt firstLineNumber == settings.selectedId then
         [ rightToLeftSyncHelper firstLineNumber (firstLineNumber + numberOfLines)

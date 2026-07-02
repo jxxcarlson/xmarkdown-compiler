@@ -3,7 +3,7 @@ module Render.Indentation exposing (indentParagraph, indentOrdinaryBlock)
 import Html exposing (Html)
 import Html.Attributes
 import Render.Helper
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 
 
 topPaddingForIndentedElements : Int

@@ -8,7 +8,7 @@ import Html.Attributes
 import Render.Expression
 import Render.Helper
 import Render.OrdinaryBlock
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.VerbatimBlock as VerbatimBlock
 import XMarkdown.Types exposing (MarkupMsg)
 

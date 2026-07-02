@@ -20,7 +20,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
 import Render.Expression
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.Sync
 import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg)
@@ -99,7 +99,7 @@ renderNothing _ _ _ _ _ =
 renderWithDefault : String -> Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> List Expression -> List (Html MarkupMsg)
 renderWithDefault default count acc settings attr exprs =
     if List.isEmpty exprs then
-        [ Html.span [ Html.Attributes.style "color" "rgb(150, 0, 0)", Html.Attributes.style "font-size" (String.fromInt (Render.Settings.scaleFont settings 14) ++ "px") ] [ Html.text default ] ]
+        [ Html.span [ Html.Attributes.style "color" "rgb(150, 0, 0)", Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 14) ++ "px") ] [ Html.text default ] ]
 
     else
         List.map (Render.Expression.render count acc settings attr) exprs
