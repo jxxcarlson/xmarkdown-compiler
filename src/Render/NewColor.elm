@@ -1,9 +1,9 @@
 module Render.NewColor exposing
     ( Color
-    , blue300, blue500
+    , blue300
     , indigo200, indigo500, indigo600
     , gray100, gray200, gray300, gray400, gray600, gray700, gray800, gray900, gray920, gray950
-    , transparentIndigo500, whiteAlpha100
+    , blue700, blueDark, blueLight, indigo900, indigo950, midnightIndigo, transparentIndigo500, whiteAlpha100
     )
 
 {-| A native macOS-inspired color system with professional, subtle tones.
@@ -98,7 +98,35 @@ blue500 =
     rgba 0.0 0.48 1.0 1
 
 
+blue700 : Color
+blue700 =
+    rgba 0.0 0.2 1.0 1
 
+
+blueDark : Color
+blueDark =
+    rgba 0.0 0.0 0.3 1
+
+
+blueLight : Color
+blueLight =
+    rgba 0.95 0.95 1.0 1
+
+
+blueTextLight =
+    rgba 0.114 0.306 0.847 1
+
+
+
+-- #1D4ED8
+
+
+blueTextDark =
+    rgba 0.376 0.647 0.98 1
+
+
+
+-- #60A5FA
 -- macOS accent blue
 -- Green variants (macOS system green inspired)
 -- macOS system green
@@ -118,6 +146,11 @@ indigo500 =
     rgba 0.35 0.38 0.67 1
 
 
+indigo900 : Color
+indigo900 =
+    rgba 0.19 0.18 0.51 1
+
+
 transparentIndigo500 : Color
 transparentIndigo500 =
     rgba 0.35 0.38 0.67 0.3
@@ -130,6 +163,16 @@ transparentIndigo500 =
 indigo600 : Color
 indigo600 =
     rgba 0.29 0.31 0.58 1
+
+
+indigo950 : Color
+indigo950 =
+    rgba 0.12 0.11 0.29 1
+
+
+midnightIndigo : Color
+midnightIndigo =
+    rgba 0.06 0.04 0.18 1
 
 
 

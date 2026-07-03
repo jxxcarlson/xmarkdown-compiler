@@ -371,7 +371,11 @@ view model =
                 [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
                   Html.map Render (renderPanel model.renderSettings compilerOutput.body)
                 ]
-            , div [ class "panel toc-panel", style "width" (px g.tocW) ]
+            , div
+                [ -- class "panel toc-panel"
+                  style "width" (px g.tocW)
+                , style "background" (Render.Theme.getThemedColorAsCssString .background model.theme)
+                ]
                 [ Html.map Render (renderPanel model.renderSettings compilerOutput.toc) ]
             ]
         ]
@@ -402,7 +406,7 @@ renderPanel settings elements =
         , Html.Attributes.style "gap" (String.fromInt (round settings.interBlockSpacing) ++ "px")
         , Html.Attributes.style "width" "100%"
         , Html.Attributes.style "background-color" (Render.Theme.getThemedColorAsCssString .background settings.theme)
-        , Html.Attributes.style "font-color" (Render.Theme.getThemedColorAsCssString .text settings.theme)
+        , Html.Attributes.style "color" (Render.Theme.getThemedColorAsCssString .text settings.theme)
         ]
         elements
 

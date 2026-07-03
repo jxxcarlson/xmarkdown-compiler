@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.Math
 import Render.Theme exposing (RenderSettings)
-import XMarkdown.Types exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg, Theme(..))
 
 
 {-| Render verbatim blocks (code, math, verse, etc.) as Html
@@ -24,13 +24,19 @@ render count acc settings attrs block =
                     if functionName == "math" then
                         -- Render as display math, not code
                         Render.Math.displayedMath count acc settings attrs { block | body = Either.Left str }
+
                     else
                         -- Render as code
                         Html.pre
                             ([ Html.Attributes.id block.meta.id
-                             , Html.Attributes.style "background-color" "#f5f5f5"
-                             , Html.Attributes.style "padding" "12px"
-                             , Html.Attributes.style "border-radius" "4px"
+                             , Html.Attributes.style "padding-left" "24px"
+
+                             --, case settings.theme of
+                             --   Light ->
+                             --       Html.Attributes.style "color" "blue"
+                             --
+                             --   Dark ->
+                             --       Html.Attributes.style "color" "pink"
                              , Html.Attributes.style "overflow-x" "auto"
                              , Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 16) ++ "px")
                              ]

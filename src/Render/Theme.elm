@@ -165,10 +165,10 @@ lightTheme =
     { background = Color.rgba 0.9 0.9 0.9 1.0
     , text = gray950
     , codeBackground = Color.rgba 0.9 0.9 0.94 1
-    , codeText = gray900
+    , codeText = blueDark
     , offsetBackground = Color.rgb 1 1 1 --indigo300 |> Render.NewColor.setOpacity 0.25
     , offsetText = gray950
-    , link = blue500
+    , link = blue700 --blue500
     , highlight = indigo200
     , border = gray300
     }
@@ -178,8 +178,8 @@ darkTheme : ThemedStyles
 darkTheme =
     { background = gray900
     , text = Color.rgba 0.835 0.847 0.882 1 -- gray100
-    , codeBackground = Color.rgba 0.35 0.37 0.42 1
-    , codeText = gray100
+    , codeBackground = gray800
+    , codeText = Color.lightBlue --blueLight
     , offsetBackground = gray900
     , offsetText = Color.rgba 0.835 0.847 0.882 1 -- gray200 |> Render.NewColor.setOpacity 0.25
     , link = blue300
