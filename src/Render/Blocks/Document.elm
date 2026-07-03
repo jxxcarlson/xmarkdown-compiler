@@ -53,11 +53,11 @@ section count acc settings attr block =
                     [ Html.text "" ]
     in
     headingElement
-        ([ Html.Attributes.id block.meta.id
-         , Html.Attributes.style "margin-top" "16px"
-         , Html.Attributes.style "margin-bottom" "8px"
-         ]
-            ++ attr
+        (attr
+            ++ [ Html.Attributes.id ("e-" ++ String.fromInt block.meta.lineNumber ++ ".0")
+               , Html.Attributes.style "margin-top" "16px"
+               , Html.Attributes.style "margin-bottom" "8px"
+               ]
         )
         content
 

@@ -12,6 +12,8 @@ import AST.Language
 import Either
 import Html exposing (Html)
 import Html.Attributes
+import Html.Events
+import Json.Decode
 import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg(..), Theme(..))
 
@@ -57,8 +59,17 @@ renderTocItem acc block =
                 _ ->
                     ""
     in
+    let
+        -- Use the "e-{lineNumber}.0" format consistent with search function
+        elementId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
+    in
     Html.li []
-        [ Html.a [ Html.Attributes.href ("#" ++ block.meta.id) ]
+        [ Html.a
+            [ Html.Attributes.href ("#" ++ elementId)
+            , Html.Events.preventDefaultOn "click"
+                (Json.Decode.succeed (SelectId elementId, True))
+            ]
             [ Html.text (if String.isEmpty headingText then "Untitled" else headingText) ]
         ]
 

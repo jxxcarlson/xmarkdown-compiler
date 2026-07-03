@@ -34,7 +34,7 @@ The *Schwarzschild radius* is one of the simplest and **most important quantitie
 The Schwarzschild radius of an uncharged, non-rotating black hole is
 
 $$
-r_s = \frac{2GM}{c^2}
+r_s = \\frac{2GM}{c^2}
 $$
 
 where $G$ is Newton's gravitational constant, $M$ is the mass, and $c$ is the speed of light.
