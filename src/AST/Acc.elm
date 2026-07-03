@@ -38,20 +38,20 @@ module AST.Acc exposing
 
 -}
 
-import Dict exposing (Dict)
-import ETeX.Transform exposing (MathMacroDict, makeMacroDict)
-import Either exposing (Either(..))
 import AST.ASTTools
 import AST.BlockUtilities
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
 import AST.Settings
-import Macro.TextMacro exposing (Macro)
 import AST.Vector as Vector exposing (Vector)
+import Dict exposing (Dict)
+import ETeX.Transform exposing (MathMacroDict, makeMacroDict)
+import Either exposing (Either(..))
+import Macro.TextMacro exposing (Macro)
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
-import XMarkdown.Config as Config
 import Tools.String
 import Tools.Utility as Utility
+import XMarkdown.Config as Config
 
 
 initialData : InitialAccumulatorData
@@ -488,33 +488,11 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
         Ordinary "list" ->
             { accumulator | itemVector = Vector.init 4 }
 
-        Ordinary "chapter" ->
-            let
-                level : String
-                level =
-                    "0"
-            in
-            case getNameContentId block of
-                Just { content, id } ->
-                    updateWithOrdinarySectionBlock accumulator content level id
-                        |> updateReferenceWithBlock block
-
-                Nothing ->
-                    accumulator |> updateReferenceWithBlock block
-
         Ordinary "section" ->
             let
                 level : String
                 level =
-                    case Dict.get "has-chapters" accumulator.keyValueDict of
-                        Nothing ->
-                            Dict.get "level" properties |> Maybe.withDefault "1"
-
-                        Just "yes" ->
-                            Dict.get "level" properties |> Maybe.withDefault "1"
-
-                        _ ->
-                            Dict.get "level" properties |> Maybe.withDefault "1"
+                    Dict.get "level" properties |> Maybe.withDefault "1"
             in
             case getNameContentId block of
                 Just { content, id } ->
@@ -572,9 +550,6 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                     List.head args |> Maybe.andThen String.toInt |> Maybe.withDefault 1
             in
             { accumulator | headingIndex = { content = [ n, 0, 0, 0 ], size = 4 }, deltaLevel = 1 }
-
-        Ordinary "bibitem" ->
-            updateBibItemBlock accumulator args block.meta.id
 
         Ordinary _ ->
             updateWithOrdinaryBlock block accumulator
@@ -703,15 +678,6 @@ updateWithOrdinaryDocumentBlock accumulator content level id =
     in
     -- TODO: take care of numberedItemIndex = 0 here and elsewhere
     { accumulator | documentIndex = documentIndex } |> updateReference referenceDatum
-
-
-updateBibItemBlock accumulator args id =
-    case List.head args of
-        Nothing ->
-            accumulator
-
-        Just label ->
-            { accumulator | reference = Dict.insert label { id = id, numRef = "_irrelevant_" } accumulator.reference }
 
 
 updateWithOrdinaryBlock : ExpressionBlock -> Accumulator -> Accumulator

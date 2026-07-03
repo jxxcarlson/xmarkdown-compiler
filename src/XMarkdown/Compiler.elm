@@ -20,8 +20,8 @@ import Parser.Block.Pipeline
 import Parser.Block.PrimitiveBlock
 import Parser.Inline.Expression
 import Render.Block
-import Render.Theme
 import Render.TOCTree
+import Render.Theme
 import Render.Tree
 import RoseTree.Tree
 import XMarkdown.Config as Config
@@ -78,10 +78,6 @@ viewTOC compiled =
     compiled.toc
 
 
-bottomPadding k =
-    Html.Attributes.style "padding-bottom" (String.fromInt k ++ "px")
-
-
 {-| Compile XMarkdown source lines into renderable output (body, banner, TOC, title).
 -}
 compile : CompilerParameters -> List String -> CompilerOutput
@@ -130,7 +126,7 @@ render params ( accumulator_, forest_ ) =
     let
         renderSettings : Render.Theme.RenderSettings
         renderSettings =
-            Render.Theme.defaultRenderSettings params
+            Render.Theme.makeSettings params
 
         viewParameters =
             { idsOfOpenNodes = params.idsOfOpenNodes

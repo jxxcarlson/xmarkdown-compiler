@@ -6,21 +6,20 @@ module Render.OrdinaryBlock exposing (getAttributes, render)
 
 -}
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock, Heading(..))
 import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock, Heading(..))
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.BlockType
 import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
 import Render.Blocks.Text as TextBlocks
-import Render.Indentation
+import Render.GHTable
 import Render.List
 import Render.Math
 import Render.Theme exposing (RenderSettings)
-import Render.GHTable
 import XMarkdown.Types exposing (MarkupMsg)
 
 
@@ -110,5 +109,6 @@ indentOrdinaryBlock : Int -> String -> RenderSettings -> Html msg -> Html msg
 indentOrdinaryBlock indent id settings x =
     if indent > 0 then
         Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
+
     else
         x

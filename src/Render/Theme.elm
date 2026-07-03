@@ -2,7 +2,7 @@ module Render.Theme exposing
     ( ActualTheme
     , getColor
     , lightTheme, darkTheme
-    , Display, RenderSettings, ThemedStyles, colorFromTheme, defaultRenderSettings, scaleFont
+    , Display, RenderSettings, ThemedStyles, colorFromTheme, getThemedColorAsCssString, makeSettings, scaleFont
     )
 
 {-| Theme support for Scripta rendering.
@@ -143,6 +143,19 @@ getThemedColor keyAccess theme =
             Light ->
                 lightTheme
         )
+
+
+getThemedColorAsCssString : (ThemedStyles -> Color) -> Theme -> String
+getThemedColorAsCssString keyAccess theme =
+    keyAccess
+        (case theme of
+            Dark ->
+                darkTheme
+
+            Light ->
+                lightTheme
+        )
+        |> Color.toCssString
 
 
 {-| A light theme with a white background and dark text.

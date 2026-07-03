@@ -13,7 +13,7 @@ import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Helper
-import Render.Settings exposing (RenderSettings)
+import Render.Theme exposing (RenderSettings)
 import Render.Sync
 import XMarkdown.Types exposing (MarkupMsg)
 

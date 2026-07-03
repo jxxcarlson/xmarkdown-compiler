@@ -6,7 +6,6 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Data.XMarkdown
-import Element
 import File exposing (File)
 import File.Download
 import File.Select
@@ -18,7 +17,7 @@ import Ports
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
-import XMarkdown.Types exposing (MarkupMsg(..), SyncHighlight, Theme(..))
+import XMarkdown.Types exposing (CompilerParameters, MarkupMsg(..), SyncHighlight, Theme(..))
 
 
 main : Program Flags Model Msg
@@ -49,8 +48,10 @@ type alias Model =
     , idsOfOpenNodes : List String
     , syncHighlight : Maybe SyncHighlight
     , tick : Int
+    , compilerParameters : CompilerParameters
+    , currentTheme : Theme
     , theme : Theme
-    , currentTheme : ThemedStyles
+    , renderSettings : Render.Theme.RenderSettings
     , fileName : String
     , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
@@ -88,12 +89,15 @@ init flags =
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , theme = Light
-      , currentTheme = lightTheme
+      , renderSettings =
+            Render.Theme.makeSettings defaultCompilerParameters
+      , currentTheme = Light
       , tick = 0
       , fileName = "untitled.md"
       , lrSyncMatches = []
       , lrSyncIndex = 0
       , lrSyncText = ""
+      , compilerParameters = defaultCompilerParameters
       }
     , Ports.setEditorHighlightColor defaultCompilerParameters.highlightColor
     )
@@ -156,15 +160,15 @@ update msg model =
                         Dark ->
                             Light
 
-                newActualTheme =
-                    case newTheme of
-                        Light ->
-                            lightTheme
+                oldRenderSettings =
+                    model.renderSettings
 
-                        Dark ->
-                            darkTheme
+                newRenderSettings =
+                    { oldRenderSettings | theme = newTheme }
             in
-            ( { model | theme = newTheme, currentTheme = newActualTheme }, Cmd.none )
+            ( { model | theme = newTheme, renderSettings = newRenderSettings }
+            , Cmd.none
+            )
 
         LRSync searchText ->
             let
@@ -295,14 +299,15 @@ view model =
         g =
             geometry model
 
+        -- Customize compiler parameters here
         params =
             { defaultCompilerParameters
                 | docWidth = g.docWidth
                 , editCount = model.count
                 , selectedId = model.selectId
                 , idsOfOpenNodes = model.idsOfOpenNodes
-                , interBlockSpacing = 18
-                , paddingAboveHeadings = 18
+                , interBlockSpacing = 0
+                , paddingAboveHeadings = 0
                 , numberToLevel = 2
             }
 
@@ -339,7 +344,7 @@ view model =
                             Dark ->
                                 "Switch to Light Mode"
                         )
-                    , style "background-color" "black"
+                    , Html.Attributes.style "background-color" "black"
                     , style "margin-left" "auto"
                     ]
                     [ text
@@ -361,13 +366,20 @@ view model =
                 [ class "panel rendered-panel"
                 , id XMarkdown.API.renderedTextId
                 , style "width" (px g.renderedW)
+                , style "background-color" (Render.Theme.getThemedColorAsCssString .background model.theme)
                 ]
-                [ Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
+                [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
+                  Html.map Render (renderPanel model.renderSettings compilerOutput.body)
                 ]
             , div [ class "panel toc-panel", style "width" (px g.tocW) ]
-                [ Html.map Render (renderPanel 18 compilerOutput.toc) ]
+                [ Html.map Render (renderPanel model.renderSettings compilerOutput.toc) ]
             ]
         ]
+
+
+
+--renderPanel : Render.Theme.RenderSettings -> List (Html MarkupMsg) -> Html MarkupMsg
+--renderPanel settings elements
 
 
 editorView : Model -> Html Msg
@@ -382,15 +394,21 @@ editorView model =
 
 {-| Render the compiler's Html output into the panel.
 -}
-renderPanel : Int -> List (Html MarkupMsg) -> Html MarkupMsg
-renderPanel blockSpacing elements =
+renderPanel : Render.Theme.RenderSettings -> List (Html MarkupMsg) -> Html MarkupMsg
+renderPanel settings elements =
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-direction" "column"
-        , Html.Attributes.style "gap" (String.fromInt blockSpacing ++ "px")
+        , Html.Attributes.style "gap" (String.fromInt (round settings.interBlockSpacing) ++ "px")
         , Html.Attributes.style "width" "100%"
+        , Html.Attributes.style "background-color" (Render.Theme.getThemedColorAsCssString .background settings.theme)
+        , Html.Attributes.style "font-color" (Render.Theme.getThemedColorAsCssString .text settings.theme)
         ]
         elements
+
+
+
+-- getThemedColorAsCssString : (ThemedStyles -> Color) -> Theme -> String
 
 
 px : Int -> String

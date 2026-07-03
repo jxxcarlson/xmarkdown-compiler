@@ -13,18 +13,9 @@ import Dict
 import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
-import Html.Events
 import Render.Block
-import Render.Expression
-import Render.Helper
-import Render.Indentation
-import Render.OrdinaryBlock
 import Render.Theme exposing (RenderSettings)
-import Render.Sync
-import Render.Utility
-import Render.VerbatimBlock as VerbatimBlock
 import XMarkdown.Types exposing (MarkupMsg)
-import XMarkdown.Types
 
 
 {-| Simplified version of Block.renderAttributes (now returns Html.Attribute)
@@ -45,6 +36,7 @@ syncAttributes settings block =
     ]
         ++ (if String.fromInt block.meta.lineNumber == settings.selectedId then
                 [ Html.Attributes.style "background-color" "rgba(160, 160, 255, 0.3)" ]
+
             else
                 []
            )
@@ -61,6 +53,7 @@ renderBody params settings acc block =
         spacer =
             if isHeading then
                 [ Html.div [ Html.Attributes.style "height" (String.fromInt (round params.paddingAboveHeadings) ++ "px") ] [] ]
+
             else
                 []
     in
@@ -103,5 +96,6 @@ indentParagraph : Int -> Html msg -> Html msg
 indentParagraph indent x =
     if indent > 0 then
         Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
+
     else
         x
