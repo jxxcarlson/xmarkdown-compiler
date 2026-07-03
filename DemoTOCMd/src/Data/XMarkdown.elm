@@ -31,6 +31,14 @@ Also note the search and replace features of the editor. Type cmd-F to bring up 
 
 The *Schwarzschild radius* is one of the simplest and **most important quantities in black-hole physics**. It is the radius of the event horizon of a non-rotating, uncharged black hole.
 
+The Schwarzschild radius of an uncharged, non-rotating black hole is
+
+$$
+r_s = \frac{2GM}{c^2}
+$$
+
+where $G$ is Newton's gravitational constant, $M$ is the mass, and $c$ is the speed of light.
+
 # Links
 
 I read the [New York Times](https://nytimes.com) every day.
