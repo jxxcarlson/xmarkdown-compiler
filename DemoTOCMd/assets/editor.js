@@ -1,10 +1,8 @@
 // Minimal CodeMirror 6 custom element for DemoTOCMd.
-// Imports without ?bundle so esm.sh shares one @codemirror/state instance
-// (duplicate state instances cause "unrecognized extension" errors).
 console.log("editor.js: starting to load dependencies");
-import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
-import { EditorState, StateField, StateEffect } from "https://esm.sh/@codemirror/state@6";
-import { Decoration, keymap } from "https://esm.sh/@codemirror/view@6";
+import { basicSetup, EditorView } from "../node_modules/codemirror/dist/index.js";
+import { EditorState, StateField, StateEffect } from "../node_modules/@codemirror/state/dist/index.js";
+import { Decoration, keymap } from "../node_modules/@codemirror/view/dist/index.js";
 console.log("editor.js: dependencies loaded successfully");
 
 // RL sync: a background decoration over the source span the user clicked.

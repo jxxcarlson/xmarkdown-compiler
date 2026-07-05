@@ -14,6 +14,7 @@ import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
 import Render.Block
+import Render.Sync
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
@@ -27,19 +28,11 @@ renderAttributes settings block =
 
 {-| The standard attributes for a block are those needed for LR and RL sync
 and for highlighting the block if it is selected.
-TODO: Phase 5 - Wire up proper sync via Render.Sync module
 -}
 syncAttributes : RenderSettings -> ExpressionBlock -> List (Html.Attribute MarkupMsg)
 syncAttributes settings block =
-    [ Html.Attributes.id (String.fromInt block.meta.lineNumber)
-    , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-    ]
-        ++ (if String.fromInt block.meta.lineNumber == settings.selectedId then
-                [ Html.Attributes.style "background-color" "rgba(160, 160, 255, 0.3)" ]
-
-            else
-                []
-           )
+    Render.Sync.attributes settings block
+        ++ [ Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber) ]
 
 
 {-| Render block body using the real block renderer

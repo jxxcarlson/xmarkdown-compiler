@@ -7,68 +7,20 @@
     <script src="katex.js"></script>
 
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="editor.js"></script>
+    <script type="module" src="editor-bundle.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 
     <script defer src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script>
 
     <script src="main.js"></script>
+    <script type="module" src="app.js"></script>
 
 </head>
 
 <body>
 
 <div id="main"></div>
-
-<script>
-
-    var root = document.getElementById('main');
-    var app = Elm.Main.init({
-        node: root,
-        flags: {
-            window: {
-                windowWidth: window.innerWidth,
-                windowHeight: window.innerHeight
-            }
-        }
-    });
-    init(app);
-
-    // Listen for LR sync events from the editor
-    document.addEventListener('lr-sync', (e) => {
-        console.log("lr-sync event received:", e.detail);
-        if (e.detail && e.detail.text) {
-            console.log("Sending to Elm port:", e.detail.text);
-            app.ports.lrSyncRequest.send(e.detail.text);
-        }
-    }, true);
-    console.log("Port listener attached");
-
-    // Listen for CSS injection from Elm (LR sync)
-    app.ports.injectHighlightCSS.subscribe((css) => {
-        console.log("Injecting CSS:", css);
-
-        // Remove previous highlight style if it exists
-        const oldStyle = document.getElementById('lr-sync-highlight-style');
-        if (oldStyle) {
-            oldStyle.remove();
-        }
-
-        // Create and inject new style
-        const style = document.createElement('style');
-        style.id = 'lr-sync-highlight-style';
-        style.textContent = css;
-        document.head.appendChild(style);
-    });
-
-    // Listen for editor highlight color changes from Elm (RL sync)
-    app.ports.setEditorHighlightColor.subscribe((colorStr) => {
-        console.log("Setting editor highlight color:", colorStr);
-        document.documentElement.style.setProperty('--cm-sync-highlight-bg', colorStr);
-    });
-
-</script>
 
 </body>
 </html>
