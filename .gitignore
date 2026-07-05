@@ -22,3 +22,6 @@ Benchmark/main.js
 xmarkdown.iml
 DemoMd/index.html
 DemoTOCMd/index.html
+DemoTOCMd/node_modules/
+DemoTOCMd/assets/editor-bundle.js
+DemoTOCMd/dist/
