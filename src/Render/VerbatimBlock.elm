@@ -29,24 +29,29 @@ render count acc settings attrs block =
                         -- Render as code
                         let
                             blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+                            indentPx = String.fromInt settings.leftIndentation ++ "px"
                         in
-                        Html.pre
-                            ([ Html.Attributes.id blockId
-                             , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-                             , Html.Attributes.style "padding-left" "24px"
+                        Html.div
+                            [ Html.Attributes.style "margin-left" indentPx
+                            ]
+                            [ Html.pre
+                                ([ Html.Attributes.id blockId
+                                 , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+                                 , Html.Attributes.style "padding-left" "0"
 
-                             --, case settings.theme of
-                             --   Light ->
-                             --       Html.Attributes.style "color" "blue"
-                             --
-                             --   Dark ->
-                             --       Html.Attributes.style "color" "pink"
-                             , Html.Attributes.style "overflow-x" "auto"
-                             , Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 16) ++ "px")
-                             ]
-                                ++ attrs
-                            )
-                            [ Html.code [] [ Html.text str ] ]
+                                 --, case settings.theme of
+                                 --   Light ->
+                                 --       Html.Attributes.style "color" "blue"
+                                 --
+                                 --   Dark ->
+                                 --       Html.Attributes.style "color" "pink"
+                                 , Html.Attributes.style "overflow-x" "auto"
+                                 , Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 16) ++ "px")
+                                 ]
+                                    ++ attrs
+                                )
+                                [ Html.code [] [ Html.text str ] ]
+                            ]
 
                 _ ->
                     Html.text ""
