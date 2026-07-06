@@ -87,12 +87,8 @@ renderTocItem acc editCount numberToLevel block =
         liStyle =
             [ Html.Attributes.style "margin-left" (String.fromInt indent ++ "px")
             , Html.Attributes.style "margin-bottom" "8px"
+            , Html.Attributes.style "list-style-type" "none"
             ]
-                ++ (if String.isEmpty sectionNumber then
-                        []
-                    else
-                        [ Html.Attributes.style "list-style-type" "none" ]
-                   )
     in
     let
         elementId =

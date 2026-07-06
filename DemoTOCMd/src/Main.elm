@@ -308,9 +308,6 @@ view model =
                 , editCount = model.count
                 , selectedId = model.selectId
                 , idsOfOpenNodes = model.idsOfOpenNodes
-                , interBlockSpacing = 0
-                , paddingAboveHeadings = 0
-                , numberToLevel = 2
             }
 
         compilerOutput : XMarkdown.Types.CompilerOutput
@@ -443,10 +440,6 @@ jumpToTopOfWithLineNumber elementId lineNumber =
             )
         |> Task.onError
             (\err ->
-                let
-                    _ =
-                        Debug.log ("Scroll error for " ++ elementId ++ " (line " ++ String.fromInt lineNumber ++ ")") err
-                in
                 Task.fail err
             )
         |> Task.attempt (\_ -> NoOp)
