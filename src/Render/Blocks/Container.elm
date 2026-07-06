@@ -4,6 +4,7 @@ import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
 import Either
 import Html exposing (Html)
+import Html.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Expression
 import Render.Theme exposing (RenderSettings)
@@ -24,8 +25,7 @@ registerRenderers registry =
 
 {-| Render an item list
 -}
-itemList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-itemList _ _ _ attrs block =
+itemList _ _ settings attrs block =
     let
         content =
             case block.body of
@@ -34,14 +34,26 @@ itemList _ _ _ attrs block =
 
                 Either.Left _ ->
                     [ Html.text "" ]
+
+        indentPx =
+            String.fromInt settings.leftIndentation ++ "px"
     in
-    Html.ul attrs [ Html.li [] content ]
+    Html.div
+        [ Html.Attributes.style "margin-left" indentPx
+        ]
+        [ Html.ul
+            (attrs
+                ++ [ Html.Attributes.style "padding-left" "24px"
+                   , Html.Attributes.style "margin-left" "0"
+                   ]
+            )
+            [ Html.li [] content ]
+        ]
 
 
 {-| Render a numbered list
 -}
-numberedList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numberedList _ _ _ attrs block =
+numberedList _ _ settings attrs block =
     let
         content =
             case block.body of
@@ -50,8 +62,22 @@ numberedList _ _ _ attrs block =
 
                 Either.Left _ ->
                     [ Html.text "" ]
+
+        indentPx =
+            String.fromInt settings.leftIndentation ++ "px"
     in
-    Html.ol attrs [ Html.li [] content ]
+    Html.div
+        [ Html.Attributes.style "margin-left" indentPx
+        ]
+        [ Html.ol
+            (attrs
+                ++ [ Html.Attributes.style "padding-left" "24px"
+                   , Html.Attributes.style "margin-left" "0"
+                   , Html.Attributes.style "list-style" "none"
+                   ]
+            )
+            [ Html.li [] content ]
+        ]
 
 
 {-| Render a description list

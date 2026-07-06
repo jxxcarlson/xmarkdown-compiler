@@ -84,7 +84,7 @@ section count _ settings attr block =
             ++ [ Html.Attributes.id ("e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count)
                , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
                , Html.Attributes.style "margin-top" "16px"
-               , Html.Attributes.style "margin-bottom" "8px"
+               , Html.Attributes.style "margin-bottom" "12px"
                , Html.Attributes.style "font-weight" "400"
                ]
         )

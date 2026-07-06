@@ -179,7 +179,7 @@ update msg model =
                         , editCount = model.count
                         , selectedId = "selectedId"
                         , idsOfOpenNodes = model.idsOfOpenNodes
-                        , interBlockSpacing = 18
+                        , interBlockSpacing = 0
                         , paddingAboveHeadings = 18
 
                         -- JCX -- , numberToLevel = 0

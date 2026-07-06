@@ -65,7 +65,7 @@ renderTree params settings accumulator tree =
     if isBoxLike root then
         Html.div blockAttrs
             [ Html.div
-                [ Html.Attributes.style "padding-bottom" "18px"
+                [ Html.Attributes.style "padding-bottom" "0px"
                 , Html.Attributes.style "border" ("4px solid " ++ borderColor)
                 , Html.Attributes.style "margin-left" "auto"
                 , Html.Attributes.style "margin-right" "auto"

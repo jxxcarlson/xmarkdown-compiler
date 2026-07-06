@@ -102,22 +102,18 @@ type alias RenderSettings =
     , titleSize : Int
     , fontSize : Int
     , width : Int
+    , listSpacing : Int
     , backgroundColor : Color
+    , redColor : Color
     , textColor : Color
     , codeColor : Color
     , linkColor : Color
     , highlight : Color
     , codeBackground : Color
+    , theme : Theme
     , margins : Int
     , leftIndentation : Int
-    , windowWidthScale : Float
-    , maxHeadingFontSize : Float
-    , redColor : Color
-    , theme : Theme
-    , paddingTop : Int
-    , paddingBottom : Int
     , numberToLevel : Int
-    , properties : Dict String String
     }
 
 
@@ -229,6 +225,7 @@ makeSettings params =
     , titleSize = titleSize
     , fontSize = params.fontSize
     , interBlockSpacing = params.interBlockSpacing
+    , listSpacing = 14
     , display = DefaultDisplay
     , showTOC = True
     , showErrorMessages = False
@@ -242,14 +239,9 @@ makeSettings params =
     , codeBackground = getThemedColor .codeBackground params.theme
     , margins = 24
     , leftIndentation = 18
-    , windowWidthScale = 0.3
-    , maxHeadingFontSize = (titleSize |> toFloat) * 0.72
     , redColor = Color.rgb 0.7 0 0
     , theme = params.theme
-    , paddingTop = 0
-    , paddingBottom = 0
     , numberToLevel = params.numberToLevel
-    , properties = Dict.singleton "number-to-level" (String.fromInt params.numberToLevel)
     }
 
 
