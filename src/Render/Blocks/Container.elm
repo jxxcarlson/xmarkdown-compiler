@@ -27,6 +27,9 @@ registerRenderers registry =
 -}
 itemList _ _ settings attrs block =
     let
+        _ =
+            Debug.log "ITEM LIST" ()
+
         content =
             case block.body of
                 Either.Right exprs ->
@@ -34,19 +37,10 @@ itemList _ _ settings attrs block =
 
                 Either.Left _ ->
                     [ Html.text "" ]
-
-        indentPx =
-            String.fromInt settings.leftIndentation ++ "px"
     in
-    Html.div
-        [ Html.Attributes.style "margin-left" indentPx
-        ]
+    Html.div []
         [ Html.ul
-            (attrs
-                ++ [ Html.Attributes.style "padding-left" "24px"
-                   , Html.Attributes.style "margin-left" "0"
-                   ]
-            )
+            attrs
             [ Html.li [] content ]
         ]
 
@@ -62,20 +56,10 @@ numberedList _ _ settings attrs block =
 
                 Either.Left _ ->
                     [ Html.text "" ]
-
-        indentPx =
-            String.fromInt settings.leftIndentation ++ "px"
     in
-    Html.div
-        [ Html.Attributes.style "margin-left" indentPx
-        ]
+    Html.div []
         [ Html.ol
-            (attrs
-                ++ [ Html.Attributes.style "padding-left" "24px"
-                   , Html.Attributes.style "margin-left" "0"
-                   , Html.Attributes.style "list-style" "none"
-                   ]
-            )
+            attrs
             [ Html.li [] content ]
         ]
 

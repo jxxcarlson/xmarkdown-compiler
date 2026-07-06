@@ -15,6 +15,7 @@ numberToLetter : Int -> String
 numberToLetter n =
     if n > 0 && n <= 26 then
         String.fromChar (Char.fromCode (96 + n))
+
     else
         String.fromInt n
 
@@ -33,6 +34,7 @@ numberToRoman n =
                 ( value, numeral ) :: rest ->
                     if num >= value then
                         numeral ++ toRoman (num - value) pairs
+
                     else
                         toRoman num rest
     in
@@ -52,6 +54,32 @@ formatListNumber level number =
             numberToRoman number
 
 
+bulletSymbol : Int -> Html MarkupMsg
+bulletSymbol level =
+    case level of
+        0 ->
+            Html.span
+                [ Html.Attributes.style "color" "#444"
+                , Html.Attributes.style "font-weight" "bold"
+                , Html.Attributes.style "font-size" "0.5em"
+                ]
+                [ Html.text "●" ]
+
+        1 ->
+            Html.span
+                [ Html.Attributes.style "color" "#444"
+                , Html.Attributes.style "font-size" "0.5em"
+                ]
+                [ Html.text "□" ]
+
+        _ ->
+            Html.span
+                [ Html.Attributes.style "color" "#444"
+                , Html.Attributes.style "font-size" "0.84em"
+                ]
+                [ Html.text "◇" ]
+
+
 {-| Render a list item
 -}
 item : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
@@ -61,24 +89,10 @@ item count _ settings attr block =
             block.indent // 2
 
         indentation =
-            if level >= 3 then
-                0
-            else
-                settings.leftIndentation
+            (round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
 
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
-
-        bulletStyle =
-            case level of
-                0 ->
-                    "disc"
-
-                1 ->
-                    "circle"
-
-                _ ->
-                    "none"
 
         content =
             case block.body of
@@ -88,23 +102,34 @@ item count _ settings attr block =
                 Either.Left _ ->
                     [ Html.text "" ]
 
-        finalContent =
-            if level >= 2 then
-                [ Html.span [ Html.Attributes.style "font-size" "0.67em" ] [ Html.text "□" ], Html.text " " ] ++ content
-            else
-                content
+        hangingIndentContent =
+            [ Html.div
+                [ Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "gap" "8px"
+                ]
+                [ Html.div
+                    [ Html.Attributes.style "flex-shrink" "0"
+                    , Html.Attributes.style "white-space" "nowrap"
+                    ]
+                    [ bulletSymbol level ]
+                , Html.div
+                    [ Html.Attributes.style "flex-grow" "1"
+                    ]
+                    content
+                ]
+            ]
     in
     Html.li
-        ([ Html.Attributes.style "margin-left" (String.fromInt (6 + indentation) ++ "px")
+        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
          , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
-         , Html.Attributes.style "width" (String.fromInt (settings.width - (6 + indentation)) ++ "px")
-         , Html.Attributes.style "list-style-type" bulletStyle
+         , Html.Attributes.style "width" (String.fromInt (settings.width - indentation) ++ "px")
+         , Html.Attributes.style "list-style" "none"
          , Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          ]
             ++ attr
         )
-        finalContent
+        hangingIndentContent
 
 
 {-| Render a numbered list item
@@ -116,10 +141,7 @@ numbered count acc settings attr block =
             block.indent // 2
 
         indentation =
-            if level >= 3 then
-                0
-            else
-                settings.leftIndentation
+            (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
 
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -140,11 +162,25 @@ numbered count acc settings attr block =
         formattedNumber =
             formatListNumber level itemNumber
 
-        prefixedContent =
-            [ Html.text (formattedNumber ++ ". ") ] ++ content
+        hangingIndentContent =
+            [ Html.div
+                [ Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "gap" "8px"
+                ]
+                [ Html.div
+                    [ Html.Attributes.style "flex-shrink" "0"
+                    , Html.Attributes.style "white-space" "nowrap"
+                    ]
+                    [ Html.text (formattedNumber ++ ".") ]
+                , Html.div
+                    [ Html.Attributes.style "flex-grow" "1"
+                    ]
+                    content
+                ]
+            ]
     in
     Html.li
-        ([ Html.Attributes.style "margin-left" (String.fromInt (6 + indentation) ++ "px")
+        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
          , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
          , Html.Attributes.style "width" (String.fromInt (settings.width - (6 + indentation)) ++ "px")
          , Html.Attributes.style "list-style" "none"
@@ -153,7 +189,7 @@ numbered count acc settings attr block =
          ]
             ++ attr
         )
-        prefixedContent
+        hangingIndentContent
 
 
 {-| Render a description list item

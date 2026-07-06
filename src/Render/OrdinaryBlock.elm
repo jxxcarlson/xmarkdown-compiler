@@ -96,8 +96,7 @@ render count acc settings attr block =
                                     in
                                     renderer count acc newSettings attr block
                     in
-                    -- Apply indentation to the rendered block
-                    indentOrdinaryBlock block.indent renderedBlock
+                    renderedBlock
 
                 _ ->
                     Html.text ""

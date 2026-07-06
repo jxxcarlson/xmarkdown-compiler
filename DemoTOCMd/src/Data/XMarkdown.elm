@@ -92,11 +92,23 @@ Use "-" as the prefix for itemized lists:
 
 - G is the mass of the object.
 
+  - and it is very massive
+
+  - and heavy
+
+    - heavy as in totally loaded
+
 - c is the speed of light.
 
 Use "." as the prefix for numbered lists:
 
 . G is Newton’s gravitational constant. G is Newton’s gravitational constant. G is Newton’s gravitational constant.
+
+  . and it is very massive
+
+  . and heavy
+
+    . heavy as in totally loaded
 
 . G is the mass of the object.
 
