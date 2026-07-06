@@ -51,7 +51,6 @@ type alias Model =
     , compilerParameters : CompilerParameters
     , currentTheme : Theme
     , theme : Theme
-    , renderSettings : Render.Theme.RenderSettings
     , fileName : String
     , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
@@ -93,7 +92,6 @@ init flags =
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , theme = Light
-      , renderSettings = Render.Theme.makeSettings params
       , currentTheme = Light
       , tick = 0
       , fileName = "untitled.md"
@@ -163,13 +161,13 @@ update msg model =
                         Dark ->
                             Light
 
-                oldRenderSettings =
-                    model.renderSettings
+                params =
+                    model.compilerParameters
 
-                newRenderSettings =
-                    { oldRenderSettings | theme = newTheme }
+                newParams =
+                    { params | theme = newTheme }
             in
-            ( { model | theme = newTheme, renderSettings = newRenderSettings }
+            ( { model | theme = newTheme, compilerParameters = newParams }
             , Cmd.none
             )
 
@@ -373,14 +371,14 @@ view model =
                 , style "background-color" (Render.Theme.getThemedColorAsCssString .background model.theme)
                 ]
                 [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
-                  Html.map Render (renderPanel model.renderSettings compilerOutput.body)
+                  Html.map Render (renderPanel model.compilerParameters compilerOutput.body)
                 ]
             , div
                 [ -- class "panel toc-panel"
                   style "width" (px g.tocW)
                 , style "background" (Render.Theme.getThemedColorAsCssString .background model.theme)
                 ]
-                [ Html.map Render (renderPanel model.renderSettings compilerOutput.toc) ]
+                [ Html.map Render (renderPanel model.compilerParameters compilerOutput.toc) ]
             ]
         ]
 
@@ -402,8 +400,12 @@ editorView model =
 
 {-| Render the compiler's Html output into the panel.
 -}
-renderPanel : Render.Theme.RenderSettings -> List (Html MarkupMsg) -> Html MarkupMsg
-renderPanel settings elements =
+renderPanel : XMarkdown.Types.CompilerParameters -> List (Html MarkupMsg) -> Html MarkupMsg
+renderPanel params elements =
+    let
+        settings =
+            Render.Theme.makeSettings params
+    in
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "flex-direction" "column"
