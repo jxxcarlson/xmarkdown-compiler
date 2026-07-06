@@ -27,15 +27,21 @@ render count acc settings _ block =
                 rowElements =
                     List.indexedMap (renderTableRow count acc settings alignments) rows
                 blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+                indentPx = String.fromInt settings.leftIndentation ++ "px"
+                tableWidth = String.fromInt (settings.width - settings.leftIndentation) ++ "px"
             in
-            Html.table
-                [ Html.Attributes.id blockId
-                , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-                , Html.Attributes.style "border-collapse" "collapse"
-                , Html.Attributes.style "width" "100%"
-                , Html.Attributes.style "border" "1px solid #ddd"
+            Html.div
+                [ Html.Attributes.style "margin-left" indentPx
                 ]
-                rowElements
+                [ Html.table
+                    [ Html.Attributes.id blockId
+                    , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+                    , Html.Attributes.style "border-collapse" "collapse"
+                    , Html.Attributes.style "width" tableWidth
+                    , Html.Attributes.style "border" "1px solid #ddd"
+                    ]
+                    rowElements
+                ]
 
         _ ->
             Html.div [] [ Html.text "(table)" ]

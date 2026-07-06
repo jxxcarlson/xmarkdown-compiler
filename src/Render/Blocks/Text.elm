@@ -38,6 +38,7 @@ quotation count acc settings attrs block =
                 |> Maybe.map (\text -> [ Html.text text ])
                 |> Maybe.withDefault []
         blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        indentWidth = String.fromInt settings.leftIndentation ++ "px"
     in
     Html.div
         [ Html.Attributes.style "display" "flex"
@@ -45,7 +46,7 @@ quotation count acc settings attrs block =
         , Html.Attributes.id blockId
         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
         ]
-        [ Html.div [ Html.Attributes.style "width" "40px" ] []
+        [ Html.div [ Html.Attributes.style "width" indentWidth ] []
         , Html.p
             [ Html.Attributes.style "font-style" "italic"
             ]
