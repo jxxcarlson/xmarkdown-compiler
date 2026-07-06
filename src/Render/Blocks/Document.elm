@@ -42,15 +42,36 @@ section count acc settings attr block =
                 4 -> Html.h4
                 5 -> Html.h5
                 _ -> Html.h6
+
+        numberToLevel : Int
+        numberToLevel =
+            Dict.get "number-to-level" settings.properties
+                |> Maybe.andThen String.toInt
+                |> Maybe.withDefault 0
+
+        sectionNumber : Maybe String
+        sectionNumber =
+            if numberToLevel > 0 && level <= numberToLevel then
+                Dict.get "label" block.properties
+            else
+                Nothing
     in
     let
-        content =
+        contentExprs =
             case block.body of
                 Either.Right exprs ->
                     List.map (Render.Expression.render count acc settings attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
+
+        content =
+            case sectionNumber of
+                Just num ->
+                    Html.span [ Html.Attributes.style "margin-right" "8px" ] [ Html.text (num ++ " ") ] :: contentExprs
+
+                Nothing ->
+                    contentExprs
     in
     headingElement
         (attr
