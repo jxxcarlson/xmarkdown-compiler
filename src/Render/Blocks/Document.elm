@@ -43,15 +43,9 @@ section count acc settings attr block =
                 5 -> Html.h5
                 _ -> Html.h6
 
-        numberToLevel : Int
-        numberToLevel =
-            Dict.get "number-to-level" settings.properties
-                |> Maybe.andThen String.toInt
-                |> Maybe.withDefault 0
-
         sectionNumber : Maybe String
         sectionNumber =
-            if numberToLevel > 0 && level <= numberToLevel then
+            if settings.numberToLevel > 0 && level <= settings.numberToLevel then
                 Dict.get "label" block.properties
             else
                 Nothing

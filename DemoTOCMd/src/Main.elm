@@ -80,6 +80,10 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
+    let
+        params =
+            { defaultCompilerParameters | numberToLevel = 0 }
+    in
     ( { initialText = Data.XMarkdown.text
       , sourceText = Data.XMarkdown.text
       , count = 0
@@ -89,17 +93,16 @@ init flags =
       , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , theme = Light
-      , renderSettings =
-            Render.Theme.makeSettings defaultCompilerParameters
+      , renderSettings = Render.Theme.makeSettings params
       , currentTheme = Light
       , tick = 0
       , fileName = "untitled.md"
       , lrSyncMatches = []
       , lrSyncIndex = 0
       , lrSyncText = ""
-      , compilerParameters = defaultCompilerParameters
+      , compilerParameters = params
       }
-    , Ports.setEditorHighlightColor defaultCompilerParameters.highlightColor
+    , Ports.setEditorHighlightColor params.highlightColor
     )
 
 
@@ -180,7 +183,8 @@ update msg model =
                         , idsOfOpenNodes = model.idsOfOpenNodes
                         , interBlockSpacing = 18
                         , paddingAboveHeadings = 18
-                        , numberToLevel = 2
+
+                        -- JCX -- , numberToLevel = 0
                     }
 
                 matches =
@@ -251,7 +255,8 @@ update msg model =
 
                         SelectId selId ->
                             let
-                                lineNum = String.split "." selId |> List.head |> Maybe.withDefault "0" |> String.dropLeft 2 |> String.toInt |> Maybe.withDefault 0
+                                lineNum =
+                                    String.split "." selId |> List.head |> Maybe.withDefault "0" |> String.dropLeft 2 |> String.toInt |> Maybe.withDefault 0
                             in
                             ( { model | selectId = selId }, jumpToTopOfWithLineNumber selId lineNum )
 
@@ -428,7 +433,8 @@ jumpToTopOfWithLineNumber elementId lineNumber =
             (\_ ->
                 -- ID not found, try by data-line-number
                 let
-                    selector = "[data-line-number=\"" ++ String.fromInt lineNumber ++ "\"]"
+                    selector =
+                        "[data-line-number=\"" ++ String.fromInt lineNumber ++ "\"]"
                 in
                 Browser.Dom.getElement selector
                     |> Task.andThen performScroll
@@ -436,7 +442,8 @@ jumpToTopOfWithLineNumber elementId lineNumber =
         |> Task.onError
             (\err ->
                 let
-                    _ = Debug.log ("Scroll error for " ++ elementId ++ " (line " ++ String.fromInt lineNumber ++ ")") err
+                    _ =
+                        Debug.log ("Scroll error for " ++ elementId ++ " (line " ++ String.fromInt lineNumber ++ ")") err
                 in
                 Task.fail err
             )

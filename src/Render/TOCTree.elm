@@ -39,14 +39,14 @@ view theme viewParameters acc documentAst =
         [ Html.Attributes.style "padding-left" "0"
         , Html.Attributes.style "margin-left" "0"
         ]
-        (List.map (renderTocItem acc viewParameters.counter) tocAST)
+        (List.map (renderTocItem acc viewParameters.counter viewParameters.settings.numberToLevel) tocAST)
     ]
 
 
 {-| Render a single TOC item with the actual heading text
 -}
-renderTocItem : Accumulator -> Int -> ExpressionBlock -> Html MarkupMsg
-renderTocItem acc editCount block =
+renderTocItem : Accumulator -> Int -> Int -> ExpressionBlock -> Html MarkupMsg
+renderTocItem acc editCount numberToLevel block =
     let
         headingText =
             case block.body of
@@ -70,7 +70,10 @@ renderTocItem acc editCount block =
                 |> Maybe.withDefault 1
 
         sectionNumber =
-            Dict.get "label" block.properties |> Maybe.withDefault ""
+            if numberToLevel > 0 && level <= numberToLevel then
+                Dict.get "label" block.properties |> Maybe.withDefault ""
+            else
+                ""
 
         displayText =
             if String.isEmpty sectionNumber then

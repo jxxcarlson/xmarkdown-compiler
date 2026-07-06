@@ -116,6 +116,7 @@ type alias RenderSettings =
     , theme : Theme
     , paddingTop : Int
     , paddingBottom : Int
+    , numberToLevel : Int
     , properties : Dict String String
     }
 
@@ -253,6 +254,7 @@ makeSettings params =
     , theme = params.theme
     , paddingTop = 0
     , paddingBottom = 0
+    , numberToLevel = params.numberToLevel
     , properties = Dict.singleton "number-to-level" (String.fromInt params.numberToLevel)
     }
 
