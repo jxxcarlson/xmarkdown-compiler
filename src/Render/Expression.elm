@@ -1,42 +1,39 @@
 module Render.Expression exposing (render)
 
-import AST.ASTTools as ASTTools
-import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), Expression)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
-import Html.Events
-import Json.Decode
-import Json.Encode
-import Render.Theme exposing (RenderSettings)
-import XMarkdown.Types exposing (MarkupMsg(..))
+import XMarkdown.Types exposing (MarkupMsg)
 
 
 {-| Render an expression to Html
 -}
-render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
-render generation acc settings attrs expr =
+render : List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
+render attrs expr =
     case expr of
-        Text string meta ->
+        Text string _ ->
             Html.span attrs [ Html.text (string ++ " ") ]
 
-        VFun name content meta ->
+        VFun name content _ ->
             if List.member name [ "math", "m", "chem" ] then
                 Html.node "math-text"
                     [ Html.Attributes.attribute "data-content" content
                     , Html.Attributes.attribute "data-display" "false"
                     ]
                     [ Html.text content ]
+
             else if name == "code" then
                 Html.code [] [ Html.text content ]
+
             else
                 Html.span [] [ Html.text content ]
 
-        Fun name exprList meta ->
+        Fun name exprList _ ->
             if List.member name [ "chem", "math", "m" ] then
                 let
-                    mathContent = extractMathContent exprList
+                    mathContent =
+                        extractMathContent exprList
                 in
                 Html.node "math-text"
                     [ Html.Attributes.attribute "data-content" mathContent
@@ -46,7 +43,7 @@ render generation acc settings attrs expr =
 
             else if name == "code" then
                 Html.code []
-                    (List.map (render generation acc settings attrs) exprList)
+                    (List.map (render attrs) exprList)
 
             else if List.member name [ "anchor", "mark" ] then
                 Html.span []
@@ -54,20 +51,21 @@ render generation acc settings attrs expr =
 
             else if List.member name [ "b", "strong", "bold" ] then
                 Html.strong []
-                    (List.map (render generation acc settings attrs) exprList)
+                    (List.map (render attrs) exprList)
 
             else if List.member name [ "i", "em", "italic" ] then
                 Html.em []
-                    (List.map (render generation acc settings attrs) exprList)
+                    (List.map (render attrs) exprList)
 
             else if List.member name [ "strike", "strikethrough" ] then
                 Html.span [ Html.Attributes.style "text-decoration" "line-through" ]
-                    (List.map (render generation acc settings attrs) exprList)
+                    (List.map (render attrs) exprList)
 
             else if name == "a" || name == "link" then
                 let
                     -- Link text and URL are concatenated in the expression: "text url"
-                    (linkText, url) = extractLinkData exprList
+                    ( linkText, url ) =
+                        extractLinkData exprList
                 in
                 Html.a
                     [ Html.Attributes.href url
@@ -77,13 +75,16 @@ render generation acc settings attrs expr =
             else if name == "image" || name == "img" then
                 let
                     -- Image URL and alt text are concatenated in the expression: "url alt"
-                    (url, altText) = extractImageData exprList
+                    ( url, altText ) =
+                        extractImageData exprList
 
                     -- Parse properties from alt text (e.g., "caption width:200 height:150")
-                    (caption, props) = parseImageProperties altText
+                    ( caption, props ) =
+                        parseImageProperties altText
 
                     -- Build image attributes from properties
-                    imgAttrs = buildImageAttributes props
+                    imgAttrs =
+                        buildImageAttributes props
                 in
                 Html.figure
                     [ Html.Attributes.style "text-align" "center"
@@ -99,11 +100,14 @@ render generation acc settings attrs expr =
                              , Html.Attributes.alt caption
                              , Html.Attributes.style "max-width" "100%"
                              , Html.Attributes.style "cursor" "pointer"
-                             ] ++ imgAttrs)
+                             ]
+                                ++ imgAttrs
+                            )
                             []
                         ]
                     , if String.isEmpty caption then
                         Html.text ""
+
                       else
                         Html.figcaption
                             [ Html.Attributes.style "font-size" "0.9em"
@@ -115,7 +119,7 @@ render generation acc settings attrs expr =
 
             else
                 Html.span []
-                    (List.map (render generation acc settings attrs) exprList)
+                    (List.map (render attrs) exprList)
 
         _ ->
             Html.span [] [ Html.text "(expression)" ]
@@ -124,73 +128,90 @@ render generation acc settings attrs expr =
 {-| Extract link text and URL from expressions
 Link expressions have format: Text "linkText url" where URL is the last space-separated token
 -}
-extractLinkData : List Expression -> (String, String)
+extractLinkData : List Expression -> ( String, String )
 extractLinkData exprs =
     let
         combined =
             exprs
-                |> List.map (\expr ->
-                    case expr of
-                        Text str _ -> str
-                        _ -> ""
-                )
+                |> List.map
+                    (\expr ->
+                        case expr of
+                            Text str _ ->
+                                str
+
+                            _ ->
+                                ""
+                    )
                 |> String.concat
                 |> String.trim
     in
     case String.split " " combined |> List.reverse of
         [] ->
-            ("Link", "#")
+            ( "Link", "#" )
+
         url :: rest ->
-            (String.join " " (List.reverse rest), url)
+            ( String.join " " (List.reverse rest), url )
 
 
 {-| Extract image URL and alt text from expressions
 Image expressions have format: Text "url altText" where URL is the first space-separated token
 -}
-extractImageData : List Expression -> (String, String)
+extractImageData : List Expression -> ( String, String )
 extractImageData exprs =
     let
         combined =
             exprs
-                |> List.map (\expr ->
-                    case expr of
-                        Text str _ -> str
-                        _ -> ""
-                )
+                |> List.map
+                    (\expr ->
+                        case expr of
+                            Text str _ ->
+                                str
+
+                            _ ->
+                                ""
+                    )
                 |> String.concat
                 |> String.trim
     in
     case String.split " " combined of
         [] ->
-            ("", "Image")
+            ( "", "Image" )
+
         url :: rest ->
-            (url, String.join " " rest)
+            ( url, String.join " " rest )
 
 
 {-| Parse image properties from alt text
 Properties are in format "key:value" (e.g., "width:200 height:150")
 Returns (caption, properties dict)
 -}
-parseImageProperties : String -> (String, Dict String String)
+parseImageProperties : String -> ( String, Dict String String )
 parseImageProperties altText =
     let
-        tokens = String.split " " altText
-        (propTokens, captionTokens) =
+        tokens =
+            String.split " " altText
+
+        ( propTokens, captionTokens ) =
             List.partition (\token -> String.contains ":" token) tokens
 
         props =
             propTokens
-                |> List.map (\token ->
-                    case String.split ":" token of
-                        [key, value] -> Just (key, value)
-                        _ -> Nothing
-                )
+                |> List.map
+                    (\token ->
+                        case String.split ":" token of
+                            [ key, value ] ->
+                                Just ( key, value )
+
+                            _ ->
+                                Nothing
+                    )
                 |> List.filterMap identity
                 |> Dict.fromList
 
-        caption = String.join " " captionTokens |> String.trim
+        caption =
+            String.join " " captionTokens |> String.trim
     in
-    (caption, props)
+    ( caption, props )
 
 
 {-| Build HTML attributes from image properties
@@ -215,17 +236,14 @@ buildImageAttributes props =
 extractMathContent : List Expression -> String
 extractMathContent exprs =
     exprs
-        |> List.map (\expr ->
-            case expr of
-                Text str _ -> str
-                _ -> ""
-        )
+        |> List.map
+            (\expr ->
+                case expr of
+                    Text str _ ->
+                        str
+
+                    _ ->
+                        ""
+            )
         |> String.concat
         |> String.trim
-
-
-{-| Helper for click events
--}
-onClickStop : MarkupMsg -> Html.Attribute MarkupMsg
-onClickStop msg =
-    Html.Events.stopPropagationOn "click" (Json.Decode.succeed ( msg, True ))

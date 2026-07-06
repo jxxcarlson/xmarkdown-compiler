@@ -1,10 +1,10 @@
 module Render.List exposing (desc, item, numbered)
 
-import Html exposing (Html)
-import Html.Attributes
-import Either
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
+import Either
+import Html exposing (Html)
+import Html.Attributes
 import Render.Expression
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
@@ -13,16 +13,21 @@ import XMarkdown.Types exposing (MarkupMsg)
 {-| Render a list item
 -}
 item : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-item count acc settings attr block =
+item count _ _ attr block =
     let
-        level = block.indent // 2
-        indentation = 15 * level
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        level =
+            block.indent // 2
+
+        indentation =
+            15 * level
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render count acc settings attr) exprs
+                    List.map (Render.Expression.render attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -40,16 +45,21 @@ item count acc settings attr block =
 {-| Render a numbered list item
 -}
 numbered : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numbered count acc settings attr block =
+numbered count _ _ attr block =
     let
-        level = block.indent // 2
-        indentation = 15 * level
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        level =
+            block.indent // 2
+
+        indentation =
+            15 * level
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render count acc settings attr) exprs
+                    List.map (Render.Expression.render attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -67,14 +77,15 @@ numbered count acc settings attr block =
 {-| Render a description list item
 -}
 desc : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-desc count acc settings attr block =
+desc count _ _ attr block =
     let
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render count acc settings attr) exprs
+                    List.map (Render.Expression.render attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]

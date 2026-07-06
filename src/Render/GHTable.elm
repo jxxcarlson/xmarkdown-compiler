@@ -1,11 +1,11 @@
 module Render.GHTable exposing (render)
 
-import Html exposing (Html)
-import Html.Attributes
-import Either exposing (Either(..))
-import Dict
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock)
+import Dict
+import Either exposing (Either(..))
+import Html exposing (Html)
+import Html.Attributes
 import Render.Expression
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
@@ -14,7 +14,7 @@ import XMarkdown.Types exposing (MarkupMsg)
 {-| Render a GFM table
 -}
 render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-render count acc settings _ block =
+render count _ settings _ block =
     case block.body of
         Right [ Fun "table" rows _ ] ->
             let
@@ -25,10 +25,16 @@ render count acc settings _ block =
                         |> List.map String.trim
 
                 rowElements =
-                    List.indexedMap (renderTableRow count acc settings alignments) rows
-                blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
-                indentPx = String.fromInt settings.leftIndentation ++ "px"
-                tableWidth = String.fromInt (settings.width - settings.leftIndentation) ++ "px"
+                    List.indexedMap (renderTableRow alignments) rows
+
+                blockId =
+                    "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+
+                indentPx =
+                    String.fromInt settings.leftIndentation ++ "px"
+
+                tableWidth =
+                    String.fromInt (settings.width - settings.leftIndentation) ++ "px"
             in
             Html.div
                 [ Html.Attributes.style "margin-left" indentPx
@@ -49,16 +55,23 @@ render count acc settings _ block =
 
 {-| Render a single table row
 -}
-renderTableRow : Int -> Accumulator -> RenderSettings -> List String -> Int -> Expression -> Html MarkupMsg
-renderTableRow count acc settings alignments rowIndex expr =
+renderTableRow : List String -> Int -> Expression -> Html MarkupMsg
+renderTableRow alignments rowIndex expr =
     case expr of
         Fun "row" cells _ ->
             let
-                isHeader = rowIndex == 0
-                cellElements =
-                    List.indexedMap (renderTableCell count acc settings alignments isHeader) cells
+                isHeader =
+                    rowIndex == 0
 
-                element = if isHeader then Html.thead else Html.tbody
+                cellElements =
+                    List.indexedMap (renderTableCell alignments isHeader) cells
+
+                element =
+                    if isHeader then
+                        Html.thead
+
+                    else
+                        Html.tbody
             in
             element [] [ Html.tr [] cellElements ]
 
@@ -68,24 +81,34 @@ renderTableRow count acc settings alignments rowIndex expr =
 
 {-| Render a single table cell
 -}
-renderTableCell : Int -> Accumulator -> RenderSettings -> List String -> Bool -> Int -> Expression -> Html MarkupMsg
-renderTableCell count acc settings alignments isHeader colIndex expr =
+renderTableCell : List String -> Bool -> Int -> Expression -> Html MarkupMsg
+renderTableCell alignments isHeader colIndex expr =
     case expr of
         Fun "cell" content _ ->
             let
                 renderedContent =
-                    List.map (Render.Expression.render count acc settings []) content
+                    List.map (Render.Expression.render []) content
 
-                element = if isHeader then Html.th else Html.td
+                element =
+                    if isHeader then
+                        Html.th
+
+                    else
+                        Html.td
 
                 alignment =
                     List.drop colIndex alignments |> List.head |> Maybe.withDefault "l"
 
                 textAlign =
                     case alignment of
-                        "c" -> "center"
-                        "r" -> "right"
-                        _ -> "left"
+                        "c" ->
+                            "center"
+
+                        "r" ->
+                            "right"
+
+                        _ ->
+                            "left"
             in
             element
                 [ Html.Attributes.style "border" "1px solid #ddd"

@@ -12,7 +12,6 @@ import Html
 import Html.Attributes
 import Html.Events as Events
 import Render.Theme
-import Render.Utility
 import XMarkdown.Types exposing (MarkupMsg(..))
 
 

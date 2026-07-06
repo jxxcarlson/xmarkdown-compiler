@@ -1,9 +1,7 @@
 module AST.ASTTools exposing
     ( banner
-    , exprListToStringList
     , filterExpressionsOnName_
     , filterExprs
-    , filterForestOnLabelNames
     , getText
     , isBlank
     , stringValueOfList
@@ -11,7 +9,6 @@ module AST.ASTTools exposing
     , title
     )
 
-import AST.Forest exposing (Forest)
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
 import Library.Tree
 import Maybe.Extra
@@ -56,16 +53,6 @@ filterBlocksOnName2 name name2 blocks =
 --filterForestOnBlockNames : String -> Forest ExpressionBlock -> Forest ExpressionBlock
 --filterForestOnBlockNames name forest =
 --    List.filter (\tree -> predicate (labelName tree)) forest
-
-
-filterForestOnLabelNames : (Maybe String -> Bool) -> Forest ExpressionBlock -> Forest ExpressionBlock
-filterForestOnLabelNames predicate forest =
-    List.filter (\tree -> predicate (labelName tree)) forest
-
-
-labelName : Tree ExpressionBlock -> Maybe String
-labelName tree =
-    Tree.value tree |> AST.Language.getName
 
 
 matchBlockName : String -> ExpressionBlock -> Bool
@@ -132,14 +119,6 @@ title ast =
 tableOfContents : List (Tree ExpressionBlock) -> List ExpressionBlock
 tableOfContents ast =
     filterBlocksOnName2 "section" "chapter" (List.map Library.Tree.flatten ast |> List.concat)
-
-
-exprListToStringList : List Expression -> List String
-exprListToStringList exprList =
-    List.map getText exprList
-        |> Maybe.Extra.values
-        |> List.map String.trim
-        |> List.filter (\s -> s /= "")
 
 
 getText : Expression -> Maybe String

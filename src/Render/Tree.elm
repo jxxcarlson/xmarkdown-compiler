@@ -11,8 +11,6 @@ import AST.Language exposing (ExpressionBlock)
 import Dict
 import Html exposing (Html)
 import Html.Attributes
-import Html.Events
-import Render.Attributes
 import Render.Theme exposing (RenderSettings)
 import Render.TreeSupport
 import RoseTree.Tree exposing (Tree)
@@ -46,6 +44,7 @@ renderTree params settings accumulator tree =
             case Dict.get "style" root.properties of
                 Just "italic" ->
                     "italic"
+
                 _ ->
                     "normal"
 
@@ -116,7 +115,8 @@ renderLeafNode :
     -> Html MarkupMsg
 renderLeafNode params settings accumulator root =
     let
-        attrs = Render.TreeSupport.renderAttributes settings root
+        attrs =
+            Render.TreeSupport.renderAttributes settings root
     in
     Html.div attrs
         (Render.TreeSupport.renderBody params settings accumulator root)
@@ -153,12 +153,13 @@ renderStandardBranch :
     -> Html MarkupMsg
 renderStandardBranch params settings accumulator root children =
     Html.div
-        (Render.TreeSupport.renderAttributes settings root ++
-            [ Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "flex-direction" "column"
-            , Html.Attributes.style "width" "100%"
-            , Html.Attributes.style "gap" (String.fromFloat settings.interBlockSpacing ++ "px")
-            ])
+        (Render.TreeSupport.renderAttributes settings root
+            ++ [ Html.Attributes.style "display" "flex"
+               , Html.Attributes.style "flex-direction" "column"
+               , Html.Attributes.style "width" "100%"
+               , Html.Attributes.style "gap" (String.fromFloat settings.interBlockSpacing ++ "px")
+               ]
+        )
         (Render.TreeSupport.renderBody params settings accumulator root
             ++ List.map (renderTree_ params settings accumulator) children
         )

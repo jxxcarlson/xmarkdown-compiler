@@ -8,7 +8,6 @@ import AST.ASTTools
 import AST.Acc exposing (Accumulator)
 import AST.Forest exposing (Forest)
 import AST.Language exposing (ExpressionBlock)
-import AST.Language
 import Dict
 import Either
 import Html exposing (Html)
@@ -16,7 +15,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Render.Theme
-import XMarkdown.Types exposing (MarkupMsg(..), Theme(..))
+import XMarkdown.Types exposing (MarkupMsg(..), Theme)
 
 
 type alias ViewParameters =
@@ -39,27 +38,29 @@ view theme viewParameters acc documentAst =
         [ Html.Attributes.style "padding-left" "0"
         , Html.Attributes.style "margin-left" "0"
         ]
-        (List.map (renderTocItem acc viewParameters.counter viewParameters.settings.numberToLevel) tocAST)
+        (List.map (renderTocItem viewParameters.counter viewParameters.settings.numberToLevel) tocAST)
     ]
 
 
 {-| Render a single TOC item with the actual heading text
 -}
-renderTocItem : Accumulator -> Int -> Int -> ExpressionBlock -> Html MarkupMsg
-renderTocItem acc editCount numberToLevel block =
+renderTocItem : Int -> Int -> ExpressionBlock -> Html MarkupMsg
+renderTocItem editCount numberToLevel block =
     let
         headingText =
             case block.body of
                 Either.Right exprs ->
-                    List.map (extractText acc) exprs |> String.concat
+                    List.map extractText exprs |> String.concat
+
                 Either.Left _ ->
                     ""
 
-        extractText : Accumulator -> AST.Language.Expression -> String
-        extractText _ expr =
+        extractText : AST.Language.Expression -> String
+        extractText expr =
             case expr of
                 AST.Language.Text text _ ->
                     text
+
                 _ ->
                     ""
 
@@ -72,12 +73,18 @@ renderTocItem acc editCount numberToLevel block =
         sectionNumber =
             if numberToLevel > 0 && level <= numberToLevel then
                 Dict.get "label" block.properties |> Maybe.withDefault ""
+
             else
                 ""
 
         displayText =
             if String.isEmpty sectionNumber then
-                if String.isEmpty headingText then "Untitled" else headingText
+                if String.isEmpty headingText then
+                    "Untitled"
+
+                else
+                    headingText
+
             else
                 sectionNumber ++ " " ++ headingText
 
@@ -98,7 +105,7 @@ renderTocItem acc editCount numberToLevel block =
         [ Html.a
             [ Html.Attributes.href ("#" ++ elementId)
             , Html.Events.preventDefaultOn "click"
-                (Json.Decode.succeed (SelectId elementId, True))
+                (Json.Decode.succeed ( SelectId elementId, True ))
             ]
             [ Html.text displayText ]
         ]

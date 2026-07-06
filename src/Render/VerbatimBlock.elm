@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.Math
 import Render.Theme exposing (RenderSettings)
-import XMarkdown.Types exposing (MarkupMsg, Theme(..))
+import XMarkdown.Types exposing (MarkupMsg)
 
 
 {-| Render verbatim blocks (code, math, verse, etc.) as Html
@@ -23,13 +23,16 @@ render count acc settings attrs block =
                 Verbatim functionName ->
                     if functionName == "math" then
                         -- Render as display math, not code
-                        Render.Math.displayedMath count acc settings attrs { block | body = Either.Left str }
+                        Render.Math.displayedMath count acc attrs { block | body = Either.Left str }
 
                     else
                         -- Render as code
                         let
-                            blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
-                            indentPx = String.fromInt settings.leftIndentation ++ "px"
+                            blockId =
+                                "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+
+                            indentPx =
+                                String.fromInt settings.leftIndentation ++ "px"
                         in
                         Html.div
                             [ Html.Attributes.style "margin-left" indentPx

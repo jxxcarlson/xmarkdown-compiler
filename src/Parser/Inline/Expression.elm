@@ -8,13 +8,12 @@ module Parser.Inline.Expression exposing
 import AST.Language exposing (Expr(..), Expression)
 import List.Extra
 import Parser.Inline.Core.Expression exposing (parseWithMessages)
-import XMarkdown.Config as Config
-import Tools.Loop exposing (Step(..), loop)
-import Parser.Inline.ForkLog as Tools
 import Parser.Inline.Match as M
 import Parser.Inline.Meta as Meta
 import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
 import Parser.Inline.Token as Token exposing (Token(..), TokenType(..))
+import Tools.Loop exposing (Step(..), loop)
+import XMarkdown.Config as Config
 
 
 
@@ -58,21 +57,17 @@ parse : Int -> String -> List Expression
 parse lineNumber str =
     str
         |> Token.run
-        |> Tools.forklogCyan
         |> initWithTokens lineNumber
         |> run
         |> .committed
-        |> Tools.forklogCyan
 
 
 parseTokens : Int -> List Token -> List Expression
 parseTokens lineNumber tokens =
     tokens
-        |> Tools.forklogCyan
         |> initWithTokens lineNumber
         |> run
         |> .committed
-        |> Tools.forklogCyan
 
 
 
@@ -94,13 +89,12 @@ nextStep state =
 
             else
                 -- the stack is not empty, so we need to handle the parse error
-                recoverFromError (state |> Tools.forklogBlue)
+                recoverFromError state
 
         Just token ->
             state
                 |> advanceTokenIndex
                 |> pushToken token
-                |> Tools.forklogBlue
                 |> reduceState
                 |> (\st -> { st | step = st.step + 1 })
                 |> Loop
@@ -212,13 +206,13 @@ reduceState state =
     let
         -- peek : Maybe Token
         reducible1 =
-            isReducible state.stack |> Tools.forklogRed
+            isReducible state.stack
     in
     -- if state.tokenIndex >= state.numberOfTokens || (reducible1 && not (isLBToken peek)) then
     if state.tokenIndex >= state.numberOfTokens || reducible1 then
         let
             symbols =
-                state.stack |> Symbol.convertTokens |> List.reverse |> Tools.forklogRed
+                state.stack |> Symbol.convertTokens |> List.reverse
         in
         case List.head symbols of
             Just SAT ->
@@ -251,10 +245,8 @@ reduceState state =
                     handleLink state
 
                 else
-                    handleBracketedText state |> Tools.forklogRed
+                    handleBracketedText state
 
-            --else
-            --    state
             Just SImage ->
                 handleImage state
 
@@ -338,7 +330,7 @@ handleImage state =
                     { label = "no image label", url = "no image url" }
 
         expr =
-            Fun "image" [ Text (data.url ++ " " ++ data.label) meta ] meta |> Tools.forklogRed
+            Fun "image" [ Text (data.url ++ " " ++ data.label) meta ] meta
 
         meta =
             stackSpan state
@@ -354,7 +346,6 @@ handleAt state =
                 |> List.reverse
                 |> Token.toString
                 |> String.dropLeft 1
-                |> Tools.forklogRed
 
         expr : List Expression
         expr =
@@ -545,13 +536,13 @@ isReducible : List Token -> Bool
 isReducible tokens =
     let
         preliminary =
-            tokens |> List.reverse |> Symbol.convertTokens |> List.filter (\_ -> True) |> Tools.forklogYellow
+            tokens |> List.reverse |> Symbol.convertTokens |> List.filter (\_ -> True)
     in
     if preliminary == [] then
         False
 
     else
-        preliminary |> M.reducible |> Tools.forklogYellow
+        preliminary |> M.reducible
 
 
 

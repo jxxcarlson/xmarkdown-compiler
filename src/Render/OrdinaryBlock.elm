@@ -97,7 +97,7 @@ render count acc settings attr block =
                                     renderer count acc newSettings attr block
                     in
                     -- Apply indentation to the rendered block
-                    indentOrdinaryBlock block.indent (String.fromInt block.meta.lineNumber) settings renderedBlock
+                    indentOrdinaryBlock block.indent renderedBlock
 
                 _ ->
                     Html.text ""
@@ -105,8 +105,8 @@ render count acc settings attr block =
 
 {-| Apply indentation to an ordinary block (returns Html)
 -}
-indentOrdinaryBlock : Int -> String -> RenderSettings -> Html msg -> Html msg
-indentOrdinaryBlock indent id settings x =
+indentOrdinaryBlock : Int -> Html msg -> Html msg
+indentOrdinaryBlock indent x =
     if indent > 0 then
         Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
 

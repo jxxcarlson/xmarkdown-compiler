@@ -8,11 +8,11 @@ module Parser.Block.PrimitiveBlock exposing (parse)
 
 -}
 
-import Dict exposing (Dict)
 import AST.BlockUtilities
 import AST.Language exposing (Heading(..), PrimitiveBlock, emptyBlockMeta)
-import Parser.Block.Line as Line exposing (HeadingData, HeadingError(..), Line)
+import Dict exposing (Dict)
 import List.Extra
+import Parser.Block.Line as Line exposing (HeadingData, HeadingError(..), Line)
 import Regex
 import Tools.KV as KV
 import Tools.Loop exposing (Step(..), loop)
@@ -232,11 +232,9 @@ nextStep state =
 
                         blocks =
                             if block.body == [ "" ] then
-                                -- Debug.log (LogTools.cyan "****, DONE" 13)
                                 List.reverse state.blocks
 
                             else
-                                -- Debug.log (LogTools.cyan "****, DONE" 13)
                                 List.reverse (block :: state.blocks)
                     in
                     Done blocks
@@ -598,8 +596,6 @@ createBlock state currentLine =
 
 
 --HELPERS
-
-
 -- XMARKDOWN HEADING / VERBATIM RULES
 
 

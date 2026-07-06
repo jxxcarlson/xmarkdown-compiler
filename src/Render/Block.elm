@@ -17,7 +17,7 @@ renderBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute Markup
 renderBody count acc settings attrs block =
     case block.heading of
         Paragraph ->
-            [ renderParagraphBody count acc settings attrs block ]
+            [ renderParagraphBody count settings attrs block ]
 
         Ordinary _ ->
             [ Render.OrdinaryBlock.render count acc settings attrs block ]
@@ -26,8 +26,8 @@ renderBody count acc settings attrs block =
             [ VerbatimBlock.render count acc settings attrs block |> Render.Helper.showError block.meta.error ]
 
 
-renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-renderParagraphBody count acc settings attrs block =
+renderParagraphBody : Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+renderParagraphBody count settings attrs block =
     case block.body of
         Right exprs ->
             Html.p
@@ -36,7 +36,7 @@ renderParagraphBody count acc settings attrs block =
                     :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
                     :: attrs
                 )
-                (List.map (Render.Expression.render count acc settings attrs) exprs)
+                (List.map (Render.Expression.render attrs) exprs)
 
         Left _ ->
             Html.text ""

@@ -214,12 +214,6 @@ scaleFont settings designSize =
 
 
 {-| -}
-defaultRenderSettings : CompilerParameters -> RenderSettings
-defaultRenderSettings params =
-    makeSettings params
-
-
-{-| -}
 makeSettings : CompilerParameters -> RenderSettings
 makeSettings params =
     let

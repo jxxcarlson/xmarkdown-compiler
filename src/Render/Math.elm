@@ -10,19 +10,17 @@ module Render.Math exposing
 
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), ExpressionBlock)
-import Dict exposing (Dict)
-import Either
+import Dict
 import ETeX.Transform
+import Either
 import Html exposing (Html)
 import Html.Attributes
-import Json.Encode
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 
 type DisplayMode
     = InlineMathMode
-    | DisplayMathMode
 
 
 {-| Get the math content from a block and transform it from ETeX to LaTeX
@@ -35,6 +33,7 @@ getMathContent block =
                 Either.Left str ->
                     -- For Verbatim math blocks, content is already raw text
                     str
+
                 Either.Right exprs ->
                     -- For expression-based math (inline), extract text
                     exprs
@@ -58,12 +57,15 @@ extractExprText expr =
     case expr of
         Text str _ ->
             str
+
         VFun _ content _ ->
             content
+
         Fun _ exprList _ ->
             exprList
                 |> List.map extractExprText
                 |> String.concat
+
         ExprList _ exprList _ ->
             exprList
                 |> List.map extractExprText
@@ -77,17 +79,19 @@ stripMathDelimiters content =
     content
         |> String.trim
         |> (\s ->
-            if String.startsWith "$$" s then
-                String.dropLeft 2 s
-            else
-                s
+                if String.startsWith "$$" s then
+                    String.dropLeft 2 s
+
+                else
+                    s
            )
         |> String.trim
         |> (\s ->
-            if String.endsWith "$$" s then
-                String.dropRight 2 s
-            else
-                s
+                if String.endsWith "$$" s then
+                    String.dropRight 2 s
+
+                else
+                    s
            )
         |> String.trim
 
@@ -98,7 +102,13 @@ renderMath : String -> Bool -> List (Html.Attribute MarkupMsg) -> Html MarkupMsg
 renderMath content isDisplay attrs =
     Html.node "math-text"
         ([ Html.Attributes.attribute "data-content" content
-         , Html.Attributes.attribute "data-display" (if isDisplay then "true" else "false")
+         , Html.Attributes.attribute "data-display"
+            (if isDisplay then
+                "true"
+
+             else
+                "false"
+            )
          ]
             ++ attrs
         )
@@ -110,81 +120,112 @@ renderMath content isDisplay attrs =
 chem : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 chem count acc settings attrs block =
     let
-        content = getMathContent block
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        content =
+            getMathContent block
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content False
+    renderMath content
+        False
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          , Html.Attributes.style "padding" "8px"
-         ] ++ attrs)
+         ]
+            ++ attrs
+        )
 
 
 {-| Render displayed math
 -}
-displayedMath : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-displayedMath count acc settings attrs block =
+displayedMath : Int -> Accumulator -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+displayedMath count acc attrs block =
     let
-        content = getMathContent block
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        content =
+            getMathContent block
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True
+    renderMath content
+        True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          , Html.Attributes.style "padding" "8px"
-         ] ++ attrs)
+         ]
+            ++ attrs
+        )
 
 
 {-| Render equation
 -}
 equation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-equation count acc settings attrs block =
+equation count _ _ attrs block =
     let
-        content = getMathContent block
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        content =
+            getMathContent block
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True
+    renderMath content
+        True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          , Html.Attributes.style "padding" "8px"
-         ] ++ attrs)
+         ]
+            ++ attrs
+        )
 
 
 {-| Render aligned math
 -}
 aligned : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-aligned count acc settings attrs block =
+aligned count _ _ attrs block =
     let
-        content = getMathContent block
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        content =
+            getMathContent block
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True
+    renderMath content
+        True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          , Html.Attributes.style "padding" "8px"
-         ] ++ attrs)
+         ]
+            ++ attrs
+        )
 
 
 {-| Render array/matrix
 -}
 array : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-array count acc settings attrs block =
+array count _ _ attrs block =
     let
-        content = getMathContent block
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+        content =
+            getMathContent block
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True
+    renderMath content
+        True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          , Html.Attributes.style "padding" "8px"
-         ] ++ attrs)
+         ]
+            ++ attrs
+        )
 
 
 {-| Render inline math text
 -}
-mathText : String -> Int -> String -> DisplayMode -> String -> Html MarkupMsg
-mathText theme generation id mode content =
+mathText : String -> Html MarkupMsg
+mathText content =
     let
-        isDisplay = mode == DisplayMathMode
+        isDisplay =
+            False
     in
     renderMath content isDisplay []

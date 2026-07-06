@@ -1,6 +1,5 @@
-module Library.Tree exposing (flatten, lev, makeTree)
+module Library.Tree exposing (flatten, makeTree)
 
-import Dict
 import RoseTree.Tree exposing (Tree)
 
 
@@ -15,16 +14,6 @@ makeTree getLevel input =
 
 
 -- UTILITIES
-
-
-lev : { a | block : { b | properties : Dict.Dict String String } } -> Int
-lev { block } =
-    case Dict.get "level" block.properties of
-        Just level ->
-            String.toInt level |> Maybe.withDefault 1 |> (\x -> x - 1)
-
-        Nothing ->
-            0
 
 
 flatten : Tree a -> List a

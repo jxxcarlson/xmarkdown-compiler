@@ -13,11 +13,10 @@ allows renderers to be registered from various modules and looked up by name.
 
 -}
 
-import Dict exposing (Dict)
-import Html exposing (Html)
-import Html.Attributes
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
+import Dict exposing (Dict)
+import Html exposing (Html)
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 

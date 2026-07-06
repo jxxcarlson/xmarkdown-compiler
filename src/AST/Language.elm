@@ -8,10 +8,8 @@ module AST.Language exposing
     , Heading(..)
     , PrimitiveBlock
     , boostBlock
-    , composeTextElement
     , emptyBlockMeta
     , emptyExprMeta
-    , extractText
     , getExpressionContent
     , getFunctionName
     , getMeta
@@ -20,7 +18,6 @@ module AST.Language exposing
     , getVerbatimContent
     , shiftExpressionPositions
     , updateMeta
-    , updateMetaInBlock
     )
 
 import Dict exposing (Dict)
@@ -36,21 +33,6 @@ type Expr metaData
     | Fun String (List (Expr metaData)) metaData
     | VFun String String metaData
     | ExprList Int (List (Expr metaData)) metaData -- the Int parameter is the indentation of the expression list in the source
-
-
-extractText : Expr metaData -> Maybe ( String, metaData )
-extractText expr =
-    case expr of
-        Text text meta ->
-            Just ( text, meta )
-
-        _ ->
-            Nothing
-
-
-composeTextElement : String -> metaData -> Expr metaData
-composeTextElement text meta =
-    Text text meta
 
 
 {-|
@@ -202,20 +184,6 @@ shiftExpressionPositions delta expr =
 updateMeta : (ExprMeta -> ExprMeta) -> Expression -> Expression
 updateMeta update expr =
     setMeta (update (getMeta expr)) expr
-
-
-updateMetaInBlock : (ExprMeta -> ExprMeta) -> ExpressionBlock -> ExpressionBlock
-updateMetaInBlock updater block =
-    let
-        newBody =
-            case block.body of
-                Left str ->
-                    Left str
-
-                Right exprs ->
-                    Right (List.map (updateMeta updater) exprs)
-    in
-    { block | body = newBody }
 
 
 {-| A block whose content is a list of strings.

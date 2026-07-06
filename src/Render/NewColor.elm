@@ -93,11 +93,6 @@ blue300 =
     rgba 0.54 0.71 0.94 1
 
 
-blue500 : Color
-blue500 =
-    rgba 0.0 0.48 1.0 1
-
-
 blue700 : Color
 blue700 =
     rgba 0.0 0.2 1.0 1
@@ -113,19 +108,8 @@ blueLight =
     rgba 0.95 0.95 1.0 1
 
 
-blueTextLight =
-    rgba 0.114 0.306 0.847 1
-
-
 
 -- #1D4ED8
-
-
-blueTextDark =
-    rgba 0.376 0.647 0.98 1
-
-
-
 -- #60A5FA
 -- macOS accent blue
 -- Green variants (macOS system green inspired)

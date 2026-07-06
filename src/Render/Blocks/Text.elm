@@ -6,15 +6,13 @@ module Render.Blocks.Text exposing (registerRenderers)
 
 -}
 
+import AST.Acc exposing (Accumulator)
+import AST.Language exposing (ExpressionBlock)
 import Dict
 import Html exposing (Html)
 import Html.Attributes
-import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock)
 import Render.BlockRegistry exposing (BlockRegistry)
-import Render.Helper
 import Render.Theme exposing (RenderSettings)
-import Render.Sync
 import XMarkdown.Types exposing (MarkupMsg)
 
 
@@ -31,14 +29,18 @@ registerRenderers registry =
 {-| Render a quotation block (returns Html)
 -}
 quotation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-quotation count acc settings attrs block =
+quotation count _ settings _ block =
     let
         content =
             Dict.get "firstLine" block.properties
                 |> Maybe.map (\text -> [ Html.text text ])
                 |> Maybe.withDefault []
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
-        indentWidth = String.fromInt settings.leftIndentation ++ "px"
+
+        blockId =
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+
+        indentWidth =
+            String.fromInt settings.leftIndentation ++ "px"
     in
     Html.div
         [ Html.Attributes.style "display" "flex"

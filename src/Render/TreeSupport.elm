@@ -8,9 +8,8 @@ to avoid import cycles.
 -}
 
 import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock, Heading(..))
+import AST.Language exposing (ExpressionBlock)
 import Dict
-import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
 import Render.Block
@@ -57,47 +56,3 @@ renderBodyWithAttrs params settings acc attrs block =
                 []
     in
     spacer ++ Render.Block.renderBody params.editCount acc settings attrs block
-
-
-{-| Render a paragraph body (returns Html)
-TODO: Phase 3+ - Implement expression rendering
--}
-renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-renderParagraphBody count acc settings attrs block =
-    let
-        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
-    in
-    case block.body of
-        Right exprs ->
-            Html.p (Html.Attributes.id blockId :: Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber) :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px") :: attrs)
-                [ Html.text "Paragraph content - TODO Phase 4" ]
-
-        Left _ ->
-            Html.text ""
-
-
-{-| Helper for clickable paragraphs (returns Html)
-TODO: Phase 5 - Wire up proper sync via Render.Sync module
--}
-clickableParagraph : Int -> Int -> Html.Attribute MarkupMsg -> List (Html MarkupMsg) -> Html MarkupMsg
-clickableParagraph lineNumber numberOfLines color elements =
-    let
-        id =
-            String.fromInt lineNumber
-    in
-    Html.p
-        [ Html.Attributes.id id
-        , color
-        ]
-        elements
-
-
-{-| Helper for indenting paragraphs (returns Html)
--}
-indentParagraph : Int -> Html msg -> Html msg
-indentParagraph indent x =
-    if indent > 0 then
-        Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
-
-    else
-        x
