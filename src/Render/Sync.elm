@@ -21,7 +21,6 @@ import XMarkdown.Types exposing (MarkupMsg(..))
 attributes : Render.Theme.RenderSettings -> AST.Language.ExpressionBlock -> List (Html.Attribute MarkupMsg)
 attributes settings block =
     [ rightToLeftSyncHelper block.meta.lineNumber block.meta.numberOfLines
-    , Render.Utility.idAttribute block.meta.id
     ]
         ++ highlightIfIdIsSelected block.meta.lineNumber block.meta.numberOfLines settings
 

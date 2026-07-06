@@ -111,8 +111,13 @@ chem : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -
 chem count acc settings attrs block =
     let
         content = getMathContent block
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content False ([ Html.Attributes.style "padding" "8px" ] ++ attrs)
+    renderMath content False
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+         , Html.Attributes.style "padding" "8px"
+         ] ++ attrs)
 
 
 {-| Render displayed math
@@ -121,8 +126,13 @@ displayedMath : Int -> Accumulator -> RenderSettings -> List (Html.Attribute Mar
 displayedMath count acc settings attrs block =
     let
         content = getMathContent block
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True ([ Html.Attributes.style "padding" "8px" ] ++ attrs)
+    renderMath content True
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+         , Html.Attributes.style "padding" "8px"
+         ] ++ attrs)
 
 
 {-| Render equation
@@ -131,8 +141,13 @@ equation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMs
 equation count acc settings attrs block =
     let
         content = getMathContent block
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True ([ Html.Attributes.style "padding" "8px" ] ++ attrs)
+    renderMath content True
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+         , Html.Attributes.style "padding" "8px"
+         ] ++ attrs)
 
 
 {-| Render aligned math
@@ -141,8 +156,13 @@ aligned : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg
 aligned count acc settings attrs block =
     let
         content = getMathContent block
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True ([ Html.Attributes.style "padding" "8px" ] ++ attrs)
+    renderMath content True
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+         , Html.Attributes.style "padding" "8px"
+         ] ++ attrs)
 
 
 {-| Render array/matrix
@@ -151,8 +171,13 @@ array : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) 
 array count acc settings attrs block =
     let
         content = getMathContent block
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
-    renderMath content True ([ Html.Attributes.style "padding" "8px" ] ++ attrs)
+    renderMath content True
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+         , Html.Attributes.style "padding" "8px"
+         ] ++ attrs)
 
 
 {-| Render inline math text

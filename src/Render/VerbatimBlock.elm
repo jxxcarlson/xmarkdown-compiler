@@ -27,8 +27,12 @@ render count acc settings attrs block =
 
                     else
                         -- Render as code
+                        let
+                            blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+                        in
                         Html.pre
-                            ([ Html.Attributes.id block.meta.id
+                            ([ Html.Attributes.id blockId
+                             , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
                              , Html.Attributes.style "padding-left" "24px"
 
                              --, case settings.theme of

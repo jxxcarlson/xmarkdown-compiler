@@ -31,7 +31,8 @@ renderParagraphBody count acc settings attrs block =
     case block.body of
         Right exprs ->
             Html.p
-                (Render.Helper.htmlId block.meta.id
+                (Html.Attributes.id ("e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count)
+                    :: Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
                     :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
                     :: attrs
                 )

@@ -32,13 +32,19 @@ and for highlighting the block if it is selected.
 syncAttributes : RenderSettings -> ExpressionBlock -> List (Html.Attribute MarkupMsg)
 syncAttributes settings block =
     Render.Sync.attributes settings block
-        ++ [ Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber) ]
+        ++ [ Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+           ]
 
 
 {-| Render block body using the real block renderer
 -}
 renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Html MarkupMsg)
 renderBody params settings acc block =
+    renderBodyWithAttrs params settings acc (renderAttributes settings block) block
+
+
+renderBodyWithAttrs : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
+renderBodyWithAttrs params settings acc attrs block =
     let
         isHeading =
             Dict.member "level" block.properties
@@ -50,7 +56,7 @@ renderBody params settings acc block =
             else
                 []
     in
-    spacer ++ Render.Block.renderBody params.editCount acc settings (renderAttributes settings block) block
+    spacer ++ Render.Block.renderBody params.editCount acc settings attrs block
 
 
 {-| Render a paragraph body (returns Html)
@@ -58,9 +64,12 @@ TODO: Phase 3+ - Implement expression rendering
 -}
 renderParagraphBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 renderParagraphBody count acc settings attrs block =
+    let
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+    in
     case block.body of
         Right exprs ->
-            Html.p (Html.Attributes.id block.meta.id :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px") :: attrs)
+            Html.p (Html.Attributes.id blockId :: Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber) :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px") :: attrs)
                 [ Html.text "Paragraph content - TODO Phase 4" ]
 
         Left _ ->

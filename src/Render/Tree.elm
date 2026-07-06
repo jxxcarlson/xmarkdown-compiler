@@ -115,7 +115,10 @@ renderLeafNode :
     -> ExpressionBlock
     -> Html MarkupMsg
 renderLeafNode params settings accumulator root =
-    Html.div (Render.TreeSupport.renderAttributes settings root)
+    let
+        attrs = Render.TreeSupport.renderAttributes settings root
+    in
+    Html.div attrs
         (Render.TreeSupport.renderBody params settings accumulator root)
 
 

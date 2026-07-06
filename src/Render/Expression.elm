@@ -19,20 +19,19 @@ render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg)
 render generation acc settings attrs expr =
     case expr of
         Text string meta ->
-            Html.span ([ htmlId meta.id ] ++ attrs) [ Html.text (string ++ " ") ]
+            Html.span attrs [ Html.text (string ++ " ") ]
 
         VFun name content meta ->
             if List.member name [ "math", "m", "chem" ] then
                 Html.node "math-text"
                     [ Html.Attributes.attribute "data-content" content
                     , Html.Attributes.attribute "data-display" "false"
-                    , htmlId meta.id
                     ]
                     [ Html.text content ]
             else if name == "code" then
-                Html.code [ htmlId meta.id ] [ Html.text content ]
+                Html.code [] [ Html.text content ]
             else
-                Html.span [ htmlId meta.id ] [ Html.text content ]
+                Html.span [] [ Html.text content ]
 
         Fun name exprList meta ->
             if List.member name [ "chem", "math", "m" ] then
@@ -42,28 +41,27 @@ render generation acc settings attrs expr =
                 Html.node "math-text"
                     [ Html.Attributes.attribute "data-content" mathContent
                     , Html.Attributes.attribute "data-display" "false"
-                    , htmlId meta.id
                     ]
                     [ Html.text mathContent ]
 
             else if name == "code" then
-                Html.code [ htmlId meta.id ]
+                Html.code []
                     (List.map (render generation acc settings attrs) exprList)
 
             else if List.member name [ "anchor", "mark" ] then
-                Html.span [ htmlId meta.id ]
+                Html.span []
                     [ Html.text ("(" ++ name ++ " content)") ]
 
             else if List.member name [ "b", "strong", "bold" ] then
-                Html.strong [ htmlId meta.id ]
+                Html.strong []
                     (List.map (render generation acc settings attrs) exprList)
 
             else if List.member name [ "i", "em", "italic" ] then
-                Html.em [ htmlId meta.id ]
+                Html.em []
                     (List.map (render generation acc settings attrs) exprList)
 
             else if List.member name [ "strike", "strikethrough" ] then
-                Html.span [ Html.Attributes.style "text-decoration" "line-through", htmlId meta.id ]
+                Html.span [ Html.Attributes.style "text-decoration" "line-through" ]
                     (List.map (render generation acc settings attrs) exprList)
 
             else if name == "a" || name == "link" then
@@ -73,7 +71,6 @@ render generation acc settings attrs expr =
                 in
                 Html.a
                     [ Html.Attributes.href url
-                    , htmlId meta.id
                     ]
                     [ Html.text linkText ]
 
@@ -102,7 +99,6 @@ render generation acc settings attrs expr =
                              , Html.Attributes.alt caption
                              , Html.Attributes.style "max-width" "100%"
                              , Html.Attributes.style "cursor" "pointer"
-                             , htmlId meta.id
                              ] ++ imgAttrs)
                             []
                         ]
@@ -118,7 +114,7 @@ render generation acc settings attrs expr =
                     ]
 
             else
-                Html.span [ htmlId meta.id ]
+                Html.span []
                     (List.map (render generation acc settings attrs) exprList)
 
         _ ->
@@ -233,10 +229,3 @@ extractMathContent exprs =
 onClickStop : MarkupMsg -> Html.Attribute MarkupMsg
 onClickStop msg =
     Html.Events.stopPropagationOn "click" (Json.Decode.succeed ( msg, True ))
-
-
-{-| Helper for id attributes
--}
-htmlId : String -> Html.Attribute MarkupMsg
-htmlId str =
-    Html.Attributes.id str

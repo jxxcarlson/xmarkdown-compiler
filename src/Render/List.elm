@@ -17,6 +17,7 @@ item count acc settings attr block =
     let
         level = block.indent // 2
         indentation = 15 * level
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
@@ -28,7 +29,8 @@ item count acc settings attr block =
     in
     Html.li
         ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
-         , Html.Attributes.id block.meta.id
+         , Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          ]
             ++ attr
         )
@@ -42,6 +44,7 @@ numbered count acc settings attr block =
     let
         level = block.indent // 2
         indentation = 15 * level
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
@@ -53,7 +56,8 @@ numbered count acc settings attr block =
     in
     Html.li
         ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
-         , Html.Attributes.id block.meta.id
+         , Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          ]
             ++ attr
         )
@@ -65,6 +69,8 @@ numbered count acc settings attr block =
 desc : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 desc count acc settings attr block =
     let
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
+
         content =
             case block.body of
                 Either.Right exprs ->
@@ -74,7 +80,8 @@ desc count acc settings attr block =
                     [ Html.text "" ]
     in
     Html.dd
-        ([ Html.Attributes.id block.meta.id
+        ([ Html.Attributes.id blockId
+         , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
          ]
             ++ attr
         )

@@ -95,7 +95,7 @@ Use "." as the prefix for numbered lists:
 
 **Ages, Occupations, and Favorite Formulas**
 
-| Name  | Age | Occupation  | F.V|
+| Name  | Age | Occupation  | F.F.|
 |-------|----:|-------------|
 | Alice |  28 | *Engineer*    | $n!$ |
 | Bob   |  34 | *Musician*    | $3:2$ |

@@ -191,7 +191,7 @@ searchBlocksContainingText params lines searchQuery =
         |> List.filter (\block -> String.contains searchLower (String.toLower block.meta.sourceText))
         |> List.map
             (\block ->
-                { id = "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
+                { id = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt params.editCount
                 , lineNumber = block.meta.lineNumber
                 , numberOfLines = block.meta.numberOfLines
                 , sourceText = block.meta.sourceText

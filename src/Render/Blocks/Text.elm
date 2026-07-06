@@ -37,11 +37,13 @@ quotation count acc settings attrs block =
             Dict.get "firstLine" block.properties
                 |> Maybe.map (\text -> [ Html.text text ])
                 |> Maybe.withDefault []
+        blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
     in
     Html.div
         [ Html.Attributes.style "display" "flex"
         , Html.Attributes.style "width" "100%"
-        , Html.Attributes.id block.meta.id
+        , Html.Attributes.id blockId
+        , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
         ]
         [ Html.div [ Html.Attributes.style "width" "40px" ] []
         , Html.p

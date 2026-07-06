@@ -19,9 +19,12 @@ render count acc settings _ block =
             let
                 rowElements =
                     List.indexedMap (renderTableRow count acc settings) rows
+                blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
             in
             Html.table
-                [ Html.Attributes.style "border-collapse" "collapse"
+                [ Html.Attributes.id blockId
+                , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+                , Html.Attributes.style "border-collapse" "collapse"
                 , Html.Attributes.style "width" "100%"
                 , Html.Attributes.style "border" "1px solid #ddd"
                 ]

@@ -219,7 +219,7 @@ update msg model =
                     in
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText, selectId = lineNumberStr }
                     , Cmd.batch
-                        [ jumpToTopOf match.id
+                        [ jumpToTopOfWithLineNumber match.id match.lineNumber
                         , Ports.injectHighlightCSS css
                         ]
                     )
@@ -250,7 +250,10 @@ update msg model =
                             ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
 
                         SelectId selId ->
-                            ( { model | selectId = selId }, jumpToTopOf selId )
+                            let
+                                lineNum = String.split "." selId |> List.head |> Maybe.withDefault "0" |> String.dropLeft 2 |> String.toInt |> Maybe.withDefault 0
+                            in
+                            ( { model | selectId = selId }, jumpToTopOfWithLineNumber selId lineNum )
 
                         _ ->
                             ( model, Cmd.none )
@@ -416,48 +419,59 @@ px n =
     String.fromInt n ++ "px"
 
 
-jumpToTopOf : String -> Cmd Msg
-jumpToTopOf elementId =
-    -- Scroll the rendered text container to show the element
+jumpToTopOfWithLineNumber : String -> Int -> Cmd Msg
+jumpToTopOfWithLineNumber elementId lineNumber =
+    -- Try to scroll by ID first, fall back to data-line-number
     Browser.Dom.getElement elementId
-        |> Task.andThen
-            (\headingElement ->
-                Browser.Dom.getElement XMarkdown.API.renderedTextId
-                    |> Task.andThen
-                        (\containerElement ->
-                            Browser.Dom.getViewportOf XMarkdown.API.renderedTextId
-                                |> Task.andThen
-                                    (\containerViewport ->
-                                        let
-                                            -- Position of heading relative to the document viewport
-                                            headingAbsY =
-                                                headingElement.element.y
-
-                                            -- Position of container relative to the document viewport
-                                            containerAbsY =
-                                                containerElement.element.y
-
-                                            -- Current scroll position of the container
-                                            currentScroll =
-                                                containerViewport.viewport.y
-
-                                            -- Position of heading relative to the container's content
-                                            headingInContent =
-                                                headingAbsY - containerAbsY + currentScroll
-
-                                            -- Scroll to place heading near top of container
-                                            targetScroll =
-                                                max 0 (headingInContent - 50)
-                                        in
-                                        Browser.Dom.setViewportOf XMarkdown.API.renderedTextId 0 targetScroll
-                                    )
-                        )
+        |> Task.andThen performScroll
+        |> Task.onError
+            (\_ ->
+                -- ID not found, try by data-line-number
+                let
+                    selector = "[data-line-number=\"" ++ String.fromInt lineNumber ++ "\"]"
+                in
+                Browser.Dom.getElement selector
+                    |> Task.andThen performScroll
             )
         |> Task.onError
             (\err ->
                 let
-                    _ = Debug.log ("Scroll error for " ++ elementId) err
+                    _ = Debug.log ("Scroll error for " ++ elementId ++ " (line " ++ String.fromInt lineNumber ++ ")") err
                 in
                 Task.fail err
             )
         |> Task.attempt (\_ -> NoOp)
+
+
+performScroll : Browser.Dom.Element -> Task.Task Browser.Dom.Error ()
+performScroll headingElement =
+    Browser.Dom.getElement XMarkdown.API.renderedTextId
+        |> Task.andThen
+            (\containerElement ->
+                Browser.Dom.getViewportOf XMarkdown.API.renderedTextId
+                    |> Task.andThen
+                        (\containerViewport ->
+                            let
+                                -- Position of heading relative to the document viewport
+                                headingAbsY =
+                                    headingElement.element.y
+
+                                -- Position of container relative to the document viewport
+                                containerAbsY =
+                                    containerElement.element.y
+
+                                -- Current scroll position of the container
+                                currentScroll =
+                                    containerViewport.viewport.y
+
+                                -- Position of heading relative to the container's content
+                                headingInContent =
+                                    headingAbsY - containerAbsY + currentScroll
+
+                                -- Scroll to place heading near top of container
+                                targetScroll =
+                                    max 0 (headingInContent - 50)
+                            in
+                            Browser.Dom.setViewportOf XMarkdown.API.renderedTextId 0 targetScroll
+                        )
+            )
