@@ -35,14 +35,14 @@ view theme viewParameters acc documentAst =
             AST.ASTTools.tableOfContents documentAst
     in
     [ Html.ul []
-        (List.map (renderTocItem acc) tocAST)
+        (List.map (renderTocItem acc viewParameters.counter) tocAST)
     ]
 
 
 {-| Render a single TOC item with the actual heading text
 -}
-renderTocItem : Accumulator -> ExpressionBlock -> Html MarkupMsg
-renderTocItem acc block =
+renderTocItem : Accumulator -> Int -> ExpressionBlock -> Html MarkupMsg
+renderTocItem acc editCount block =
     let
         headingText =
             case block.body of
@@ -60,9 +60,8 @@ renderTocItem acc block =
                     ""
     in
     let
-        -- Use the "e-{lineNumber}.0" format consistent with search function
         elementId =
-            "e-" ++ String.fromInt block.meta.lineNumber ++ ".0"
+            "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt editCount
     in
     Html.li []
         [ Html.a

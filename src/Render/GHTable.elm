@@ -3,6 +3,7 @@ module Render.GHTable exposing (render)
 import Html exposing (Html)
 import Html.Attributes
 import Either exposing (Either(..))
+import Dict
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (Expr(..), Expression, ExpressionBlock)
 import Render.Expression
@@ -17,8 +18,14 @@ render count acc settings _ block =
     case block.body of
         Right [ Fun "table" rows _ ] ->
             let
+                alignments =
+                    Dict.get "alignments" block.properties
+                        |> Maybe.withDefault ""
+                        |> String.split ","
+                        |> List.map String.trim
+
                 rowElements =
-                    List.indexedMap (renderTableRow count acc settings) rows
+                    List.indexedMap (renderTableRow count acc settings alignments) rows
                 blockId = "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
             in
             Html.table
@@ -36,14 +43,14 @@ render count acc settings _ block =
 
 {-| Render a single table row
 -}
-renderTableRow : Int -> Accumulator -> RenderSettings -> Int -> Expression -> Html MarkupMsg
-renderTableRow count acc settings rowIndex expr =
+renderTableRow : Int -> Accumulator -> RenderSettings -> List String -> Int -> Expression -> Html MarkupMsg
+renderTableRow count acc settings alignments rowIndex expr =
     case expr of
         Fun "row" cells _ ->
             let
                 isHeader = rowIndex == 0
                 cellElements =
-                    List.map (renderTableCell count acc settings isHeader) cells
+                    List.indexedMap (renderTableCell count acc settings alignments isHeader) cells
 
                 element = if isHeader then Html.thead else Html.tbody
             in
@@ -55,8 +62,8 @@ renderTableRow count acc settings rowIndex expr =
 
 {-| Render a single table cell
 -}
-renderTableCell : Int -> Accumulator -> RenderSettings -> Bool -> Expression -> Html MarkupMsg
-renderTableCell count acc settings isHeader expr =
+renderTableCell : Int -> Accumulator -> RenderSettings -> List String -> Bool -> Int -> Expression -> Html MarkupMsg
+renderTableCell count acc settings alignments isHeader colIndex expr =
     case expr of
         Fun "cell" content _ ->
             let
@@ -64,10 +71,20 @@ renderTableCell count acc settings isHeader expr =
                     List.map (Render.Expression.render count acc settings []) content
 
                 element = if isHeader then Html.th else Html.td
+
+                alignment =
+                    List.drop colIndex alignments |> List.head |> Maybe.withDefault "l"
+
+                textAlign =
+                    case alignment of
+                        "c" -> "center"
+                        "r" -> "right"
+                        _ -> "left"
             in
             element
                 [ Html.Attributes.style "border" "1px solid #ddd"
                 , Html.Attributes.style "padding" "8px"
+                , Html.Attributes.style "text-align" textAlign
                 ]
                 renderedContent
 
