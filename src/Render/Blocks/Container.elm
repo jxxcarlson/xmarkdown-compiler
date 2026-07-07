@@ -11,8 +11,6 @@ import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-{-| Register all container block renderers to the registry
--}
 registerRenderers : BlockRegistry -> BlockRegistry
 registerRenderers registry =
     Render.BlockRegistry.registerBatch
@@ -23,45 +21,46 @@ registerRenderers registry =
         registry
 
 
+makeItem : Html msg -> Html msg
+makeItem x =
+    Html.li [ Html.Attributes.style "margin-bottom" "4px" ] [ x ]
+
+
 {-| Render an item list
 -}
-itemList _ _ settings attrs block =
+itemList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+itemList _ _ _ attrs block =
     let
-        _ =
-            Debug.log "ITEM LIST" ()
-
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attrs) exprs
+                    List.map (Render.Expression.render attrs >> makeItem) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
     in
-    Html.div []
-        [ Html.ul
-            attrs
-            [ Html.li [] content ]
+    Html.div
+        [ Html.Attributes.style "margin-left" "36px"
+        , Html.Attributes.style "margin-bottom" "24px"
         ]
+        content
 
 
 {-| Render a numbered list
 -}
-numberedList _ _ settings attrs block =
+numberedList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+numberedList _ _ _ attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attrs) exprs
+                    List.map (Render.Expression.render attrs >> makeItem) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
     in
-    Html.div []
-        [ Html.ol
-            attrs
-            [ Html.li [] content ]
-        ]
+    -- Html.ol attrs [ Html.li [] content ]
+    Html.ol attrs content
 
 
 {-| Render a description list

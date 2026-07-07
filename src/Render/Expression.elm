@@ -121,8 +121,12 @@ render attrs expr =
                 Html.span []
                     (List.map (render attrs) exprList)
 
-        _ ->
-            Html.span [] [ Html.text "(expression)" ]
+        ExprList indent exprList meta ->
+            let
+                _ =
+                    Debug.log "ExprList" exprList
+            in
+            Html.div [] (List.map (render attrs) exprList)
 
 
 {-| Extract link text and URL from expressions
