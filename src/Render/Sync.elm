@@ -12,7 +12,7 @@ import Html
 import Html.Attributes
 import Html.Events as Events
 import Render.Theme
-import XMarkdown.Types exposing (MarkupMsg(..))
+import XMarkdown.Types exposing (MarkupMsg(..), Theme)
 
 
 {-| Use this function to add all needed properties to an element for LR sync
@@ -63,7 +63,7 @@ highlightIfIdIsSelected : Int -> Int -> Render.Theme.RenderSettings -> List (Htm
 highlightIfIdIsSelected firstLineNumber numberOfLines settings =
     if String.fromInt firstLineNumber == settings.selectedId then
         [ rightToLeftSyncHelper firstLineNumber (firstLineNumber + numberOfLines)
-        , Html.Attributes.style "background-color" (Color.toCssString (Color.rgb 0.8 0.8 1.0))
+        , Html.Attributes.style "background-color" (Color.toCssString settings.highlight)
         ]
 
     else
@@ -75,15 +75,10 @@ rightToLeftSyncHelper firstLineNumber numberOfLines =
     Events.onClick (SendLineNumber { begin = firstLineNumber, end = firstLineNumber + numberOfLines })
 
 
-highlighter : List String -> List (Html.Attribute msg) -> List (Html.Attribute msg)
-highlighter args attrs =
+highlighter : Theme -> List String -> List (Html.Attribute msg) -> List (Html.Attribute msg)
+highlighter theme args attrs =
     if List.member "highlight" args then
-        Html.Attributes.style "background-color" (Color.toCssString selectedColor) :: attrs
+        Html.Attributes.style "background-color" (Render.Theme.themedColor .highlight theme) :: attrs
 
     else
         attrs
-
-
-selectedColor : Color
-selectedColor =
-    Color.rgba 0.1 0.1 0.8 0.5

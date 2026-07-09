@@ -8,7 +8,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.Expression
 import Render.Theme exposing (RenderSettings)
-import XMarkdown.Types exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 
 numberToLetter : Int -> String
@@ -54,12 +54,12 @@ formatListNumber level number =
             numberToRoman number
 
 
-bulletSymbol : Int -> Html MarkupMsg
-bulletSymbol level =
+bulletSymbol : Theme -> Int -> Html MarkupMsg
+bulletSymbol theme level =
     case level of
         0 ->
             Html.span
-                [ Html.Attributes.style "color" "#444"
+                [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
                 , Html.Attributes.style "font-weight" "bold"
                 , Html.Attributes.style "font-size" "0.5em"
                 ]
@@ -67,14 +67,14 @@ bulletSymbol level =
 
         1 ->
             Html.span
-                [ Html.Attributes.style "color" "#444"
+                [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
                 , Html.Attributes.style "font-size" "0.5em"
                 ]
                 [ Html.text "□" ]
 
         _ ->
             Html.span
-                [ Html.Attributes.style "color" "#444"
+                [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
                 , Html.Attributes.style "font-size" "0.84em"
                 ]
                 [ Html.text "◇" ]
@@ -97,7 +97,7 @@ item count _ settings attr block =
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attr) exprs
+                    List.map (Render.Expression.render settings.theme attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -111,7 +111,7 @@ item count _ settings attr block =
                     [ Html.Attributes.style "flex-shrink" "0"
                     , Html.Attributes.style "white-space" "nowrap"
                     ]
-                    [ bulletSymbol level ]
+                    [ bulletSymbol settings.theme level ]
                 , Html.div
                     [ Html.Attributes.style "flex-grow" "1"
                     ]
@@ -154,7 +154,7 @@ numbered count acc settings attr block =
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attr) exprs
+                    List.map (Render.Expression.render settings.theme attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -195,7 +195,7 @@ numbered count acc settings attr block =
 {-| Render a description list item
 -}
 desc : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-desc count _ _ attr block =
+desc count _ settings attr block =
     let
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -203,7 +203,7 @@ desc count _ _ attr block =
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attr) exprs
+                    List.map (Render.Expression.render settings.theme attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]

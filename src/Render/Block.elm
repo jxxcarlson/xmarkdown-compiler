@@ -23,7 +23,7 @@ renderBody count acc settings attrs block =
             [ Render.OrdinaryBlock.render count acc settings attrs block ]
 
         Verbatim _ ->
-            [ VerbatimBlock.render count acc settings attrs block |> Render.Helper.showError block.meta.error ]
+            [ VerbatimBlock.render count acc settings attrs block |> Render.Helper.showError settings.theme block.meta.error ]
 
 
 renderParagraphBody : Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
@@ -39,7 +39,7 @@ renderParagraphBody count settings attrs block =
                     :: Html.Attributes.style "line-height" "1.4"
                     :: attrs
                 )
-                (List.map (Render.Expression.render attrs) exprs)
+                (List.map (Render.Expression.render settings.theme attrs) exprs)
 
         Left _ ->
             Html.text ""

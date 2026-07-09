@@ -8,7 +8,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.Expression
 import Render.Theme exposing (RenderSettings)
-import XMarkdown.Types exposing (MarkupMsg)
+import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 
 {-| Render a GFM table
@@ -25,7 +25,7 @@ render count _ settings _ block =
                         |> List.map String.trim
 
                 rowElements =
-                    List.indexedMap (renderTableRow alignments) rows
+                    List.indexedMap (renderTableRow settings.theme alignments) rows
 
                 blockId =
                     "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -55,8 +55,8 @@ render count _ settings _ block =
 
 {-| Render a single table row
 -}
-renderTableRow : List String -> Int -> Expression -> Html MarkupMsg
-renderTableRow alignments rowIndex expr =
+renderTableRow : Theme -> List String -> Int -> Expression -> Html MarkupMsg
+renderTableRow theme alignments rowIndex expr =
     case expr of
         Fun "row" cells _ ->
             let
@@ -64,7 +64,7 @@ renderTableRow alignments rowIndex expr =
                     rowIndex == 0
 
                 cellElements =
-                    List.indexedMap (renderTableCell alignments isHeader) cells
+                    List.indexedMap (renderTableCell theme alignments isHeader) cells
 
                 element =
                     if isHeader then
@@ -81,13 +81,13 @@ renderTableRow alignments rowIndex expr =
 
 {-| Render a single table cell
 -}
-renderTableCell : List String -> Bool -> Int -> Expression -> Html MarkupMsg
-renderTableCell alignments isHeader colIndex expr =
+renderTableCell : Theme -> List String -> Bool -> Int -> Expression -> Html MarkupMsg
+renderTableCell theme alignments isHeader colIndex expr =
     case expr of
         Fun "cell" content _ ->
             let
                 renderedContent =
-                    List.map (Render.Expression.render []) content
+                    List.map (Render.Expression.render theme []) content
 
                 element =
                     if isHeader then

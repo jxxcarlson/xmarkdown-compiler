@@ -308,6 +308,7 @@ view model =
                 , editCount = model.count
                 , selectedId = model.selectId
                 , idsOfOpenNodes = model.idsOfOpenNodes
+                , theme = model.theme
             }
 
         compilerOutput : XMarkdown.Types.CompilerOutput
@@ -365,7 +366,7 @@ view model =
                 [ class "panel rendered-panel"
                 , id XMarkdown.API.renderedTextId
                 , style "width" (px g.renderedW)
-                , style "background-color" (Render.Theme.getThemedColorAsCssString .background model.theme)
+                , style "background-color" (Render.Theme.themedColor .background model.theme)
                 ]
                 [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
                   Html.map Render (renderPanel model.compilerParameters compilerOutput.body)
@@ -373,7 +374,7 @@ view model =
             , div
                 [ -- class "panel toc-panel"
                   style "width" (px g.tocW)
-                , style "background" (Render.Theme.getThemedColorAsCssString .background model.theme)
+                , style "background" (Render.Theme.themedColor .background model.theme)
                 ]
                 [ Html.map Render (renderPanel model.compilerParameters compilerOutput.toc) ]
             ]
@@ -408,8 +409,8 @@ renderPanel params elements =
         , Html.Attributes.style "flex-direction" "column"
         , Html.Attributes.style "gap" (String.fromInt (round settings.interBlockSpacing) ++ "px")
         , Html.Attributes.style "width" "100%"
-        , Html.Attributes.style "background-color" (Render.Theme.getThemedColorAsCssString .background settings.theme)
-        , Html.Attributes.style "color" (Render.Theme.getThemedColorAsCssString .text settings.theme)
+        , Html.Attributes.style "background-color" (Render.Theme.themedColor .background settings.theme)
+        , Html.Attributes.style "color" (Render.Theme.themedColor .text settings.theme)
         ]
         elements
 

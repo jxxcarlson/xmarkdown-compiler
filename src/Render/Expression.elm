@@ -4,13 +4,14 @@ import AST.Language exposing (Expr(..), Expression)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
-import XMarkdown.Types exposing (MarkupMsg)
+import Render.Theme
+import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 
 {-| Render an expression to Html
 -}
-render : List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
-render attrs expr =
+render : Theme -> List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
+render theme attrs expr =
     case expr of
         Text string _ ->
             Html.span attrs [ Html.text (string ++ " ") ]
@@ -43,7 +44,7 @@ render attrs expr =
 
             else if name == "code" then
                 Html.code []
-                    (List.map (render attrs) exprList)
+                    (List.map (render theme attrs) exprList)
 
             else if List.member name [ "anchor", "mark" ] then
                 Html.span []
@@ -51,15 +52,15 @@ render attrs expr =
 
             else if List.member name [ "b", "strong", "bold" ] then
                 Html.strong []
-                    (List.map (render attrs) exprList)
+                    (List.map (render theme attrs) exprList)
 
             else if List.member name [ "i", "em", "italic" ] then
                 Html.em []
-                    (List.map (render attrs) exprList)
+                    (List.map (render theme attrs) exprList)
 
             else if List.member name [ "strike", "strikethrough" ] then
                 Html.span [ Html.Attributes.style "text-decoration" "line-through" ]
-                    (List.map (render attrs) exprList)
+                    (List.map (render theme attrs) exprList)
 
             else if name == "a" || name == "link" then
                 let
@@ -69,6 +70,7 @@ render attrs expr =
                 in
                 Html.a
                     [ Html.Attributes.href url
+                    , Html.Attributes.style "color" (Render.Theme.themedColor .link theme)
                     ]
                     [ Html.text linkText ]
 
@@ -111,7 +113,7 @@ render attrs expr =
                       else
                         Html.figcaption
                             [ Html.Attributes.style "font-size" "0.9em"
-                            , Html.Attributes.style "color" "#666"
+                            , Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
                             , Html.Attributes.style "margin-top" "0.5em"
                             ]
                             [ Html.text caption ]
@@ -119,14 +121,10 @@ render attrs expr =
 
             else
                 Html.span []
-                    (List.map (render attrs) exprList)
+                    (List.map (render theme attrs) exprList)
 
         ExprList indent exprList meta ->
-            let
-                _ =
-                    Debug.log "ExprList" exprList
-            in
-            Html.div [] (List.map (render attrs) exprList)
+            Html.div [] (List.map (render theme attrs) exprList)
 
 
 {-| Extract link text and URL from expressions

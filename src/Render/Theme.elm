@@ -1,8 +1,6 @@
 module Render.Theme exposing
-    ( ActualTheme
-    , getColor
-    , lightTheme, darkTheme
-    , Display, RenderSettings, ThemedStyles, colorFromTheme, getThemedColorAsCssString, makeSettings, scaleFont
+    ( lightTheme, darkTheme
+    , Display, RenderSettings, ThemedStyles, makeSettings, scaleFont, themedColor
     )
 
 {-| Theme support for Scripta rendering.
@@ -27,65 +25,9 @@ with support for both raw Color values and elm-ui Element.Color.
 
 -}
 
-import Color
-import Dict exposing (Dict)
+import Color exposing (red)
 import Render.NewColor exposing (..)
 import XMarkdown.Types exposing (CompilerParameters, Theme(..))
-
-
-{-| A theme's color palette, containing colors for various UI elements.
--}
-type alias ActualTheme =
-    { background : Color
-    , text : Color
-    , codeBackground : Color
-    , codeText : Color
-    , offsetBackground : Color
-    , offsetText : Color
-    , link : Color
-    , highlight : Color
-    }
-
-
-{-| Get a Color value from the selected theme.
-
-    myTextColor =
-        getColor Light .text
-
--}
-getColor : Theme -> (ThemedStyles -> Color) -> Color
-getColor theme colorSelector =
-    let
-        actualTheme =
-            case theme of
-                Light ->
-                    lightTheme
-
-                Dark ->
-                    darkTheme
-    in
-    colorSelector actualTheme
-
-
-{-| Get Color value from the selected theme.
--}
-colorFromTheme : Theme -> (ThemedStyles -> Color) -> Color.Color
-colorFromTheme theme colorSelector =
-    let
-        actualTheme =
-            case theme of
-                Light ->
-                    lightTheme
-
-                Dark ->
-                    darkTheme
-    in
-    colorSelector actualTheme
-
-
-
--------------
--- default selectedId width
 
 
 {-| A record of information needed to render a document.
@@ -142,17 +84,33 @@ getThemedColor keyAccess theme =
         )
 
 
-getThemedColorAsCssString : (ThemedStyles -> Color) -> Theme -> String
-getThemedColorAsCssString keyAccess theme =
-    keyAccess
-        (case theme of
-            Dark ->
-                darkTheme
+themedColor : (ThemedStyles -> Color) -> Theme -> String
+themedColor keyAccess theme =
+    let
+        color =
+            keyAccess
+                (case theme of
+                    Dark ->
+                        darkTheme
 
-            Light ->
-                lightTheme
-        )
-        |> Color.toCssString
+                    Light ->
+                        lightTheme
+                )
+    in
+    colorToRgbString color
+
+
+colorToRgbString : Color -> String
+colorToRgbString color =
+    let
+        { red, green, blue, alpha } =
+            Color.toRgba color
+    in
+    if alpha < 1.0 then
+        "rgba(" ++ String.fromInt (round (red * 255)) ++ ", " ++ String.fromInt (round (green * 255)) ++ ", " ++ String.fromInt (round (blue * 255)) ++ ", " ++ String.fromFloat alpha ++ ")"
+
+    else
+        "rgb(" ++ String.fromInt (round (red * 255)) ++ ", " ++ String.fromInt (round (green * 255)) ++ ", " ++ String.fromInt (round (blue * 255)) ++ ")"
 
 
 {-| A light theme with a white background and dark text.
@@ -174,11 +132,11 @@ lightTheme =
 darkTheme : ThemedStyles
 darkTheme =
     { background = gray900
-    , text = Color.rgba 0.835 0.847 0.882 1 -- gray100
+    , text = gray200
     , codeBackground = gray800
-    , codeText = Color.lightBlue --blueLight
+    , codeText = Color.lightBlue
     , offsetBackground = gray900
-    , offsetText = Color.rgba 0.835 0.847 0.882 1 -- gray200 |> Render.NewColor.setOpacity 0.25
+    , offsetText = gray400
     , link = blue300
     , highlight = indigo500
     , border = gray700

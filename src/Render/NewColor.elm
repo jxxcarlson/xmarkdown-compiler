@@ -3,7 +3,7 @@ module Render.NewColor exposing
     , blue300
     , indigo200, indigo500, indigo600
     , gray100, gray200, gray300, gray400, gray600, gray700, gray800, gray900, gray920, gray950
-    , blue700, blueDark, blueLight, indigo900, indigo950, midnightIndigo, transparentIndigo500, whiteAlpha100
+    , blue200, blue700, blueDark, blueLight, indigo900, indigo950, midnightIndigo, offWhite, transparentIndigo500
     )
 
 {-| A native macOS-inspired color system with professional, subtle tones.
@@ -78,14 +78,19 @@ type alias Color =
 -- White alpha variants
 
 
-whiteAlpha100 : Color
-whiteAlpha100 =
-    rgba 1.0 1.0 1.0 0.04
+offWhite : Color
+offWhite =
+    rgba 0.9 0.9 0.9 1.0
 
 
 
 -- Black alpha variants
 -- Blue variants (macOS system blue inspired)
+
+
+blue200 : Color
+blue200 =
+    rgba 0.7 0.84 0.98 1
 
 
 blue300 : Color

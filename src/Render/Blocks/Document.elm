@@ -66,7 +66,7 @@ section count _ settings attr block =
         contentExprs =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attr) exprs
+                    List.map (Render.Expression.render settings.theme attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]

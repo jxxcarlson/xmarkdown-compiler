@@ -5,15 +5,16 @@ module Render.Helper exposing
 
 import Html exposing (Html)
 import Html.Attributes
-import XMarkdown.Types exposing (MarkupMsg)
+import Render.Theme
+import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 
 topPaddingForIndentedElements =
     10
 
 
-showError : Maybe String -> Html MarkupMsg -> Html MarkupMsg
-showError maybeError x =
+showError : Theme -> Maybe String -> Html MarkupMsg -> Html MarkupMsg
+showError theme maybeError x =
     case maybeError of
         Nothing ->
             x
@@ -21,5 +22,5 @@ showError maybeError x =
         Just error ->
             Html.div []
                 [ x
-                , Html.div [ Html.Attributes.style "color" "rgb(179, 0, 0)" ] [ Html.text error ]
+                , Html.div [ Html.Attributes.style "color" (Render.Theme.themedColor .text theme) ] [ Html.text error ]
                 ]

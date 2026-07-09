@@ -29,12 +29,12 @@ makeItem x =
 {-| Render an item list
 -}
 itemList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-itemList _ _ _ attrs block =
+itemList _ _ settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attrs >> makeItem) exprs
+                    List.map (Render.Expression.render settings.theme attrs >> makeItem) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -49,12 +49,12 @@ itemList _ _ _ attrs block =
 {-| Render a numbered list
 -}
 numberedList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numberedList _ _ _ attrs block =
+numberedList _ _ settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attrs >> makeItem) exprs
+                    List.map (Render.Expression.render settings.theme attrs >> makeItem) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -66,12 +66,12 @@ numberedList _ _ _ attrs block =
 {-| Render a description list
 -}
 descriptionList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-descriptionList _ _ _ attrs block =
+descriptionList _ _ settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render attrs) exprs
+                    List.map (Render.Expression.render settings.theme attrs) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
