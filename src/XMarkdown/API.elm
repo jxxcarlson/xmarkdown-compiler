@@ -64,6 +64,11 @@ navigation panels.
         XMarkdown.API.viewTOC output
 
 
+# Compiler parameters
+
+To automatically number section headings imitate this example:
+
+
 # See Also
 
 For one-step compilation that parses and renders together, use `compileSimple`.

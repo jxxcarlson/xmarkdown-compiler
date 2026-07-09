@@ -1,7 +1,7 @@
 # XMarkdown Compiler
 
-A standalone compiler for **XMarkdown**.  XMarkdown is an extended version of markdown with 
-support for rending mathematics presented either as TeX or ETeX (ergonomic TeX).
+A standalone compiler for **XMarkdown**.  XMarkdown is an extended version of Markdown with 
+support for rendering mathematics. Mathematical text is presented either as TeX or ETeX (ergonomic TeX).
 Consider the text for a standard calculus formula:
 
 ```
@@ -23,7 +23,7 @@ Note that the double dollar signs occupy lines by themselves.  This
 is good style in TeX but in XMarkdown it is required.  You can 
 find the ETeX package [here](https://package.elm-lang.org/packages/jxxcarlson/etex/latest/).
 
-Here is an [online demo](https://xmarkdowndemo.netlify.app/) of XMarkdown.
+There is also an [online demo](https://xmarkdowndemo.netlify.app/) of XMarkdown.
 
 ## What else?
 
@@ -36,6 +36,10 @@ XXX, is synchronization of edited an rendered text:
 
 - click on rendered text to highlight and scroll into view the corresponding source text
 - select source text and highlight and scroll into view the corresponding rendered text
+
+##   Compiler options
+
+
 
 
 ## Usage

@@ -10,7 +10,7 @@ is compiled and rendered.
 
 # Configuration
 
-@docs CompilerParameters, defaultCompilerParameters, Filter
+@docs CompilerParameters, defaultCompilerParameters
 
 
 ## Key Parameters

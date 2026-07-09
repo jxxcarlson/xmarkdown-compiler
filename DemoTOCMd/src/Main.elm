@@ -5,6 +5,7 @@ module Main exposing (main)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Color
 import Data.XMarkdown
 import File exposing (File)
 import File.Download
@@ -14,7 +15,6 @@ import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
 import List.Extra
 import Ports
-import Color
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
@@ -319,11 +319,12 @@ view model =
         -- Customize compiler parameters here
         params =
             { defaultCompilerParameters
-                | docWidth = g.docWidth
-                , editCount = model.count
-                , selectedId = model.selectId
+                | docWidth = g.docWidth -- width of rendered text in pixels
+                , editCount = model.count -- incremented on each edit
+                , selectedId = model.selectId -- id of rendered text on which user clicked
                 , idsOfOpenNodes = model.idsOfOpenNodes
-                , theme = model.theme
+                , theme = model.theme -- Dark or Light
+                , numberToLevel = 3 -- automatically number sections to level 3. Omit if you don't want sections numbered
             }
 
         compilerOutput : XMarkdown.Types.CompilerOutput
