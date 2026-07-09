@@ -167,9 +167,23 @@ update msg model =
 
                 newParams =
                     { params | theme = newTheme }
+
+                currentTheme =
+                    case newTheme of
+                        Light ->
+                            lightTheme
+
+                        Dark ->
+                            darkTheme
+
+                themeCmd =
+                    Ports.setThemeColors
+                        { fg = currentTheme.text |> Color.toCssString
+                        , bg = currentTheme.background |> Color.toCssString
+                        }
             in
             ( { model | theme = newTheme, compilerParameters = newParams }
-            , Cmd.none
+            , themeCmd
             )
 
         LRSync searchText ->
@@ -296,28 +310,6 @@ geometry model =
 -- VIEW
 
 
-themeStyles : Theme -> List (Html.Attribute Msg)
-themeStyles theme =
-    let
-        currentTheme =
-            case theme of
-                Light ->
-                    lightTheme
-
-                Dark ->
-                    darkTheme
-
-        textColor =
-            currentTheme.text |> Color.toCssString
-
-        bgColor =
-            currentTheme.background |> Color.toCssString
-    in
-    [ style "--cm-fg" textColor
-    , style "--cm-bg" bgColor
-    ]
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -338,7 +330,7 @@ view model =
         compilerOutput =
             XMarkdown.API.compile params (String.lines model.sourceText)
     in
-    div (class "app" :: themeStyles model.theme)
+    div [ class "app" ]
         [ div [ class "app-header" ]
             [ div [ class "toolbar" ]
                 [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]

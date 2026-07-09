@@ -54,4 +54,10 @@ function initializeApp() {
         console.log("Setting editor highlight color:", colorStr);
         document.documentElement.style.setProperty('--cm-sync-highlight-bg', colorStr);
     });
+
+    app.ports.setThemeColors.subscribe((colors) => {
+        console.log("Setting theme colors:", colors);
+        document.documentElement.style.setProperty('--cm-fg', colors.fg);
+        document.documentElement.style.setProperty('--cm-bg', colors.bg);
+    });
 }
