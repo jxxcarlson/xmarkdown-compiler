@@ -6,15 +6,11 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
-import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Element.Input as Input
 import File exposing (File)
 import File.Select as Select
-import Html exposing (Html)
-import Html.Attributes
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (id, style)
+import Html.Events exposing (onClick)
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters)
 import XMarkdown.Types exposing (MarkupMsg(..))
@@ -110,58 +106,69 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    layoutWith { options = [ Element.focusStyle noFocus ] }
-        [ bgGray 0.4, Font.size 16 ]
-        (mainColumn model)
-
-
-mainColumn : Model -> Element Msg
-mainColumn model =
-    column
-        [ centerX
-        , spacing 16
-        , paddingXY 20 20
-        , width (px (panelWidth model + 2 * xPadding))
-        , height (px model.windowHeight)
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "gap" "16px"
+        , style "padding" "20px"
+        , style "width" (String.fromInt (panelWidth model + 2 * xPadding) ++ "px")
+        , style "height" (String.fromInt model.windowHeight ++ "px")
+        , style "background-color" "rgba(102, 102, 102, 1)"
+        , style "font-size" "16px"
         ]
         [ header model
-        , displayRenderedText model |> Element.map Render
+        , Html.map Render (displayRenderedText model)
         ]
 
 
-header : Model -> Element Msg
+header : Model -> Html Msg
 header model =
-    row [ spacing 20, width fill ]
+    div
+        [ style "display" "flex"
+        , style "gap" "20px"
+        , style "width" "100%"
+        ]
         [ openButton
-        , el [ Font.color (rgb 1 1 1), Font.size 14, centerY ]
-            (text (model.fileName |> Maybe.map (\n -> "Loaded: " ++ n) |> Maybe.withDefault "No file loaded"))
+        , div
+            [ style "color" "rgb(255, 255, 255)"
+            , style "font-size" "14px"
+            , style "display" "flex"
+            , style "align-items" "center"
+            ]
+            [ text (model.fileName |> Maybe.map (\n -> "Loaded: " ++ n) |> Maybe.withDefault "No file loaded")
+            ]
         ]
 
 
-openButton : Element Msg
+openButton : Html Msg
 openButton =
-    Input.button
-        [ Background.color (rgb255 20 20 20)
-        , Font.color (rgb 1 1 1)
-        , Font.size 14
-        , paddingXY 12 10
-        , Border.rounded 4
+    button
+        [ onClick MarkdownRequested
+        , style "background-color" "rgb(20, 20, 20)"
+        , style "color" "rgb(255, 255, 255)"
+        , style "font-size" "14px"
+        , style "padding" "10px 12px"
+        , style "border-radius" "4px"
+        , style "border" "1px solid #444"
+        , style "cursor" "pointer"
         ]
-        { onPress = Just MarkdownRequested
-        , label = text "Open .md file…"
-        }
+        [ text "Open .md file…"
+        ]
 
 
-displayRenderedText : Model -> Element MarkupMsg
+displayRenderedText : Model -> Html MarkupMsg
 displayRenderedText model =
-    column
-        [ spacing 4
-        , Background.color (rgb 1.0 1.0 1.0)
-        , width (px (panelWidth model))
-        , height (px (panelHeight model))
-        , paddingXY xPadding 24
-        , htmlId "rendered-text"
-        , scrollbarY
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "gap" "4px"
+        , style "background-color" "rgb(255, 255, 255)"
+        , style "width" (String.fromInt (panelWidth model) ++ "px")
+        , style "height" (String.fromInt (panelHeight model) ++ "px")
+        , style "padding" (String.fromInt xPadding ++ "px 24px")
+        , id "rendered-text"
+        , style "overflow-y" "auto"
         ]
         (XMarkdown.API.compileSimple
             { defaultCompilerParameters
@@ -191,21 +198,3 @@ panelHeight : Model -> Int
 panelHeight model =
     model.windowHeight - 120
 
-
-
--- HELPERS
-
-
-noFocus : Element.FocusStyle
-noFocus =
-    { borderColor = Nothing, backgroundColor = Nothing, shadow = Nothing }
-
-
-htmlId : String -> Attribute msg
-htmlId str =
-    Element.htmlAttribute (Html.Attributes.id str)
-
-
-bgGray : Float -> Attr decorative msg
-bgGray g =
-    Background.color (rgb g g g)
