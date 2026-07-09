@@ -24,22 +24,27 @@ function initKatex() {
 
     connectedCallback() {
       this.attachShadow({mode: "open"});
-      
-      // Get properties (not attributes) - Elm sets these as properties
-      const content = this.content || '';
-      const display = this.display || false;
-      
+
+      // Get attributes from Elm (data-content and data-display)
+      const content = this.getAttribute('data-content') || '';
+      const display = this.getAttribute('data-display') === 'true';
+
       console.log('math-text element connected:', {content, display});
-      
-      this.shadowRoot.innerHTML =
-        katex.renderToString(
-          content,
-          { throwOnError: false, displayMode: display }
-        );
-      let link = document.createElement('link');
-      link.setAttribute('rel', 'stylesheet');
-      link.setAttribute('href', 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css');
-      this.shadowRoot.appendChild(link);
+
+      try {
+        this.shadowRoot.innerHTML =
+          katex.renderToString(
+            content,
+            { throwOnError: false, displayMode: display }
+          );
+        let link = document.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('href', 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css');
+        this.shadowRoot.appendChild(link);
+      } catch (e) {
+        console.error('KaTeX rendering error:', e);
+        this.shadowRoot.innerHTML = `<span style="color: red;">Math render error: ${e.message}</span>`;
+      }
 
     }
 
