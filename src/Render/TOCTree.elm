@@ -14,6 +14,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import Render.NewColor exposing (blue300)
 import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg(..), Theme)
 
@@ -38,14 +39,14 @@ view theme viewParameters acc documentAst =
         [ Html.Attributes.style "padding-left" "0"
         , Html.Attributes.style "margin-left" "0"
         ]
-        (List.map (renderTocItem viewParameters.counter viewParameters.settings.numberToLevel) tocAST)
+        (List.map (renderTocItem theme viewParameters.counter viewParameters.settings.numberToLevel) tocAST)
     ]
 
 
 {-| Render a single TOC item with the actual heading text
 -}
-renderTocItem : Int -> Int -> ExpressionBlock -> Html MarkupMsg
-renderTocItem editCount numberToLevel block =
+renderTocItem : Theme -> Int -> Int -> ExpressionBlock -> Html MarkupMsg
+renderTocItem theme editCount numberToLevel block =
     let
         headingText =
             case block.body of
@@ -104,6 +105,7 @@ renderTocItem editCount numberToLevel block =
     Html.li liStyle
         [ Html.a
             [ Html.Attributes.href ("#" ++ elementId)
+            , Html.Attributes.style "color" (Render.Theme.themedColor .link theme)
             , Html.Events.preventDefaultOn "click"
                 (Json.Decode.succeed ( SelectId elementId, True ))
             ]
