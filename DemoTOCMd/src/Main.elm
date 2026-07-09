@@ -302,7 +302,7 @@ view model =
         params =
             { defaultCompilerParameters
                 | docWidth = g.docWidth -- width of rendered text in pixels
-                , editCount = model.count -- incremented on each edit
+                , editCount = model.count -- incremented on each edit; rendered text won't update withoug this
                 , selectedId = model.selectId -- id of rendered text on which user clicked
                 , theme = model.theme -- Dark or Light
                 , numberToLevel = 3 -- automatically number sections to level 3. Omit if you don't want sections numbered
