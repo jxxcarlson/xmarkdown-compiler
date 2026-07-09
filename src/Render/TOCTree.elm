@@ -20,8 +20,7 @@ import XMarkdown.Types exposing (MarkupMsg(..), Theme)
 
 
 type alias ViewParameters =
-    { idsOfOpenNodes : List String
-    , selectedId : String
+    { selectedId : String
     , counter : Int
     , attr : List (Html.Attribute MarkupMsg)
     , settings : Render.Theme.RenderSettings

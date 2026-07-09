@@ -46,7 +46,6 @@ type alias Model =
     , windowWidth : Int
     , windowHeight : Int
     , selectId : String
-    , idsOfOpenNodes : List String
     , syncHighlight : Maybe SyncHighlight
     , tick : Int
     , compilerParameters : CompilerParameters
@@ -90,7 +89,6 @@ init flags =
       , windowWidth = flags.window.windowWidth
       , windowHeight = flags.window.windowHeight
       , selectId = "@InitID"
-      , idsOfOpenNodes = []
       , syncHighlight = Nothing
       , theme = Light
       , currentTheme = Light
@@ -193,7 +191,6 @@ update msg model =
                         | docWidth = geometry model |> .docWidth
                         , editCount = model.count
                         , selectedId = "selectedId"
-                        , idsOfOpenNodes = model.idsOfOpenNodes
                         , interBlockSpacing = 0
                         , paddingAboveHeadings = 18
 
@@ -251,21 +248,6 @@ update msg model =
 
                 Nothing ->
                     case msg_ of
-                        ToggleTOCNodeID nodeId ->
-                            let
-                                idsOfOpenNodes =
-                                    if String.left 2 nodeId == "@-" then
-                                        if List.member nodeId model.idsOfOpenNodes then
-                                            List.Extra.remove nodeId model.idsOfOpenNodes
-
-                                        else
-                                            nodeId :: model.idsOfOpenNodes
-
-                                    else
-                                        model.idsOfOpenNodes
-                            in
-                            ( { model | idsOfOpenNodes = idsOfOpenNodes }, Cmd.none )
-
                         SelectId selId ->
                             let
                                 lineNum =
@@ -322,7 +304,6 @@ view model =
                 | docWidth = g.docWidth -- width of rendered text in pixels
                 , editCount = model.count -- incremented on each edit
                 , selectedId = model.selectId -- id of rendered text on which user clicked
-                , idsOfOpenNodes = model.idsOfOpenNodes
                 , theme = model.theme -- Dark or Light
                 , numberToLevel = 3 -- automatically number sections to level 3. Omit if you don't want sections numbered
             }

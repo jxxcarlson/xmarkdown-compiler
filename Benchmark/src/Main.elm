@@ -128,7 +128,6 @@ compileString str =
                     , docWidth = 500
                     , editCount = 0
                     , selectedId = "-"
-                    , idsOfOpenNodes = []
                 }
                 str
     in

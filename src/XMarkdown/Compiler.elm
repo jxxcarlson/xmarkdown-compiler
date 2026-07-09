@@ -129,8 +129,7 @@ render params ( accumulator_, forest_ ) =
             Render.Theme.makeSettings params
 
         viewParameters =
-            { idsOfOpenNodes = params.idsOfOpenNodes
-            , selectedId = params.selectedId
+            { selectedId = params.selectedId
             , counter = params.editCount
             , attr = []
             , settings = renderSettings

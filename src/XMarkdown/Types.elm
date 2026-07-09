@@ -19,7 +19,6 @@ is compiled and rendered.
   - **editCount**: Increment this after each edit for live editing contexts (use 0 for static documents)
   - **selectedId**: ID of the currently selected block for highlighting
   - **theme**: Visual theme (Light or Dark)
-  - **idsOfOpenNodes**: List of IDs for expanded/collapsed sections
 
 
 ## Usage
@@ -53,7 +52,6 @@ defaultCompilerParameters =
     , editCount = 0
     , selectedId = ""
     , selectedSlug = Nothing
-    , idsOfOpenNodes = []
     , theme = Light
     , backgroundColor = "rgba(255, 255, 255, 1.0)"
     , highlightColor = "rgba(200, 200, 255, 0.4)"
@@ -86,7 +84,6 @@ type alias CompilerParameters =
     , editCount : Int
     , selectedId : String
     , selectedSlug : Maybe String
-    , idsOfOpenNodes : List String
     , theme : Theme
     , backgroundColor : String
     , highlightColor : String
@@ -106,7 +103,6 @@ type MarkupMsg
     = SendMeta { begin : Int, end : Int, index : Int, id : String }
     | SendLineNumber { begin : Int, end : Int }
     | SelectId String
-    | ToggleTOCNodeID String
     | HighlightId String
     | JumpToTop
     | MMNoOp

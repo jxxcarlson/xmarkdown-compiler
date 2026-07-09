@@ -168,7 +168,6 @@ displayRenderedText model =
                 | docWidth = panelWidth model - 2 * xPadding
                 , editCount = model.count
                 , selectedId = model.selectId
-                , idsOfOpenNodes = []
             }
             model.sourceText
         )
