@@ -6,6 +6,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
+import Data.Example exposing (exampleMarkdown)
 import File exposing (File)
 import File.Select as Select
 import Html exposing (Html, button, div, text)
@@ -56,8 +57,8 @@ type Msg
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { sourceText = "Click **Open .md file…** to load and render a document."
-      , fileName = Nothing
+    ( { sourceText = exampleMarkdown
+      , fileName = Just "example.md"
       , count = 1
       , windowWidth = flags.window.windowWidth
       , windowHeight = flags.window.windowHeight
@@ -108,17 +109,25 @@ view : Model -> Html Msg
 view model =
     div
         [ style "display" "flex"
-        , style "flex-direction" "column"
-        , style "align-items" "center"
-        , style "gap" "16px"
-        , style "padding" "20px"
-        , style "width" (String.fromInt (panelWidth model + 2 * xPadding) ++ "px")
-        , style "height" (String.fromInt model.windowHeight ++ "px")
-        , style "background-color" "rgba(102, 102, 102, 1)"
-        , style "font-size" "16px"
+        , style "justify-content" "center"
+        , style "height" "100%"
+        , style "width" "100%"
+        , style "background-color" "rgba(22, 22, 22, 1)"
         ]
-        [ header model
-        , Html.map Render (displayRenderedText model)
+        [ div
+            [ style "display" "flex"
+            , style "flex-direction" "column"
+            , style "gap" "16px"
+            , style "padding" "20px"
+            , style "width" (String.fromInt (panelWidth model + 2 * xPadding) ++ "px")
+            , style "height" (String.fromInt model.windowHeight ++ "px")
+            , style "background-color" "rgba(102, 102, 102, 1)"
+            , style "font-size" "16px"
+            , style "overflow" "hidden"
+            ]
+            [ header model
+            , Html.map Render (displayRenderedText model)
+            ]
         ]
 
 
@@ -165,14 +174,15 @@ displayRenderedText model =
         , style "gap" "4px"
         , style "background-color" "rgb(255, 255, 255)"
         , style "width" (String.fromInt (panelWidth model) ++ "px")
-        , style "height" (String.fromInt (panelHeight model) ++ "px")
+        , style "flex" "1"
+        , style "min-height" "0"
         , style "padding" (String.fromInt xPadding ++ "px 24px")
         , id "rendered-text"
         , style "overflow-y" "auto"
         ]
         (XMarkdown.API.compileSimple
             { defaultCompilerParameters
-                | docWidth = panelWidth model - 2 * xPadding
+                | docWidth = panelWidth model
                 , editCount = model.count
                 , selectedId = model.selectId
             }
@@ -191,10 +201,9 @@ xPadding =
 
 panelWidth : Model -> Int
 panelWidth model =
-    min 800 (model.windowWidth - 60)
+    min 500 (model.windowWidth - 60)
 
 
 panelHeight : Model -> Int
 panelHeight model =
     model.windowHeight - 120
-

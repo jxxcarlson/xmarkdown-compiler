@@ -134,7 +134,7 @@ Your `Msg` type should include `| Render MarkupMsg`.
 -}
 compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileSimple params sourceText =
-    XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.view params.docWidth
+    XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.viewBodyOnly params.docWidth
 
 
 {-| Compile source text into a CompilerOutput structure.
