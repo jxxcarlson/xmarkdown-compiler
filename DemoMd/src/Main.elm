@@ -5,6 +5,7 @@ module Main exposing (main)
 -}
 
 import Browser
+import Browser.Dom
 import Browser.Events
 import Data.Example exposing (exampleMarkdown)
 import File exposing (File)
@@ -13,8 +14,8 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Task
-import XMarkdown.API exposing (defaultCompilerParameters)
-import XMarkdown.Types exposing (MarkupMsg(..))
+import XMarkdown.API exposing (compile, defaultCompilerParameters, viewBodyOnly, viewTOC)
+import XMarkdown.Types exposing (CompilerOutput, MarkupMsg(..))
 
 
 main : Program Flags Model Msg
@@ -95,7 +96,7 @@ update msg model =
         Render markupMsg ->
             case markupMsg of
                 SelectId id ->
-                    ( { model | selectId = id }, Cmd.none )
+                    ( { model | selectId = id }, scrollToElement id )
 
                 _ ->
                     ( model, Cmd.none )
@@ -107,6 +108,16 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        compilerOutput =
+            compile defaultCompilerParameters (String.lines model.sourceText)
+
+        tocElements =
+            viewTOC compilerOutput
+
+        shouldShowToc =
+            not (List.isEmpty tocElements)
+    in
     div
         [ style "display" "flex"
         , style "justify-content" "center"
@@ -119,14 +130,27 @@ view model =
             , style "flex-direction" "column"
             , style "gap" "16px"
             , style "padding" "20px"
-            , style "width" (String.fromInt (panelWidth model + 2 * xPadding) ++ "px")
+            , style "width" (String.fromInt (if shouldShowToc then panelWidth model + 250 + 2 * xPadding else panelWidth model + 2 * xPadding) ++ "px")
             , style "height" (String.fromInt model.windowHeight ++ "px")
             , style "background-color" "rgba(102, 102, 102, 1)"
             , style "font-size" "16px"
             , style "overflow" "hidden"
             ]
             [ header model
-            , Html.map Render (displayRenderedText model)
+            , div
+                [ style "display" "flex"
+                , style "gap" "16px"
+                , style "flex" "1"
+                , style "min-height" "0"
+                ]
+                ([ Html.map Render (displayRenderedText model compilerOutput)
+                 ]
+                    ++ (if shouldShowToc then
+                            [ Html.map Render (displayTOC tocElements) ]
+                        else
+                            []
+                       )
+                )
             ]
         ]
 
@@ -166,29 +190,62 @@ openButton =
         ]
 
 
-displayRenderedText : Model -> Html MarkupMsg
-displayRenderedText model =
+displayRenderedText : Model -> XMarkdown.Types.CompilerOutput -> Html MarkupMsg
+displayRenderedText model compilerOutput =
     div
         [ style "display" "flex"
         , style "flex-direction" "column"
         , style "gap" "4px"
         , style "background-color" "rgb(255, 255, 255)"
-        , style "width" (String.fromInt (panelWidth model) ++ "px")
         , style "flex" "1"
         , style "min-height" "0"
         , style "padding" (String.fromInt xPadding ++ "px 24px")
         , id "rendered-text"
         , style "overflow-y" "auto"
         ]
-        (XMarkdown.API.compileSimple
-            { defaultCompilerParameters
-                | docWidth = panelWidth model
-                , editCount = model.count
-                , selectedId = model.selectId
-            }
-            model.sourceText
-        )
+        (viewBodyOnly (panelWidth model) compilerOutput)
 
+
+displayTOC : List (Html MarkupMsg) -> Html MarkupMsg
+displayTOC tocElements =
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "background-color" "rgb(245, 245, 245)"
+        , style "width" "200px"
+        , style "min-height" "0"
+        , style "padding" "12px 16px"
+        , style "border-left" "1px solid #ddd"
+        , style "overflow-y" "auto"
+        , style "font-size" "13px"
+        ]
+        tocElements
+
+
+scrollToElement : String -> Cmd Msg
+scrollToElement elementId =
+    Browser.Dom.getElement elementId
+        |> Task.andThen (\targetElem ->
+            Browser.Dom.getElement "rendered-text"
+                |> Task.map (\containerElem -> (targetElem, containerElem)))
+        |> Task.andThen (\(targetElem, containerElem) ->
+            Browser.Dom.getViewportOf "rendered-text"
+                |> Task.map (\viewport -> (targetElem, containerElem, viewport)))
+        |> Task.andThen (\(targetElem, containerElem, viewport) ->
+            let
+                targetY =
+                    targetElem.element.y
+                containerY =
+                    containerElem.element.y
+                currentScroll =
+                    viewport.viewport.y
+                positionInContent =
+                    targetY - containerY + currentScroll
+                targetScroll =
+                    max 0 (positionInContent - 50)
+            in
+            Browser.Dom.setViewportOf "rendered-text" 0 targetScroll)
+        |> Task.attempt (\_ -> NoOp)
 
 
 -- GEOMETRY
