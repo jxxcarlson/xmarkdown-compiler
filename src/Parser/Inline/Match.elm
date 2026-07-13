@@ -11,6 +11,9 @@ reducible symbols =
         Just M ->
             List.head (List.reverse (List.drop 1 symbols)) == Just M
 
+        Just ML ->
+            List.head (List.reverse (List.drop 1 symbols)) == Just MR
+
         Just C ->
             List.head (List.reverse (List.drop 1 symbols)) == Just C
 

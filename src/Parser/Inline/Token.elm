@@ -12,9 +12,9 @@ module Parser.Inline.Token exposing
 
 import List.Extra
 import Parser.Advanced as Parser exposing (DeadEnd, Parser)
-import Tools.Loop exposing (Step(..), loop)
 import Parser.Inline.Meta exposing (Meta)
 import Parser.Inline.ParserTools as PT exposing (Problem)
+import Tools.Loop exposing (Step(..), loop)
 
 
 fakeDebugLog =
@@ -37,6 +37,8 @@ type Token
     | S String Meta
     | W String Meta
     | MathToken Meta
+    | MathTokenLeft Meta -- for "\\("
+    | MathTokenRight Meta -- for "\\)"
     | CodeToken Meta
     | TokenError (List (DeadEnd () Problem)) Meta
 
@@ -77,6 +79,12 @@ setIndex k token =
         MathToken meta ->
             MathToken { meta | index = k }
 
+        MathTokenLeft meta ->
+            MathTokenLeft { meta | index = k }
+
+        MathTokenRight meta ->
+            MathTokenRight { meta | index = k }
+
         CodeToken meta ->
             CodeToken { meta | index = k }
 
@@ -98,6 +106,7 @@ type alias State a =
 type Mode
     = Normal
     | InMath
+    | InMathParen
     | InCode
 
 
@@ -113,6 +122,8 @@ type TokenType
     | TS
     | TW
     | TMath
+    | TMathLeft
+    | TMathRight
     | TCode
     | TTokenError
 
@@ -152,6 +163,12 @@ type_ token =
 
         MathToken _ ->
             TMath
+
+        MathTokenLeft _ ->
+            TMathLeft
+
+        MathTokenRight _ ->
+            TMathRight
 
         CodeToken _ ->
             TCode
@@ -194,6 +211,12 @@ getMeta token =
             m
 
         MathToken m ->
+            m
+
+        MathTokenLeft m ->
+            m
+
+        MathTokenRight m ->
             m
 
         CodeToken m ->
@@ -239,6 +262,12 @@ stringValue token =
         MathToken _ ->
             "$"
 
+        MathTokenLeft _ ->
+            "\\("
+
+        MathTokenRight _ ->
+            "\\)"
+
         CodeToken _ ->
             "`"
 
@@ -281,6 +310,12 @@ stringValue2 token =
 
         MathToken _ ->
             "M"
+
+        MathTokenLeft _ ->
+            "ML"
+
+        MathTokenRight _ ->
+            "MR"
 
         CodeToken _ ->
             "C"
@@ -330,6 +365,12 @@ length token =
             meta.end - meta.begin
 
         MathToken meta ->
+            meta.end - meta.begin
+
+        MathTokenLeft meta ->
+            meta.end - meta.begin
+
+        MathTokenRight meta ->
             meta.end - meta.begin
 
         CodeToken meta ->
@@ -508,6 +549,9 @@ newMode token currentMode =
                 MathToken _ ->
                     InMath
 
+                MathTokenLeft _ ->
+                    InMathParen
+
                 CodeToken _ ->
                     InCode
 
@@ -521,6 +565,14 @@ newMode token currentMode =
 
                 _ ->
                     InMath
+
+        InMathParen ->
+            case token of
+                MathTokenRight _ ->
+                    Normal
+
+                _ ->
+                    InMathParen
 
         InCode ->
             case token of
@@ -544,6 +596,9 @@ tokenParser mode start index =
         InMath ->
             mathParser_ start index
 
+        InMathParen ->
+            mathParenParser_ start index
+
         InCode ->
             codeParser_ start index
 
@@ -565,6 +620,8 @@ tokenParser_ start index =
     Parser.oneOf
         [ imageParser start index
         , atParser start index
+        , mathTokenLeftParser start index
+        , mathTokenRightParser start index
         , textParser start index
         , leftBracketParser start index
         , rightBracketParser start index
@@ -583,6 +640,15 @@ mathParser_ start index =
     Parser.oneOf
         [ mathTextParser start index
         , mathParser start index
+        , whiteSpaceParser start index
+        ]
+
+
+mathParenParser_ : Int -> Int -> TokenParser
+mathParenParser_ start index =
+    Parser.oneOf
+        [ mathTokenRightParser start index
+        , mathParenTextParser start index
         , whiteSpaceParser start index
         ]
 
@@ -660,6 +726,15 @@ mathTextParser start index =
         |> Parser.map (\data -> S data.content { begin = start, end = start + data.end - data.begin - 1, index = index, id = makeId start index })
 
 
+{-| Text inside \\(...\\) math: chomp anything except space, stopping at each
+backslash so that a closing \\) is always seen by mathTokenRightParser.
+-}
+mathParenTextParser : Int -> Int -> TokenParser
+mathParenTextParser start index =
+    PT.text (\c -> c /= ' ') (\c -> c /= ' ' && c /= '\\')
+        |> Parser.map (\data -> S data.content { begin = start, end = start + data.end - data.begin - 1, index = index, id = makeId start index })
+
+
 codeTextParser start index =
     PT.text (\c -> not <| List.member c (' ' :: codeChars)) (\c -> not <| List.member c (' ' :: languageChars))
         |> Parser.map (\data -> S data.content { begin = start, end = start + data.end - data.begin - 1, index = index, id = makeId start index })
@@ -669,6 +744,18 @@ mathParser : Int -> Int -> TokenParser
 mathParser start index =
     PT.text (\c -> c == '$') (\_ -> False)
         |> Parser.map (\_ -> MathToken { begin = start, end = start, index = index, id = makeId start index })
+
+
+mathTokenLeftParser : Int -> Int -> TokenParser
+mathTokenLeftParser start index =
+    Parser.symbol (Parser.Token "\\(" (PT.ExpectingSymbol "\\("))
+        |> Parser.map (\_ -> MathTokenLeft { begin = start, end = start + 1, index = index, id = makeId start index })
+
+
+mathTokenRightParser : Int -> Int -> TokenParser
+mathTokenRightParser start index =
+    Parser.symbol (Parser.Token "\\)" (PT.ExpectingSymbol "\\)"))
+        |> Parser.map (\_ -> MathTokenRight { begin = start, end = start + 1, index = index, id = makeId start index })
 
 
 codeParser : Int -> Int -> TokenParser
@@ -726,6 +813,12 @@ indexOf token =
             meta.index
 
         MathToken meta ->
+            meta.index
+
+        MathTokenLeft meta ->
+            meta.index
+
+        MathTokenRight meta ->
             meta.index
 
         CodeToken meta ->

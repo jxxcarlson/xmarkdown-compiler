@@ -14,6 +14,8 @@ type Symbol
     | SImage
     | SAT
     | M
+    | ML
+    | MR
     | C
 
 
@@ -45,6 +47,12 @@ value symbol =
             1
 
         M ->
+            0
+
+        ML ->
+            0
+
+        MR ->
             0
 
         C ->
@@ -85,6 +93,12 @@ toSymbol token =
 
         MathToken _ ->
             Just M
+
+        MathTokenLeft _ ->
+            Just ML
+
+        MathTokenRight _ ->
+            Just MR
 
         CodeToken _ ->
             Just C

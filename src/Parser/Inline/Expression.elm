@@ -221,6 +221,9 @@ reduceState state =
             Just M ->
                 handleMathSymbol symbols state
 
+            Just ML ->
+                handleMathTokenLeftSymbol symbols state
+
             Just C ->
                 handleCodeSymbol symbols state
 
@@ -438,6 +441,22 @@ handleBoldItalic state =
 handleMathSymbol : List Symbol -> State -> State
 handleMathSymbol symbols state =
     if symbols == [ M, M ] then
+        let
+            content =
+                takeMiddleReversed state.stack |> Token.toString2
+
+            expr =
+                VFun "math" content (stackSpan state)
+        in
+        { state | stack = [], committed = expr :: state.committed }
+
+    else
+        state
+
+
+handleMathTokenLeftSymbol : List Symbol -> State -> State
+handleMathTokenLeftSymbol symbols state =
+    if symbols == [ ML, MR ] then
         let
             content =
                 takeMiddleReversed state.stack |> Token.toString2
