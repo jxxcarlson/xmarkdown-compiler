@@ -774,6 +774,28 @@ recoverFromError state =
                     , messages = prependMessage state.lineNumber "opening dollar sign needs to be matched with a closing one" state.messages
                 }
 
+        -- \( with no closing \)
+        (MathTokenLeft meta) :: rest ->
+            let
+                content =
+                    Token.toString2 rest
+
+                message =
+                    if content == "" then
+                        "\\(?\\)"
+
+                    else
+                        "\\( "
+            in
+            Loop
+                { state
+                    | committed = errorMessage message :: state.committed
+                    , stack = []
+                    , tokenIndex = meta.index + 1
+                    , numberOfTokens = 0
+                    , messages = prependMessage state.lineNumber "opening \\( needs to be matched with a closing \\)" state.messages
+                }
+
         -- backtick with no closing backtick
         (CodeToken meta) :: rest ->
             let

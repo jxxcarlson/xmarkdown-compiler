@@ -1,0 +1,8 @@
+{
+  "name": "xmarkdown-compiler-dev",
+  "private": true,
+  "description": "Dev tooling for the XMarkdown compiler (elm-test matching elm 0.19.2)",
+  "devDependencies": {
+    "elm-test": "0.19.2-0"
+  }
+}
