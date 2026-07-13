@@ -9,29 +9,26 @@ language.
 ## Module layout (organized by pipeline stage)
 
 - `Parser/` — the XMarkdown parser (source → AST). `Parser.Block.*` (block
-  structure: PrimitiveBlock, Pipeline, ForestTransform, GFMTable, Line),
-  `Parser.Inline.*` (inline parser: Expression, Token, Symbol, Match, …), and
-  `Parser.Inline.Core.*` (the L0-derived engine the inline layer is built on).
+  structure: PrimitiveBlock, Pipeline, ForestTransform, GFMTable, Line) and
+  `Parser.Inline.*` (inline parser: Expression, Token, Symbol, Match, …).
 - `AST/` — the data model + post-parse passes (Language, ASTTools, Acc, Forest,
   Vector, BlockUtilities).
-- `Macro/`, `ETeX/` — macro expansion and math rendering.
-- `Render/` — AST → elm-ui.
-- `Scripta/` — the public API + driver (API, Compiler, Types, Msg,
-  Editor, Sync, Config). The driver is `Scripta.Compiler`.
+- `Render/` — AST → HTML.
+- `XMarkdown/` — the public API + driver (API, Compiler, Types,
+  Editor, Sync, Config). The driver is `XMarkdown.Compiler`.
 
-## Key architectural fact (do not get this wrong)
+Math rendering uses the external `jxxcarlson/etex` package (`ETeX.*`).
 
-`Parser.Inline.Core.*` (Expression/Match/Symbol/Tokenizer) is the L0-derived
-*inline* engine, **shared infrastructure** reused by `Macro.TextMacro` and (via
-`Parser.Inline.Expression`) by XMarkdown's `@[...]` syntax. **Keep it.** `ETeX/`
-is the math renderer, not a language — keep it.
+Historical note: the L0-derived inline engine (`Parser.Inline.Core.*`) and the
+text-macro system (`Macro/*`), which supported the `@[...]` syntax and
+`textmacros` blocks, were removed in July 2026 along with those two features.
 
 ## Verification
 
 The Elm compiler is the regression net. After every change:
 
 ```bash
-elm make src/Scripta/API.elm src/Scripta/Types.elm src/Scripta/Msg.elm src/Render/Theme.elm --output=/dev/null
+elm make src/XMarkdown/API.elm src/XMarkdown/Types.elm src/Render/Theme.elm --output=/dev/null
 npx elm-test
 ```
 
@@ -43,6 +40,7 @@ Both must pass before committing.
   (`npx elm-json install <author/package>`, `npx elm-json uninstall --yes <author/package>`)
 - `npx elm-review --ignore-dirs src/Evergreen/` for code review.
 - Generated `main.js` files are git-ignored.
-- Public entry points: `Scripta.API`, `Scripta.Types`,
-  `Scripta.Msg`, `Render.Theme`, `Scripta.Editor`, `Scripta.Sync`.
+- Public entry points: `XMarkdown.API`, `XMarkdown.Types`, `Render.Theme`,
+  `XMarkdown.Editor`, `XMarkdown.Sync` (package `exposed-modules`:
+  `XMarkdown.API`, `XMarkdown.Types`).
 - When asked to "show me the code", give module name + line numbers.

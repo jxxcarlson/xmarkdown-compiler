@@ -123,7 +123,7 @@ render theme attrs expr =
                 Html.span []
                     (List.map (render theme attrs) exprList)
 
-        ExprList indent exprList meta ->
+        ExprList _ exprList _ ->
             Html.div [] (List.map (render theme attrs) exprList)
 
 

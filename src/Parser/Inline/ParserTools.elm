@@ -11,7 +11,6 @@ type Problem
     = ExpectingPrefix
     | ExpectingSymbol String
     | ExpectingImageStart
-    | ExpectingATStart
 
 
 type alias Parser a =

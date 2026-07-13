@@ -1,14 +1,11 @@
 module Tools.Utility exposing
     ( compressWhitespace
     , findOrdinaryTagAtEnd
-    , keyValueDict
     , replaceLeadingDashSpace
     , replaceLeadingDotSpace
     , replaceLeadingGreaterThanSign
     )
 
-import Dict exposing (Dict)
-import Maybe.Extra
 import Regex
 
 
@@ -52,25 +49,6 @@ replaceLeadingGreaterThanSign str =
             Regex.fromString "^> " |> Maybe.withDefault Regex.never
     in
     Regex.replace regex (\_ -> "") str
-
-
-keyValueDict : List String -> Dict String String
-keyValueDict strings_ =
-    List.map (String.split ":") strings_
-        |> List.map (List.map String.trim)
-        |> List.map pairFromList
-        |> Maybe.Extra.values
-        |> Dict.fromList
-
-
-pairFromList : List String -> Maybe ( String, String )
-pairFromList strings =
-    case strings of
-        [ x, y ] ->
-            Just ( x, y )
-
-        _ ->
-            Nothing
 
 
 compressWhitespace : String -> String

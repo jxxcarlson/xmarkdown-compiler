@@ -1,6 +1,10 @@
 module Render.Theme exposing
-    ( lightTheme, darkTheme
-    , Display, RenderSettings, ThemedStyles, makeSettings, scaleFont, themedColor
+    ( Display
+    , RenderSettings
+    , ThemedStyles
+    , makeSettings
+    , scaleFont
+    , themedColor
     )
 
 {-| Theme support for Scripta rendering.
@@ -21,11 +25,9 @@ with support for both raw Color values and elm-ui Element.Color.
 
 # Predefined Themes
 
-@docs lightTheme, darkTheme
-
 -}
 
-import Color exposing (red)
+import Color
 import Render.NewColor exposing (..)
 import XMarkdown.Types exposing (CompilerParameters, Theme(..))
 

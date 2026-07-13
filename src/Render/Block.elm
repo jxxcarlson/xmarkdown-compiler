@@ -23,7 +23,7 @@ renderBody count acc settings attrs block =
             [ Render.OrdinaryBlock.render count acc settings attrs block ]
 
         Verbatim _ ->
-            [ VerbatimBlock.render count acc settings attrs block |> Render.Helper.showError settings.theme block.meta.error ]
+            [ VerbatimBlock.render count settings attrs block |> Render.Helper.showError settings.theme block.meta.error ]
 
 
 renderParagraphBody : Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg

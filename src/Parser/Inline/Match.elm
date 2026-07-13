@@ -1,6 +1,5 @@
 module Parser.Inline.Match exposing (match, reducible, splitAt)
 
-import List.Extra
 import Tools.Loop exposing (Step(..), loop)
 import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
 
@@ -33,42 +32,8 @@ reducible symbols =
             else
                 False
 
-        Just SAT ->
-            if List.length symbols > 1 then
-                -- symbols == [ SAT, LBracket, RBracket ]
-                reducibleAux (List.drop 1 symbols)
-
-            else
-                False
-
         _ ->
             reducibleF symbols
-
-
-reducibleAux : List Symbol -> Bool
-reducibleAux symbols =
-    if List.isEmpty symbols then
-        True
-
-    else if List.head symbols == Just LBracket && List.Extra.last symbols == Just RBracket then
-        reducibleAux (middle symbols)
-
-    else
-        False
-
-
-middle : List a -> List a
-middle list =
-    list |> List.drop 1 |> dropLast
-
-
-dropLast : List a -> List a
-dropLast list =
-    let
-        n =
-            List.length list
-    in
-    List.take (n - 1) list
 
 
 reducibleF : List Symbol -> Bool

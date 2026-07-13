@@ -1,9 +1,9 @@
 module Render.NewColor exposing
     ( Color
     , blue300
-    , indigo200, indigo500, indigo600
-    , gray100, gray200, gray300, gray400, gray600, gray700, gray800, gray900, gray920, gray950
-    , blue200, blue700, blueDark, blueLight, indigo900, indigo950, midnightIndigo, offWhite, transparentIndigo500
+    , indigo200, indigo500
+    , gray200, gray300, gray400, gray700, gray800, gray900, gray950
+    , blue700, blueDark
     )
 
 {-| A native macOS-inspired color system with professional, subtle tones.
@@ -25,8 +25,8 @@ Each color comes in 9 harmonized shades (100-900).
 Shades are balanced across different hues, meaning blue500 and green500 have similar brightness.
 
 @docs blue300, blue500
-@docs indigo200, indigo500, indigo600
-@docs gray100, gray200, gray300, gray400, gray600, gray700, gray800, gray900, gray920, gray950
+@docs indigo200, indigo500
+@docs gray200, gray300, gray400, gray700, gray800, gray900, gray950
 
 
 # Alpha Variants
@@ -76,21 +76,8 @@ type alias Color =
 
 -- Base colors (500 variants)
 -- White alpha variants
-
-
-offWhite : Color
-offWhite =
-    rgba 0.9 0.9 0.9 1.0
-
-
-
 -- Black alpha variants
 -- Blue variants (macOS system blue inspired)
-
-
-blue200 : Color
-blue200 =
-    rgba 0.7 0.84 0.98 1
 
 
 blue300 : Color
@@ -106,11 +93,6 @@ blue700 =
 blueDark : Color
 blueDark =
     rgba 0.0 0.0 0.3 1
-
-
-blueLight : Color
-blueLight =
-    rgba 0.95 0.95 1.0 1
 
 
 
@@ -135,44 +117,11 @@ indigo500 =
     rgba 0.35 0.38 0.67 1
 
 
-indigo900 : Color
-indigo900 =
-    rgba 0.19 0.18 0.51 1
-
-
-transparentIndigo500 : Color
-transparentIndigo500 =
-    rgba 0.35 0.38 0.67 0.3
-
-
 
 -- Professional indigo
-
-
-indigo600 : Color
-indigo600 =
-    rgba 0.29 0.31 0.58 1
-
-
-indigo950 : Color
-indigo950 =
-    rgba 0.12 0.11 0.29 1
-
-
-midnightIndigo : Color
-midnightIndigo =
-    rgba 0.06 0.04 0.18 1
-
-
-
 -- Teal variants (information/help color)
 -- Professional teal
 -- Gray variants
-
-
-gray100 : Color
-gray100 =
-    rgba 0.96 0.96 0.96 1
 
 
 gray200 : Color
@@ -190,11 +139,6 @@ gray400 =
     rgba 0.65 0.65 0.65 1
 
 
-gray600 : Color
-gray600 =
-    rgba 0.4 0.42 0.44 1
-
-
 gray700 : Color
 gray700 =
     rgba 0.33 0.35 0.37 1
@@ -208,11 +152,6 @@ gray800 =
 gray900 : Color
 gray900 =
     rgba 0.19 0.21 0.23 1
-
-
-gray920 : Color
-gray920 =
-    rgba 0.15 0.17 0.19 1
 
 
 gray950 : Color

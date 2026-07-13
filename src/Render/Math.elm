@@ -1,11 +1,9 @@
 module Render.Math exposing
-    ( DisplayMode(..)
-    , aligned
+    ( aligned
     , array
     , chem
     , displayedMath
     , equation
-    , mathText
     )
 
 import AST.Acc exposing (Accumulator)
@@ -17,10 +15,6 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
-
-
-type DisplayMode
-    = InlineMathMode
 
 
 {-| Get the math content from a block and transform it from ETeX to LaTeX
@@ -118,7 +112,7 @@ renderMath content isDisplay attrs =
 {-| Render chemistry notation
 -}
 chem : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-chem count acc settings attrs block =
+chem count _ _ attrs block =
     let
         content =
             getMathContent block
@@ -138,8 +132,8 @@ chem count acc settings attrs block =
 
 {-| Render displayed math
 -}
-displayedMath : Int -> Accumulator -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-displayedMath count acc attrs block =
+displayedMath : Int -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+displayedMath count attrs block =
     let
         content =
             getMathContent block
@@ -218,14 +212,3 @@ array count _ _ attrs block =
          ]
             ++ attrs
         )
-
-
-{-| Render inline math text
--}
-mathText : String -> Html MarkupMsg
-mathText content =
-    let
-        isDisplay =
-            False
-    in
-    renderMath content isDisplay []

@@ -46,7 +46,6 @@ import AST.Vector as Vector exposing (Vector)
 import Dict exposing (Dict)
 import ETeX.Transform exposing (MathMacroDict, makeMacroDict)
 import Either exposing (Either(..))
-import Macro.TextMacro exposing (Macro)
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
 import Tools.String
@@ -57,7 +56,6 @@ import XMarkdown.Config as Config
 initialData : InitialAccumulatorData
 initialData =
     { mathMacros = ""
-    , textMacros = ""
     , vectorSize = 4
     , shiftAndSetCounter = Nothing
     }
@@ -77,7 +75,6 @@ type alias Accumulator =
     , footnotes : Dict String TermLoc2
     , footnoteNumbers : Dict String Int
     , mathMacroDict : MathMacroDict
-    , textMacroDict : Dict String Macro
     , keyValueDict : Dict String String
     }
 
@@ -114,7 +111,6 @@ init data =
     , footnotes = Dict.empty
     , footnoteNumbers = Dict.empty
     , mathMacroDict = Dict.empty
-    , textMacroDict = Dict.empty
     , keyValueDict = Dict.empty
     }
         |> updateWithMathMacros data.mathMacros
@@ -145,7 +141,6 @@ incrementCounter name dict =
 
 type alias InitialAccumulatorData =
     { mathMacros : String
-    , textMacros : String
     , vectorSize : Int
     , shiftAndSetCounter : Maybe Int
     }
@@ -290,7 +285,6 @@ transformBlock acc block =
                          else
                             block
                         )
-                            |> expand acc.textMacroDict
 
 
 vectorPrefix : Vector -> String
@@ -321,11 +315,6 @@ reduceName str =
 
     else
         str
-
-
-expand : Dict String Macro -> ExpressionBlock -> ExpressionBlock
-expand dict block =
-    { block | body = Either.map (List.map (Macro.TextMacro.expand dict)) block.body }
 
 
 {-| The first component of the return value (Bool, Maybe Vector) is the
@@ -564,14 +553,6 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                 Just str ->
                     updateWithMathMacros str accumulator
 
-        Verbatim "textmacros" ->
-            case AST.Language.getVerbatimContent block of
-                Nothing ->
-                    accumulator
-
-                Just str ->
-                    updateWithTextMacros str accumulator
-
         Verbatim _ ->
             case block.body of
                 Left _ ->
@@ -589,11 +570,6 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
 
                 Just _ ->
                     accumulator |> updateWithParagraph block |> updateReferenceWithBlock block
-
-
-normalizeLines : List String -> List String
-normalizeLines lines =
-    List.map (\line -> String.trim line) lines |> List.filter (\line -> line /= "")
 
 
 updateWithOrdinarySectionBlock : Accumulator -> Either String (List Expression) -> String -> String -> Accumulator
@@ -767,11 +743,6 @@ updateWithOrdinaryBlock block accumulator =
 
         _ ->
             accumulator
-
-
-updateWithTextMacros : String -> Accumulator -> Accumulator
-updateWithTextMacros content accumulator =
-    { accumulator | textMacroDict = Macro.TextMacro.buildDictionary (String.lines content |> normalizeLines) }
 
 
 updateWithMathMacros : String -> Accumulator -> Accumulator

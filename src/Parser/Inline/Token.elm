@@ -31,7 +31,6 @@ type Token
     | LP Meta
     | RP Meta
     | Image Meta
-    | AT Meta
     | Bold Meta
     | Italic Meta
     | S String Meta
@@ -66,9 +65,6 @@ setIndex k token =
 
         Image meta ->
             Image { meta | index = k }
-
-        AT meta ->
-            AT { meta | index = k }
 
         S str meta ->
             S str { meta | index = k }
@@ -118,7 +114,6 @@ type TokenType
     | TBold
     | TItalic
     | TImage
-    | TAT
     | TS
     | TW
     | TMath
@@ -151,9 +146,6 @@ type_ token =
 
         Image _ ->
             TImage
-
-        AT _ ->
-            TAT
 
         S _ _ ->
             TS
@@ -199,9 +191,6 @@ getMeta token =
             m
 
         Image m ->
-            m
-
-        AT m ->
             m
 
         S _ m ->
@@ -250,9 +239,6 @@ stringValue token =
         Image _ ->
             "image"
 
-        AT _ ->
-            "@"
-
         S str _ ->
             str
 
@@ -298,9 +284,6 @@ stringValue2 token =
 
         Image _ ->
             "IMAGE"
-
-        AT _ ->
-            "@"
 
         S str _ ->
             str
@@ -356,9 +339,6 @@ length token =
             meta.end - meta.begin
 
         Image meta ->
-            meta.end - meta.begin
-
-        AT meta ->
             meta.end - meta.begin
 
         S _ meta ->
@@ -619,7 +599,6 @@ tokenParser_ : Int -> Int -> TokenParser
 tokenParser_ start index =
     Parser.oneOf
         [ imageParser start index
-        , atParser start index
         , mathTokenLeftParser start index
         , mathTokenRightParser start index
         , textParser start index
@@ -672,12 +651,6 @@ imageParser : Int -> Int -> TokenParser
 imageParser start index =
     Parser.symbol (Parser.Token "![" PT.ExpectingImageStart)
         |> Parser.map (\_ -> Image { begin = start, end = start, index = index, id = makeId start index })
-
-
-atParser : Int -> Int -> TokenParser
-atParser start index =
-    Parser.symbol (Parser.Token "@[" PT.ExpectingATStart)
-        |> Parser.map (\_ -> AT { begin = start, end = start, index = index, id = makeId start index })
 
 
 leftBracketParser : Int -> Int -> TokenParser
@@ -834,9 +807,6 @@ indexOf token =
             meta.index
 
         Image meta ->
-            meta.index
-
-        AT meta ->
             meta.index
 
         Bold meta ->

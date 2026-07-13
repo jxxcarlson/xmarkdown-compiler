@@ -1,8 +1,8 @@
-module Render.OrdinaryBlock exposing (getAttributes, render)
+module Render.OrdinaryBlock exposing (render)
 
 {-| This module provides a new implementation of OrdinaryBlock using the registry pattern
 
-@docs getAttributes, render
+@docs render
 
 -}
 
@@ -10,9 +10,7 @@ import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
 import Either exposing (Either(..))
 import Html exposing (Html)
-import Html.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
-import Render.BlockType
 import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
 import Render.Blocks.Text as TextBlocks
@@ -21,19 +19,6 @@ import Render.List
 import Render.Math
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
-
-
-{-| Get attributes for a specific block type by name (now returns Html.Attribute)
--}
-getAttributes : String -> List (Html.Attribute MarkupMsg)
-getAttributes name =
-    let
-        blockType =
-            Render.BlockType.fromString name
-    in
-    case blockType of
-        _ ->
-            []
 
 
 {-| Initialize the registry with all renderers
@@ -85,29 +70,9 @@ render count acc settings attr block =
                                     envRenderer count acc settings attr block
 
                                 Just renderer ->
-                                    let
-                                        blockType =
-                                            Render.BlockType.fromString functionName
-
-                                        newSettings =
-                                            case blockType of
-                                                _ ->
-                                                    settings
-                                    in
-                                    renderer count acc newSettings attr block
+                                    renderer count acc settings attr block
                     in
                     renderedBlock
 
                 _ ->
                     Html.text ""
-
-
-{-| Apply indentation to an ordinary block (returns Html)
--}
-indentOrdinaryBlock : Int -> Html msg -> Html msg
-indentOrdinaryBlock indent x =
-    if indent > 0 then
-        Html.div [ Html.Attributes.style "margin-left" (String.fromInt (indent * 18) ++ "px") ] [ x ]
-
-    else
-        x

@@ -18,7 +18,7 @@ keeps the text the author actually typed, for editor sync.
 
 -}
 
-import AST.Language exposing (ExpressionBlock, Heading(..))
+import AST.Language exposing (Heading(..))
 import Dict exposing (Dict)
 import Either exposing (Either)
 import Expect

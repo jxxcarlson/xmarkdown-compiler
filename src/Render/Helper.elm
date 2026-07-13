@@ -1,16 +1,9 @@
-module Render.Helper exposing
-    ( showError
-    , topPaddingForIndentedElements
-    )
+module Render.Helper exposing (showError)
 
 import Html exposing (Html)
 import Html.Attributes
 import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg, Theme)
-
-
-topPaddingForIndentedElements =
-    10
 
 
 showError : Theme -> Maybe String -> Html MarkupMsg -> Html MarkupMsg

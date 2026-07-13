@@ -137,7 +137,7 @@ render params ( accumulator_, forest_ ) =
 
         toc : List (Html MarkupMsg)
         toc =
-            Render.TOCTree.view params.theme viewParameters accumulator_ forest_
+            Render.TOCTree.view params.theme viewParameters forest_
 
         banner : Maybe (Html MarkupMsg)
         banner =

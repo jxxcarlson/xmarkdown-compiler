@@ -1,18 +1,12 @@
-module Render.Sync exposing
-    ( attributes
-    , highlightIfIdIsSelected
-    , highlightIfIdSelected
-    , highlighter
-    , rightToLeftSyncHelper
-    )
+module Render.Sync exposing (attributes)
 
 import AST.Language
-import Color exposing (Color)
+import Color
 import Html
 import Html.Attributes
 import Html.Events as Events
 import Render.Theme
-import XMarkdown.Types exposing (MarkupMsg(..), Theme)
+import XMarkdown.Types exposing (MarkupMsg(..))
 
 
 {-| Use this function to add all needed properties to an element for LR sync
@@ -49,16 +43,6 @@ attributes settings block =
 --highlightIfIdSelected : String -> Render.Theme.RenderSettings -> List (Element.Attr () msg) -> List (Element.Attr () msg)
 
 
-highlightIfIdSelected : b -> { a | selectedId : b, highlight : Color } -> List (Html.Attribute msg) -> List (Html.Attribute msg)
-highlightIfIdSelected id settings attrs =
-    if id == settings.selectedId then
-        -- Background.color settings.highlight :: Html.padding 8 :: attrs
-        Html.Attributes.style "background-color" (Color.toCssString settings.highlight) :: attrs
-
-    else
-        attrs
-
-
 highlightIfIdIsSelected : Int -> Int -> Render.Theme.RenderSettings -> List (Html.Attribute MarkupMsg)
 highlightIfIdIsSelected firstLineNumber numberOfLines settings =
     if String.fromInt firstLineNumber == settings.selectedId then
@@ -73,12 +57,3 @@ highlightIfIdIsSelected firstLineNumber numberOfLines settings =
 rightToLeftSyncHelper : Int -> Int -> Html.Attribute MarkupMsg
 rightToLeftSyncHelper firstLineNumber numberOfLines =
     Events.onClick (SendLineNumber { begin = firstLineNumber, end = firstLineNumber + numberOfLines })
-
-
-highlighter : Theme -> List String -> List (Html.Attribute msg) -> List (Html.Attribute msg)
-highlighter theme args attrs =
-    if List.member "highlight" args then
-        Html.Attributes.style "background-color" (Render.Theme.themedColor .highlight theme) :: attrs
-
-    else
-        attrs

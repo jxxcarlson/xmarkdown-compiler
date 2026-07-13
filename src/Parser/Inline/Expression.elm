@@ -7,7 +7,6 @@ module Parser.Inline.Expression exposing
 
 import AST.Language exposing (Expr(..), Expression)
 import List.Extra
-import Parser.Inline.Core.Expression exposing (parseWithMessages)
 import Parser.Inline.Match as M
 import Parser.Inline.Meta as Meta
 import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
@@ -215,9 +214,6 @@ reduceState state =
                 state.stack |> Symbol.convertTokens |> List.reverse
         in
         case List.head symbols of
-            Just SAT ->
-                handleAt state
-
             Just M ->
                 handleMathSymbol symbols state
 
@@ -339,22 +335,6 @@ handleImage state =
             stackSpan state
     in
     { state | committed = expr :: state.committed, stack = [] }
-
-
-handleAt : State -> State
-handleAt state =
-    let
-        content =
-            state.stack
-                |> List.reverse
-                |> Token.toString
-                |> String.dropLeft 1
-
-        expr : List Expression
-        expr =
-            parseWithMessages 0 content |> Tuple.first
-    in
-    { state | committed = expr ++ state.committed, stack = [] }
 
 
 handleParens : State -> State

@@ -1,11 +1,9 @@
 module Render.TOCTree exposing
-    ( TOCNodeValue
-    , ViewParameters
+    ( ViewParameters
     , view
     )
 
 import AST.ASTTools
-import AST.Acc exposing (Accumulator)
 import AST.Forest exposing (Forest)
 import AST.Language exposing (ExpressionBlock)
 import Dict
@@ -14,7 +12,6 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
-import Render.NewColor exposing (blue300)
 import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg(..), Theme)
 
@@ -27,8 +24,8 @@ type alias ViewParameters =
     }
 
 
-view : Theme -> ViewParameters -> Accumulator -> Forest ExpressionBlock -> List (Html MarkupMsg)
-view theme viewParameters acc documentAst =
+view : Theme -> ViewParameters -> Forest ExpressionBlock -> List (Html MarkupMsg)
+view theme viewParameters documentAst =
     let
         tocAST : List ExpressionBlock
         tocAST =
@@ -110,7 +107,3 @@ renderTocItem theme editCount numberToLevel block =
             ]
             [ Html.text displayText ]
         ]
-
-
-type alias TOCNodeValue =
-    { block : ExpressionBlock, visible : Bool }

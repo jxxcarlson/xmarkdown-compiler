@@ -1,10 +1,7 @@
 module AST.ASTTools exposing
     ( banner
     , filterExpressionsOnName_
-    , filterExprs
     , getText
-    , isBlank
-    , stringValueOfList
     , tableOfContents
     , title
     )
@@ -18,25 +15,6 @@ import RoseTree.Tree as Tree exposing (Tree)
 filterExpressionsOnName_ : String -> List Expression -> List Expression
 filterExpressionsOnName_ name exprs =
     List.filter (matchExprOnName_ name) exprs
-
-
-filterExprs : (Expression -> Bool) -> List Expression -> List Expression
-filterExprs predicate list =
-    List.filter (\item -> predicate item) list
-
-
-isBlank : Expression -> Bool
-isBlank expr =
-    case expr of
-        Text content _ ->
-            if String.trim content == "" then
-                True
-
-            else
-                False
-
-        _ ->
-            False
 
 
 filterBlocksOnName : String -> List ExpressionBlock -> List ExpressionBlock
@@ -135,24 +113,3 @@ getText expression =
 
         ExprList _ _ _ ->
             Nothing
-
-
-stringValueOfList : List Expression -> String
-stringValueOfList textList =
-    String.join " " (List.map stringValue textList)
-
-
-stringValue : Expression -> String
-stringValue expr =
-    case expr of
-        Text str _ ->
-            str
-
-        Fun _ textList _ ->
-            String.join " " (List.map stringValue textList)
-
-        VFun _ str _ ->
-            str
-
-        ExprList _ _ _ ->
-            "[ExprList]"

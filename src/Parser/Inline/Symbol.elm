@@ -12,7 +12,6 @@ type Symbol
     | SBold
     | SItalic
     | SImage
-    | SAT
     | M
     | ML
     | MR
@@ -41,9 +40,6 @@ value symbol =
             0
 
         SImage ->
-            1
-
-        SAT ->
             1
 
         M ->
@@ -84,9 +80,6 @@ toSymbol token =
 
         Image _ ->
             Just SImage
-
-        AT _ ->
-            Just SAT
 
         RP _ ->
             Just RParen

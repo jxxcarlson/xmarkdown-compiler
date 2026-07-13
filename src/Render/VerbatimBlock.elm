@@ -1,6 +1,5 @@
 module Render.VerbatimBlock exposing (render)
 
-import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock, Heading(..))
 import Either exposing (Either(..))
 import Html exposing (Html)
@@ -12,8 +11,8 @@ import XMarkdown.Types exposing (MarkupMsg)
 
 {-| Render verbatim blocks (code, math, verse, etc.) as Html
 -}
-render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-render count acc settings attrs block =
+render : Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+render count settings attrs block =
     case block.body of
         Right _ ->
             Html.text ""
@@ -23,7 +22,7 @@ render count acc settings attrs block =
                 Verbatim functionName ->
                     if functionName == "math" then
                         -- Render as display math, not code
-                        Render.Math.displayedMath count acc attrs { block | body = Either.Left str }
+                        Render.Math.displayedMath count attrs { block | body = Either.Left str }
 
                     else
                         -- Render as code
