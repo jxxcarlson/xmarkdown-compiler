@@ -173,7 +173,6 @@ type Token
     = LB | RB              -- [ ]        (link/image brackets)
     | LP | RP              -- ( )
     | Image                -- ![
-    | AT                   -- @[
     | Bold | Italic        -- ** and *
     | S String | W String  -- text and whitespace runs
     | MathToken            -- $
@@ -210,11 +209,10 @@ Three things make this scanner more than a lexer:
 ### Stage B: symbols (`Parser.Inline.Symbol`)
 
 For reduction decisions, the token stack is projected onto a coarse symbol
-alphabet — `LBracket, RBracket, LParen, RParen, SBold, SItalic, SImage, SAT,
+alphabet — `LBracket, RBracket, LParen, RParen, SBold, SItalic, SImage,
 M, ML, MR, C` — and text/whitespace tokens vanish (`toSymbol` returns
 `Nothing`). So a stack holding `` [MathToken, S "x^2", MathToken] `` is seen
-as just `[M, M]`. `Symbol.value` assigns +1/−1 to opening/closing brackets
-for balance counting and 0 to self-delimiting marks (`$`, backtick, `\(`).
+as just `[M, M]`.
 
 ### Stage C: shift-reduce (`Parser.Inline.Expression` + `Parser.Inline.Match`)
 
@@ -245,10 +243,9 @@ pattern cases, e.g.:
 | `SBold`     | last symbol is `SBold`               | `Fun "bold" [...]`     |
 | `SImage`    | `[SImage, LBracket, RBracket, LParen, RParen]` | image        |
 | `LBracket`  | `[LBracket, RBracket, LParen, RParen]`         | link         |
-| `SAT`       | balanced brackets after the `@`      | `@[...]` construct     |
 
 When a rule fires, the matching handler in Expression.elm
-(`handleMathSymbol`, `handleBoldSymbol`, `handleAt`, …) takes the middle of
+(`handleMathSymbol`, `handleBoldSymbol`, …) takes the middle of
 the stack, builds the AST node — with a source span recovered from the
 stacked tokens' metas (`stackSpan`) — commits it, and clears the stack.
 Handlers for bracketed constructs recursively invoke expression parsing on
@@ -266,24 +263,22 @@ the stack, and continues. The catch-all paints the leftover stack red. The
 parser therefore **totals**: every input produces a renderable expression
 list plus diagnostic messages.
 
-### `Parser.Inline.Core.*` — a note
+### Historical note: `Parser.Inline.Core.*`
 
-`Parser.Inline.Core.{Tokenizer, Symbol, Match, Expression}` is a second,
-parallel copy of this engine, derived from the L0 language. It is *shared
-infrastructure*: `Macro.TextMacro` and the `@[...]` syntax (via
-`Parser.Inline.Expression`) use it. The XMarkdown-specific engine described
-above (`Parser.Inline.{Token, Symbol, Match, Expression}`) evolved from it
-but has diverged (different token set, modes, recovery cases). When changing
-inline syntax, the XMarkdown modules are the ones on the hot path — but
-grep both before assuming.
+Earlier versions carried a second, parallel copy of this engine
+(`Parser.Inline.Core.{Tokenizer, Symbol, Match, Expression}`, derived from
+the L0 language) that powered the `@[...]` syntax and the text-macro system
+(`Macro/*`). Those two features and the whole Core engine were removed in
+July 2026; `Parser.Inline.{Token, Symbol, Match, Expression}` is now the
+only inline engine.
 
 ## Post-parse: the accumulator
 
 `AST.Acc.transformAccumulate` folds over the finished forest in reading
-order, threading an `Accumulator` that assigns section numbers, gathers
-labels/cross-references, and stamps each block with what it needs for
-rendering (e.g. the `"label"` property used in headings and the TOC). It is
-a pure fold — parsing proper is already done.
+order, threading an `Accumulator` that assigns section numbers, tracks
+counters (equations, figures) and list state, and stamps each block with
+what it needs for rendering (e.g. the `"label"` property used in headings
+and the TOC). It is a pure fold — parsing proper is already done.
 
 ## Design themes worth knowing
 

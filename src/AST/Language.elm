@@ -11,11 +11,9 @@ module AST.Language exposing
     , emptyBlockMeta
     , emptyExprMeta
     , getExpressionContent
-    , getFunctionName
     , getMeta
     , getName
     , getNameFromHeading
-    , getVerbatimContent
     , shiftExpressionPositions
     , updateMeta
     )
@@ -248,29 +246,3 @@ getExpressionContent block =
 
         Right exprs ->
             exprs
-
-
-getVerbatimContent : ExpressionBlock -> Maybe String
-getVerbatimContent block =
-    case block.body of
-        Left str ->
-            Just str
-
-        Right _ ->
-            Nothing
-
-
-getFunctionName : Expression -> Maybe String
-getFunctionName expression =
-    case expression of
-        Fun name _ _ ->
-            Just name
-
-        VFun _ _ _ ->
-            Nothing
-
-        Text _ _ ->
-            Nothing
-
-        ExprList _ _ _ ->
-            Nothing

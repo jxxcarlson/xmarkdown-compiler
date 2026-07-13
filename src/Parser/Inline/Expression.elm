@@ -10,7 +10,7 @@ import List.Extra
 import Parser.Inline.Match as M
 import Parser.Inline.Meta as Meta
 import Parser.Inline.Symbol as Symbol exposing (Symbol(..))
-import Parser.Inline.Token as Token exposing (Token(..), TokenType(..))
+import Parser.Inline.Token as Token exposing (Token(..))
 import Tools.Loop exposing (Step(..), loop)
 import XMarkdown.Config as Config
 
@@ -464,61 +464,6 @@ handleCodeSymbol symbols state =
 
     else
         state
-
-
-eval : Int -> List Token -> List Expression
-eval lineNumber tokens =
-    case tokens of
-        (S t m2) :: rest ->
-            Text t m2 :: evalList Nothing lineNumber rest
-
-        _ ->
-            errorMessage2Part "\\" "{??}(5)"
-
-
-evalList : Maybe String -> Int -> List Token -> List Expression
-evalList macroName lineNumber tokens =
-    case List.head tokens of
-        Just token ->
-            case Token.type_ token of
-                TLB ->
-                    case M.match (Symbol.convertTokens tokens) of
-                        Nothing ->
-                            errorMessage3Part ("\\" ++ (macroName |> Maybe.withDefault "x")) (Token.toString2 tokens) " ?}"
-
-                        Just k ->
-                            let
-                                ( a, b ) =
-                                    M.splitAt (k + 1) tokens
-
-                                aa =
-                                    -- drop the leading and trailing LB, RG
-                                    a |> List.take (List.length a - 1) |> List.drop 1
-                            in
-                            eval lineNumber aa
-                                ++ evalList Nothing lineNumber b
-
-                _ ->
-                    case exprOfToken token of
-                        Just expr ->
-                            expr
-                                :: evalList Nothing lineNumber (List.drop 1 tokens)
-
-                        Nothing ->
-                            [ errorMessage "•••?(7)" ]
-
-        _ ->
-            []
-
-
-errorMessage2Part : String -> String -> List Expression
-errorMessage2Part a b =
-    [ Fun "red" [ Text b dummyLocWithId ] dummyLocWithId, Fun "blue" [ Text a dummyLocWithId ] dummyLocWithId ]
-
-
-errorMessage3Part : String -> String -> String -> List Expression
-errorMessage3Part a b c =
-    [ Fun "blue" [ Text a dummyLocWithId ] dummyLocWithId, Fun "blue" [ Text b dummyLocWithId ] dummyLocWithId, Fun "red" [ Text c dummyLocWithId ] dummyLocWithId ]
 
 
 errorMessage : String -> Expression

@@ -1,7 +1,5 @@
 module AST.ASTTools exposing
     ( banner
-    , filterExpressionsOnName_
-    , getText
     , tableOfContents
     , title
     )
@@ -10,11 +8,6 @@ import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..)
 import Library.Tree
 import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
-
-
-filterExpressionsOnName_ : String -> List Expression -> List Expression
-filterExpressionsOnName_ name exprs =
-    List.filter (matchExprOnName_ name) exprs
 
 
 filterBlocksOnName : String -> List ExpressionBlock -> List ExpressionBlock
@@ -41,16 +34,6 @@ matchBlockName key block =
 matchBlockName2 : String -> String -> ExpressionBlock -> Bool
 matchBlockName2 key key2 block =
     (Just key == AST.Language.getName block) || (Just key2 == AST.Language.getName block)
-
-
-matchExprOnName_ : String -> Expression -> Bool
-matchExprOnName_ name expr =
-    case AST.Language.getFunctionName expr of
-        Nothing ->
-            False
-
-        Just name2 ->
-            name == name2
 
 
 getBlockByName : String -> List (Tree.Tree ExpressionBlock) -> Maybe ExpressionBlock

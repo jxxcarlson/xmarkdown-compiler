@@ -1,8 +1,5 @@
 module AST.Acc exposing
     ( Accumulator
-    , InListState
-    , InitialAccumulatorData
-    , initialData
     , transformAccumulate
     )
 
@@ -13,17 +10,12 @@ module AST.Acc exposing
     data structure used for
 
             - numbering sections, theorems, figures, etc.
-            - creating
-               - a dictionary of references
-               - a dictionary of footnotes
-               - a dictionary of math macros
-               - a dictionary of text macros
-               - a dictionary of key-value pairs
+            - creating a dictionary of key-value pairs
 
 
      The main function is transformAccumulate, which has the signature
 
-           InitialAccumulatorData -> Forest ExpressionBlock -> ( Accumulator, Forest ExpressionBlock )
+           Forest ExpressionBlock -> ( Accumulator, Forest ExpressionBlock )
 
      Two helper functions are of special interest,
 
@@ -38,32 +30,19 @@ module AST.Acc exposing
 
 -}
 
-import AST.ASTTools
 import AST.BlockUtilities
-import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..))
+import AST.Language exposing (Expr(..), ExpressionBlock, Heading(..))
 import AST.Settings
 import AST.Vector as Vector exposing (Vector)
 import Dict exposing (Dict)
-import ETeX.Transform exposing (MathMacroDict, makeMacroDict)
 import Either exposing (Either(..))
-import Maybe.Extra
 import RoseTree.Tree as Tree exposing (Tree)
 import Tools.String
-import Tools.Utility as Utility
 import XMarkdown.Config as Config
-
-
-initialData : InitialAccumulatorData
-initialData =
-    { mathMacros = ""
-    , vectorSize = 4
-    , shiftAndSetCounter = Nothing
-    }
 
 
 type alias Accumulator =
     { headingIndex : Vector
-    , documentIndex : Vector
     , counter : Dict String Int
     , blockCounter : Int
     , itemVector : Vector -- Used for section numbering
@@ -71,10 +50,6 @@ type alias Accumulator =
     , numberedItemDict : Dict String { level : Int, index : Int }
     , numberedBlockNames : List String
     , inListState : InListState
-    , reference : Dict String { id : String, numRef : String }
-    , footnotes : Dict String TermLoc2
-    , footnoteNumbers : Dict String Int
-    , mathMacroDict : MathMacroDict
     , keyValueDict : Dict String String
     }
 
@@ -84,43 +59,23 @@ type InListState
     | SNotInList
 
 
-init : InitialAccumulatorData -> Accumulator
-init data =
-    { headingIndex =
-        case data.shiftAndSetCounter of
-            Nothing ->
-                Vector.init data.vectorSize
-
-            Just n ->
-                { content = [ n + 1, 0, 0, 0 ], size = 4 }
-    , deltaLevel =
-        case data.shiftAndSetCounter of
-            Nothing ->
-                0
-
-            Just _ ->
-                1
-    , documentIndex = Vector.init data.vectorSize
+init : Accumulator
+init =
+    { headingIndex = Vector.init 4
+    , deltaLevel = 0
     , inListState = SNotInList
     , counter = Dict.empty
     , blockCounter = 0
-    , itemVector = Vector.init data.vectorSize
+    , itemVector = Vector.init 4
     , numberedItemDict = Dict.empty
     , numberedBlockNames = AST.Settings.numberedBlockNames
-    , reference = Dict.empty
-    , footnotes = Dict.empty
-    , footnoteNumbers = Dict.empty
-    , mathMacroDict = Dict.empty
     , keyValueDict = Dict.empty
     }
-        |> updateWithMathMacros data.mathMacros
 
 
-{-| Note that function transformAccumulate operates on initialized accumulator.
--}
-transformAccumulate : InitialAccumulatorData -> List (Tree ExpressionBlock) -> ( Accumulator, List (Tree ExpressionBlock) )
-transformAccumulate data forest =
-    List.foldl (\tree ( acc_, ast_ ) -> transformAccumulateTree tree acc_ |> mapper ast_) ( init data, [] ) forest
+transformAccumulate : List (Tree ExpressionBlock) -> ( Accumulator, List (Tree ExpressionBlock) )
+transformAccumulate forest =
+    List.foldl (\tree ( acc_, ast_ ) -> transformAccumulateTree tree acc_ |> mapper ast_) ( init, [] ) forest
         |> (\( acc_, ast_ ) -> ( acc_, List.reverse ast_ ))
 
 
@@ -137,13 +92,6 @@ getCounterAsString name dict =
 incrementCounter : String -> Dict String Int -> Dict String Int
 incrementCounter name dict =
     Dict.insert name (getCounter name dict + 1) dict
-
-
-type alias InitialAccumulatorData =
-    { mathMacros : String
-    , vectorSize : Int
-    , shiftAndSetCounter : Maybe Int
-    }
 
 
 mapper ast_ ( acc_, tree_ ) =
@@ -221,32 +169,10 @@ transformBlock acc block =
             { block | properties = Dict.insert "figure" (getCounterAsString "figure" acc.counter) block.properties }
 
         ( Verbatim "equation", _ ) ->
-            let
-                prefix =
-                    Vector.toString acc.headingIndex
-
-                equationProp =
-                    if prefix == "" then
-                        getCounterAsString "equation" acc.counter
-
-                    else
-                        Vector.toString acc.headingIndex ++ "." ++ getCounterAsString "equation" acc.counter
-            in
-            { block | properties = Dict.insert "equation-number" equationProp block.properties }
+            { block | properties = Dict.insert "equation-number" (equationNumber acc) block.properties }
 
         ( Verbatim "aligned", _ ) ->
-            let
-                prefix =
-                    Vector.toString acc.headingIndex
-
-                equationProp =
-                    if prefix == "" then
-                        getCounterAsString "equation" acc.counter
-
-                    else
-                        Vector.toString acc.headingIndex ++ "." ++ getCounterAsString "equation" acc.counter
-            in
-            { block | properties = Dict.insert "equation-number" equationProp block.properties }
+            { block | properties = Dict.insert "equation-number" (equationNumber acc) block.properties }
 
         ( heading, _ ) ->
             -- TODO: not at all sure that the below is correct
@@ -257,24 +183,13 @@ transformBlock acc block =
                 Just name ->
                     -- Insert the numerical counter, e.g,, equation number, in the arg list of the block
                     if List.member name [ "section" ] then
-                        let
-                            prefix =
-                                Vector.toString acc.headingIndex
-
-                            equationProp =
-                                if prefix == "" then
-                                    getCounterAsString "equation" acc.counter
-
-                                else
-                                    Vector.toString acc.headingIndex ++ "." ++ getCounterAsString "equation" acc.counter
-                        in
                         { block
-                            | properties = Dict.insert "label" equationProp block.properties
+                            | properties = Dict.insert "label" (equationNumber acc) block.properties
                         }
 
                     else
                         -- Default insertion of "label" property (used for block numbering)
-                        (if List.member name AST.Settings.numberedBlockNames then
+                        if List.member name AST.Settings.numberedBlockNames then
                             { block
                                 | properties =
                                     Dict.insert "label"
@@ -282,9 +197,20 @@ transformBlock acc block =
                                         block.properties
                             }
 
-                         else
+                        else
                             block
-                        )
+
+
+{-| The current equation number, prefixed by the section number if there is one,
+e.g., "3" or "2.3".
+-}
+equationNumber : Accumulator -> String
+equationNumber acc =
+    if Vector.toString acc.headingIndex == "" then
+        getCounterAsString "equation" acc.counter
+
+    else
+        Vector.toString acc.headingIndex ++ "." ++ getCounterAsString "equation" acc.counter
 
 
 vectorPrefix : Vector -> String
@@ -336,121 +262,6 @@ nextInListState heading state =
             SNotInList
 
 
-type alias ReferenceDatum =
-    { id : String
-    , tag : String
-    , numRef : String
-    }
-
-
-makeReferenceDatum : String -> String -> String -> ReferenceDatum
-makeReferenceDatum id tag numRef =
-    { id = id
-    , tag = tag
-    , numRef = numRef
-    }
-
-
-{-| Update the references dictionary: add a key-value pair where the
-key is defined as in the examples \\label{foo} or [label foo],
-and where value is a record with an id and a "numerical" reference,
-e.g, "2" or "2.3"
--}
-updateReference : ReferenceDatum -> Accumulator -> Accumulator
-updateReference referenceDatum acc =
-    -- Update the accumulator.reference dictionary with new reference data:
-    -- Namely, insert a new key-value pair where the key is the tag of the
-    -- reference, e.g., "foo" in \\label{foo} or [label foo], and where the
-    -- value is a record with an id and a "numerical" reference, e.g, "2" or "2.3"
-    --  TODO: review!
-    if referenceDatum.tag /= "" then
-        { acc
-            | reference =
-                Dict.insert referenceDatum.tag
-                    { id = referenceDatum.id, numRef = referenceDatum.numRef }
-                    acc.reference
-        }
-
-    else
-        acc
-
-
-
--- Simplify this function:
---   - take the tag from block.properties with key "tag"
---   - set the numRef to acc.headingIndex . acc.blockCounter
-
-
-updateReferenceWithBlock : ExpressionBlock -> Accumulator -> Accumulator
-updateReferenceWithBlock block acc =
-    case getReferenceDatum acc block of
-        Just referenceDatum ->
-            updateReference referenceDatum acc
-
-        Nothing ->
-            acc
-
-
-getNameContentId : ExpressionBlock -> Maybe { name : String, content : Either String (List Expression), id : String }
-getNameContentId block =
-    let
-        name : Maybe String
-        name =
-            AST.Language.getNameFromHeading block.heading
-
-        content : Maybe (Either String (List Expression))
-        content =
-            Just block.body
-
-        id =
-            Just block.meta.id
-    in
-    case ( name, content, id ) of
-        ( Just name_, Just content_, Just id_ ) ->
-            Just { name = name_, content = content_, id = id_ }
-
-        _ ->
-            Nothing
-
-
-getNameContentIdTag : ExpressionBlock -> Maybe { name : String, content : Either String (List Expression), id : String, tag : String }
-getNameContentIdTag block =
-    let
-        name =
-            Dict.get "name" block.properties
-
-        id =
-            block.meta.id
-
-        tag =
-            Dict.get "tag" block.properties |> Maybe.withDefault id
-    in
-    case name of
-        Nothing ->
-            Nothing
-
-        Just name_ ->
-            Just { name = name_, content = block.body, id = id, tag = tag }
-
-
-getReferenceDatum : Accumulator -> ExpressionBlock -> Maybe ReferenceDatum
-getReferenceDatum acc block =
-    -- TODO: REVIEW!
-    let
-        id : String
-        id =
-            block.meta.id
-
-        tag =
-            -- TODO: REVIEW!
-            Dict.get "tag" block.properties |> Maybe.withDefault "no-tag"
-
-        numRef =
-            (acc.headingIndex |> Vector.toString) ++ "." ++ (acc.blockCounter |> String.fromInt)
-    in
-    Just { id = id, tag = tag, numRef = numRef }
-
-
 {-|
 
     Update the accumulator with data from a block, e.g., update the
@@ -483,25 +294,7 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                 level =
                     Dict.get "level" properties |> Maybe.withDefault "1"
             in
-            case getNameContentId block of
-                Just { content, id } ->
-                    updateWithOrdinarySectionBlock accumulator content level id
-                        |> updateReferenceWithBlock block
-
-                Nothing ->
-                    accumulator |> updateReferenceWithBlock block
-
-        Ordinary "document" ->
-            let
-                level =
-                    List.head args |> Maybe.withDefault "1"
-            in
-            case getNameContentId block of
-                Just { content, id } ->
-                    updateWithOrdinaryDocumentBlock accumulator content level id
-
-                _ ->
-                    accumulator
+            updateWithOrdinarySectionBlock accumulator level
 
         Ordinary "title" ->
             -- Only reset headingIndex if it wasn't set by shiftAndSetCounter (deltaLevel == 1)
@@ -542,16 +335,6 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
 
         Ordinary _ ->
             updateWithOrdinaryBlock block accumulator
-                |> updateReferenceWithBlock block
-
-        -- provide for numbering of equations
-        Verbatim "mathmacros" ->
-            case AST.Language.getVerbatimContent block of
-                Nothing ->
-                    accumulator
-
-                Just str ->
-                    updateWithMathMacros str accumulator
 
         Verbatim _ ->
             case block.body of
@@ -562,31 +345,12 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                     accumulator
 
         Paragraph ->
-            case getNameContentIdTag block of
-                Nothing ->
-                    { accumulator | inListState = nextInListState block.heading accumulator.inListState }
-                        |> updateWithParagraph block
-                        |> updateReferenceWithBlock block
-
-                Just _ ->
-                    accumulator |> updateWithParagraph block |> updateReferenceWithBlock block
+            { accumulator | inListState = nextInListState block.heading accumulator.inListState }
 
 
-updateWithOrdinarySectionBlock : Accumulator -> Either String (List Expression) -> String -> String -> Accumulator
-updateWithOrdinarySectionBlock accumulator content level id =
+updateWithOrdinarySectionBlock : Accumulator -> String -> Accumulator
+updateWithOrdinarySectionBlock accumulator level =
     let
-        titleWords =
-            case content of
-                Left str ->
-                    [ Utility.compressWhitespace str ]
-
-                Right expr ->
-                    List.map AST.ASTTools.getText expr |> Maybe.Extra.values |> List.map Utility.compressWhitespace
-
-        sectionTag =
-            -- TODO: the below is a bad solution
-            titleWords |> List.map (String.toLower >> String.trim >> String.replace " " "-") |> String.join ""
-
         delta =
             case Dict.get "has-chapters" accumulator.keyValueDict of
                 Nothing ->
@@ -600,60 +364,13 @@ updateWithOrdinarySectionBlock accumulator content level id =
 
         headingIndex =
             Vector.increment (String.toInt level |> Maybe.withDefault 1 |> (\x -> x - 1 + delta + accumulator.deltaLevel)) accumulator.headingIndex
-
-        blockCounter =
-            0
-
-        referenceDatum =
-            makeReferenceDatum id sectionTag (Vector.toString headingIndex)
     in
     -- TODO: take care of numberedItemIndex = 0 here and elsewhere
     { accumulator
         | headingIndex = headingIndex
-        , blockCounter = blockCounter
+        , blockCounter = 0
         , counter = Dict.insert "equation" 0 accumulator.counter --TODO: this is strange!!
     }
-        |> updateReference referenceDatum
-
-
-itemsNotNumbered =
-    [ "preface", "introduction", "appendix", "references", "index", "scratch" ]
-
-
-{-| Update the accumulator with data from a document block, e.g., update the
-documentIndex, a vector of integers that is used to number the documents in a collection
--}
-updateWithOrdinaryDocumentBlock : Accumulator -> Either String (List Expression) -> String -> String -> Accumulator
-updateWithOrdinaryDocumentBlock accumulator content level id =
-    let
-        title =
-            case content of
-                Left str ->
-                    str
-
-                Right expr ->
-                    List.map AST.ASTTools.getText expr |> Maybe.Extra.values |> String.join " "
-
-        sectionTag =
-            title |> String.toLower |> String.replace " " "-"
-
-        documentIndex =
-            if List.member (String.toLower title) itemsNotNumbered then
-                accumulator.documentIndex
-
-            else
-                Vector.increment (String.toInt level |> Maybe.withDefault 0) accumulator.documentIndex
-
-        referenceDatum : ReferenceDatum
-        referenceDatum =
-            if List.member (String.toLower title) itemsNotNumbered then
-                makeReferenceDatum id sectionTag (Vector.toString documentIndex)
-
-            else
-                makeReferenceDatum id sectionTag ""
-    in
-    -- TODO: take care of numberedItemIndex = 0 here and elsewhere
-    { accumulator | documentIndex = documentIndex } |> updateReference referenceDatum
 
 
 updateWithOrdinaryBlock : ExpressionBlock -> Accumulator -> Accumulator
@@ -697,16 +414,12 @@ updateWithOrdinaryBlock block accumulator =
 
                 numberedItemDict =
                     Dict.insert block.meta.id { level = level, index = index } accumulator.numberedItemDict
-
-                referenceDatum =
-                    makeReferenceDatum block.meta.id (getTag block) (String.fromInt (Vector.get level itemVector))
             in
             { accumulator
                 | inListState = nextInListState block.heading accumulator.inListState
                 , itemVector = itemVector
                 , numberedItemDict = numberedItemDict
             }
-                |> updateReference referenceDatum
 
         Just "item" ->
             { accumulator | inListState = nextInListState block.heading accumulator.inListState }
@@ -726,9 +439,6 @@ updateWithOrdinaryBlock block accumulator =
 
                     numberedItemDict =
                         Dict.insert block.meta.id { level = level, index = Vector.get level itemVector } accumulator.numberedItemDict
-
-                    referenceDatum =
-                        makeReferenceDatum block.meta.id (getTag block) (String.fromInt (Vector.get level itemVector))
                 in
                 { accumulator
                     | inListState = nextInListState block.heading accumulator.inListState
@@ -736,7 +446,6 @@ updateWithOrdinaryBlock block accumulator =
                     , itemVector = itemVector
                     , numberedItemDict = numberedItemDict
                 }
-                    |> updateReference referenceDatum
 
             else
                 { accumulator | inListState = nextInListState block.heading accumulator.inListState }
@@ -745,33 +454,10 @@ updateWithOrdinaryBlock block accumulator =
             accumulator
 
 
-updateWithMathMacros : String -> Accumulator -> Accumulator
-updateWithMathMacros content accumulator =
-    let
-        definitions : String
-        definitions =
-            content
-                |> String.replace "\\begin{mathmacros}" ""
-                |> String.replace "\\end{mathmacros}" ""
-                |> String.replace "end" ""
-                |> (\str -> str ++ "\nbracket: {[ #1 ]}")
-                |> String.trim
-
-        mathMacroDict =
-            --Macro.MathMacro.makeMacroDict (String.trim definitions)
-            makeMacroDict (String.trim definitions)
-    in
-    { accumulator | mathMacroDict = mathMacroDict }
-
-
-
-{-
-
-   Update the accumulator with data from a verbatim block. In particular,
-   if it has a label property, then update the reference dictionary.
+{-| Update the accumulator with data from a verbatim block: track list state and
+increment the appropriate counter, e.g., "equation" and "aligned"
+(reduceName maps these both to "equation").
 -}
-
-
 updateWithVerbatimBlock : ExpressionBlock -> Accumulator -> Accumulator
 updateWithVerbatimBlock block accumulator =
     case block.body of
@@ -783,26 +469,6 @@ updateWithVerbatimBlock block accumulator =
                 name =
                     AST.BlockUtilities.getExpressionBlockName block |> Maybe.withDefault ""
 
-                updateAccumulatorWithLabel =
-                    case Dict.get "label" block.properties of
-                        Just tag ->
-                            let
-                                referenceDatum =
-                                    makeReferenceDatum block.meta.id
-                                        tag
-                                        (verbatimBlockReference isSimple accumulator.headingIndex name newCounter)
-                            in
-                            \acc -> updateReference referenceDatum acc
-
-                        Nothing ->
-                            identity
-
-                --Dict.get "label" dict |> Maybe.withDefault body
-                isSimple =
-                    List.member name [ "quiver", "image" ]
-
-                -- Increment the appropriate counter, e.g., "equation" and "aligned"
-                -- reduceName maps these both to "equation"
                 newCounter =
                     if List.member name accumulator.numberedBlockNames && List.member "numbered" block.args then
                         incrementCounter (reduceName name) accumulator.counter
@@ -811,116 +477,3 @@ updateWithVerbatimBlock block accumulator =
                         accumulator.counter
             in
             { accumulator | inListState = nextInListState block.heading accumulator.inListState, counter = newCounter }
-                |> updateAccumulatorWithLabel
-
-
-verbatimBlockReference : Bool -> Vector -> String -> Dict String Int -> String
-verbatimBlockReference isSimple headingIndex name newCounter =
-    let
-        a =
-            Vector.toString headingIndex
-    in
-    if a == "" || isSimple then
-        getCounter (reduceName name) newCounter |> String.fromInt
-
-    else
-        a ++ "." ++ (getCounter (reduceName name) newCounter |> String.fromInt)
-
-
-updateWithParagraph : ExpressionBlock -> Accumulator -> Accumulator
-updateWithParagraph block accumulator =
-    let
-        ( footnotes, footnoteNumbers ) =
-            addFootnotesFromContent block ( accumulator.footnotes, accumulator.footnoteNumbers )
-    in
-    { accumulator
-        | inListState = nextInListState block.heading accumulator.inListState
-        , footnotes = footnotes
-        , footnoteNumbers = footnoteNumbers
-    }
-
-
-
---|> updateReference tag id tag
-
-
-type alias TermLoc2 =
-    { begin : Int, end : Int, id : String, mSourceId : Maybe String }
-
-
-type alias TermData2 =
-    { term : String, loc : TermLoc2 }
-
-
-
--- TERMS: [Expression "term" [Text "group" { begin = 19, end = 23, index = 4 }] { begin = 13, end = 13, index = 1 }]
--- FOOTNOTES
-
-
-getFootnotes : Maybe String -> Either String (List Expression) -> List TermData2
-getFootnotes mBlockId content_ =
-    case content_ of
-        Right expressionList ->
-            AST.ASTTools.filterExpressionsOnName_ "footnote" expressionList
-                |> List.map (extractFootnote mBlockId)
-                |> Maybe.Extra.values
-
-        Left _ ->
-            []
-
-
-extractFootnote : Maybe String -> Expression -> Maybe TermData2
-extractFootnote mSourceId expr =
-    case expr of
-        Fun "footnote" [ Text content { begin, end, id } ] _ ->
-            Just { term = content, loc = { begin = begin, end = end, id = id, mSourceId = mSourceId } }
-
-        _ ->
-            Nothing
-
-
-
--- EXTRACT ??
-
-
-addFootnote : TermData2 -> Dict String TermLoc2 -> Dict String TermLoc2
-addFootnote footnoteData dict =
-    Dict.insert footnoteData.term footnoteData.loc dict
-
-
-addFootnoteLabel : TermData2 -> Dict String Int -> Dict String Int
-addFootnoteLabel footnoteData dict =
-    Dict.insert footnoteData.loc.id (Dict.size dict + 1) dict
-
-
-addFootnotes : List TermData2 -> ( Dict String TermLoc2, Dict String Int ) -> ( Dict String TermLoc2, Dict String Int )
-addFootnotes termDataList ( dict1, dict2 ) =
-    List.foldl (\data ( d1, d2 ) -> ( addFootnote data d1, addFootnoteLabel data d2 )) ( dict1, dict2 ) termDataList
-
-
-addFootnotesFromContent : ExpressionBlock -> ( Dict String TermLoc2, Dict String Int ) -> ( Dict String TermLoc2, Dict String Int )
-addFootnotesFromContent block ( dict1, dict2 ) =
-    let
-        blockId =
-            case block.body of
-                Left _ ->
-                    Nothing
-
-                Right expr ->
-                    List.map AST.Language.getMeta expr |> List.head |> Maybe.map .id
-    in
-    addFootnotes (getFootnotes blockId block.body) ( dict1, dict2 )
-
-
-
--- PARSER STUFF
-
-
-getTag : ExpressionBlock -> String
-getTag block =
-    case Dict.get "tag" block.properties of
-        Just tag ->
-            tag
-
-        Nothing ->
-            block.meta.id

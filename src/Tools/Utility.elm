@@ -1,6 +1,5 @@
 module Tools.Utility exposing
-    ( compressWhitespace
-    , findOrdinaryTagAtEnd
+    ( findOrdinaryTagAtEnd
     , replaceLeadingDashSpace
     , replaceLeadingDotSpace
     , replaceLeadingGreaterThanSign
@@ -49,23 +48,3 @@ replaceLeadingGreaterThanSign str =
             Regex.fromString "^> " |> Maybe.withDefault Regex.never
     in
     Regex.replace regex (\_ -> "") str
-
-
-compressWhitespace : String -> String
-compressWhitespace string =
-    userReplace "\\s\\s+" (\_ -> " ") string
-
-
-userReplace : String -> (Regex.Match -> String) -> String -> String
-userReplace regexString replacer string =
-    case Regex.fromString regexString of
-        Nothing ->
-            string
-
-        Just regex ->
-            Regex.replace regex replacer string
-
-
-
--- > firstMatch "\\[subheading (.+?)\\]" "[subheading Intro]"
--- Just "Intro" : Maybe String

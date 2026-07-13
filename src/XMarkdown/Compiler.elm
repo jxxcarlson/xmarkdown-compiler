@@ -118,7 +118,7 @@ type alias BlockMatch =
 
 parseToForestWithAccumulator : CompilerParameters -> List String -> ( Accumulator, Forest ExpressionBlock )
 parseToForestWithAccumulator params lines =
-    AST.Acc.transformAccumulate AST.Acc.initialData (parse Config.idPrefix params.editCount lines)
+    AST.Acc.transformAccumulate (parse Config.idPrefix params.editCount lines)
 
 
 render : CompilerParameters -> ( Accumulator, Forest ExpressionBlock ) -> CompilerOutput

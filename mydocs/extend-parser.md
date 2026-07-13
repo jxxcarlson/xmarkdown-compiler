@@ -187,10 +187,11 @@ catch-all.
   happens there is only `VFun "math" content`, with the delimiters already
   stripped. KaTeX rendering, theming, sync, etc. are all downstream of the
   AST and required no changes.
-- `Parser.Inline.Core.*` — the L0-derived engine shared with
-  `Macro.TextMacro` and the `@[...]` syntax has its own Symbol/Match modules
-  and is not on the `$`-math code path; it was left untouched.
 - `InMath` and `InCode` tokenizer modes.
+
+(An earlier version of this document also noted that `Parser.Inline.Core.*` —
+the L0-derived engine that powered `Macro.TextMacro` and the `@[...]` syntax —
+was untouched. That engine and both features were removed in July 2026.)
 
 ## 5. Bugs encountered (a case study in silent fallbacks)
 

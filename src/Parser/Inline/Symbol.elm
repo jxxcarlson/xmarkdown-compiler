@@ -1,4 +1,4 @@
-module Parser.Inline.Symbol exposing (Symbol(..), convertTokens, value)
+module Parser.Inline.Symbol exposing (Symbol(..), convertTokens)
 
 import Maybe.Extra
 import Parser.Inline.Token exposing (Token(..))
@@ -16,43 +16,6 @@ type Symbol
     | ML
     | MR
     | C
-
-
-value : Symbol -> Int
-value symbol =
-    case symbol of
-        LBracket ->
-            1
-
-        RBracket ->
-            -1
-
-        LParen ->
-            1
-
-        RParen ->
-            -1
-
-        SBold ->
-            0
-
-        SItalic ->
-            0
-
-        SImage ->
-            1
-
-        M ->
-            0
-
-        ML ->
-            0
-
-        MR ->
-            0
-
-        C ->
-            0
 
 
 convertTokens : List Token -> List Symbol

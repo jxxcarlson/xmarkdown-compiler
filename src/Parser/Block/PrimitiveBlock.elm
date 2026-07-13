@@ -502,10 +502,6 @@ acceptBlock tag block =
     not <| block.heading == Ordinary tag
 
 
-
---findMatchingBlock : List PrimitiveBlock
-
-
 fixMarkdownTitleBlock : PrimitiveBlock -> PrimitiveBlock
 fixMarkdownTitleBlock block =
     case findSectionPrefix block.firstLine of
@@ -538,20 +534,10 @@ transformBlock : PrimitiveBlock -> PrimitiveBlock
 transformBlock block =
     case AST.BlockUtilities.getPrimitiveBlockName block of
         Just "section" ->
-            case List.head block.args of
-                Nothing ->
-                    { block | properties = Dict.insert "level" "1" block.properties }
-
-                Just level ->
-                    { block | properties = Dict.insert "level" level block.properties }
+            { block | properties = Dict.insert "level" (List.head block.args |> Maybe.withDefault "1") block.properties }
 
         Just "section*" ->
-            case List.head block.args of
-                Nothing ->
-                    { block | properties = Dict.insert "level" "1" block.properties }
-
-                Just level ->
-                    { block | properties = Dict.insert "level" level block.properties }
+            { block | properties = Dict.insert "level" (List.head block.args |> Maybe.withDefault "1") block.properties }
 
         Just "subsection" ->
             { block | properties = Dict.insert "level" "2" block.properties, heading = Ordinary "section" }
@@ -559,8 +545,6 @@ transformBlock block =
         Just "subsubsection" ->
             { block | properties = Dict.insert "level" "3" block.properties, heading = Ordinary "section" }
 
-        --Just "subheading" ->
-        --    { block | properties = Dict.insert "level" "4" block.properties, heading = Ordinary "section" }
         Just "item" ->
             { block
                 | body =

@@ -1,13 +1,12 @@
 module Parser.Inline.Token exposing
     ( Token(..)
-    , TokenType(..)
+    , TokenType
     , changeTokenContentAt
     , changeTokenIndicesFrom
     , getMeta
     , run
     , toString
     , toString2
-    , type_
     )
 
 import List.Extra
@@ -15,10 +14,6 @@ import Parser.Advanced as Parser exposing (DeadEnd, Parser)
 import Parser.Inline.Meta exposing (Meta)
 import Parser.Inline.ParserTools as PT exposing (Problem)
 import Tools.Loop exposing (Step(..), loop)
-
-
-fakeDebugLog =
-    \_ -> identity
 
 
 
@@ -458,16 +453,16 @@ nextStep state =
             ( tokens, tokenIndex, currentToken_ ) =
                 if isTextToken token then
                     -- update the current token so as to merge words into a single phrase
-                    handleMerge state token |> fakeDebugLog "(1)"
+                    handleMerge state token
 
                 else if type_ token == TLB then
                     -- commit a left bracket token immediately, taking care to commit the currentToken if it contains text
-                    handleLB state token |> fakeDebugLog "(2)"
+                    handleLB state token
 
                 else
                     -- the token is neither a left bracket token nore a text token.  Commit it immediately, taking care
                     -- to also commit the currentToken if it holds text.
-                    handleDefault state token |> fakeDebugLog "(3)"
+                    handleDefault state token
 
             currentToken =
                 if isTextToken token then
