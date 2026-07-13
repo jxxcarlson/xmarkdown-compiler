@@ -1,9 +1,4 @@
 scripts:
-  pmb: elm-cli run --debug src/PMB.elm
-  # Example: vr pmb test/lx.txt
-  # Test the primitive M block parser
-
-  plb: elm-cli run --debug src/PLB.elm
-
   pxb: elm-cli run --debug src/PXB.elm
-
+  # Example: vr pxb test/xa.txt
+  # Print the primitive blocks of an XMarkdown file

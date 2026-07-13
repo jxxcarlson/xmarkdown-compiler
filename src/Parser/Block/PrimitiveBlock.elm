@@ -81,17 +81,6 @@ finalize block =
 
         properties =
             case block.heading of
-                Ordinary "document" ->
-                    let
-                        docId =
-                            block.properties
-                                |> Dict.toList
-                                |> List.head
-                                |> Maybe.map (\( a, b ) -> a ++ ":" ++ b)
-                                |> Maybe.withDefault "noDocId"
-                    in
-                    Dict.insert "docId" docId block.properties
-
                 Verbatim "settings" ->
                     let
                         getPair : List String -> Maybe ( String, String )
