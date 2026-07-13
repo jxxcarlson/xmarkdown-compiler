@@ -258,6 +258,7 @@ Syntax" section exercising the new delimiters, viewable via
 - **Stray `\)`** with no opener still falls through to the generic
   catch-all (red literal text); a dedicated recovery case could match the
   friendlier unclosed-`\(` treatment.
-- **`\[...\]` display math** would follow the same recipe if ever wanted:
-  token pair → mode → symbols → reducibility rule → reduce handler →
-  recovery case.
+- **`\[...\]` display math** — since implemented, and it did *not* follow
+  this recipe: display math is a block-level construct, classified from the
+  block's first line in `Parser.Block.PrimitiveBlock`, so the inline engine
+  was never involved. See `mydocs/altmathblock.md`.

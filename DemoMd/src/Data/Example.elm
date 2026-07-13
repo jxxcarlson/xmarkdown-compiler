@@ -46,6 +46,18 @@ You can also use LaTeX-style delimiters for inline math:
 - Complex expression: \\(\\sum_{i=0}^n x_i = \\frac{n(n+1)}{2}\\)
 - Mixed on same line: The formula $E=mc^2$ is equivalent to \\(E=mc^2\\).
 
+Display math also comes in two flavors. Dollar delimiters:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+and LaTeX-style bracket delimiters:
+
+\\[
+x^2 + y^2 = z^2
+\\]
+
 ## Tables
 
 **Ages, Occupations, and Favorite Formulas**

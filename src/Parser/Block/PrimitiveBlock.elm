@@ -23,13 +23,16 @@ import Tools.Utility
 a function for determining when a string is the first line
 of a verbatim block
 
-NOTE (TODO) for the moment we assume that the input ends with
-a blank line.
+The state machine's commit logic (finalize: body order, sourceText,
+delimiter normalization) only runs when a block is terminated by an
+empty line, so we guarantee one: a virtual blank line is appended to
+the input. Without it, a block ending at EOF took a degenerate path
+that skipped finalize, leaving its body reversed and unnormalized.
 
 -}
 parse : String -> Int -> List String -> List PrimitiveBlock
 parse initialId outerCount lines =
-    loop (init initialId outerCount lines) nextStep
+    loop (init initialId outerCount (lines ++ [ "" ])) nextStep
 
 
 type alias State =
@@ -127,6 +130,42 @@ finalize block =
                     block.args
     in
     { block | args = args, properties = properties, body = content, meta = newMeta }
+        |> normalizeMathDelimiters
+
+
+{-| A display-math block opened with `\[` parses to exactly the same block as
+one opened with `$$`: the firstLine and a closing `\]` body line are rewritten
+to `$$`. This runs after `finalize` has computed meta.sourceText, so the
+sourceText still reflects what the author actually typed (required for
+editor <-> rendered-text sync). Mixed delimiters ($$ ... \] or \[ ... $$)
+are tolerated; blocks are really terminated by the blank line, and each
+delimiter is normalized independently.
+-}
+normalizeMathDelimiters : PrimitiveBlock -> PrimitiveBlock
+normalizeMathDelimiters block =
+    if block.heading == Verbatim "math" then
+        { block
+            | firstLine =
+                if String.startsWith "\\[" (String.trimLeft block.firstLine) then
+                    "$$" ++ String.dropLeft 2 (String.trimLeft block.firstLine)
+
+                else
+                    block.firstLine
+            , body =
+                case List.Extra.unconsLast block.body of
+                    Just ( lastLine, front ) ->
+                        if String.trim lastLine == "\\]" then
+                            front ++ [ "$$" ]
+
+                        else
+                            block.body
+
+                    Nothing ->
+                        block.body
+        }
+
+    else
+        block
 
 
 {-|
@@ -603,6 +642,7 @@ isVerbatimLine : String -> Bool
 isVerbatimLine str =
     (String.left 3 str == "```")
         || (String.left 2 str == "$$")
+        || (String.left 2 str == "\\[")
 
 
 getHeadingData : String -> Result HeadingError HeadingData
@@ -705,6 +745,10 @@ getHeadingData line_ =
                                             }
 
                                 "$$" ->
+                                    Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
+
+                                -- LaTeX-style display math: \[ ... \]
+                                "\\[" ->
                                     Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
 
                                 "```" ->
