@@ -1,8 +1,8 @@
 module XMarkdown.API exposing
     ( compileOutput
-    , viewBodyOnly, viewTOC, BlockMatch, compile, fromMsg, renderedTextId, searchBlocksContainingText
-    , viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters, editorView
-    , compileSimple
+    , viewBodyOnly, viewTOC, BlockMatch, renderedTextId, searchBlocksContainingText
+    , viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters
+    , fromMsgToSyncHighlight
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
@@ -85,58 +85,6 @@ import XMarkdown.Sync
 import XMarkdown.Types exposing (MarkupMsg, SyncHighlight)
 
 
-{-| -}
-compile : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Types.CompilerOutput
-compile =
-    XMarkdown.Compiler.compile
-
-
-{-| -}
-defaultCompilerParameters : XMarkdown.Types.CompilerParameters
-defaultCompilerParameters =
-    XMarkdown.Types.defaultCompilerParameters
-
-
-{-| -}
-editorView : XMarkdown.Editor.Config msg -> Html msg
-editorView =
-    XMarkdown.Editor.view
-
-
-{-| -}
-fromMsg : Int -> MarkupMsg -> Maybe SyncHighlight
-fromMsg =
-    XMarkdown.Sync.fromMsg
-
-
-{-| -}
-renderedTextId : String
-renderedTextId =
-    XMarkdown.Editor.renderedTextId
-
-
-{-| -}
-viewEditor : XMarkdown.Editor.Config msg -> Html msg
-viewEditor =
-    XMarkdown.Editor.view
-
-
-{-| Compile source text to Html in one step (parse + render). The width of
-the rendered text in pixels is `docWidth`. Use `editCount = 0` for a static
-document; in a live-editing context, increment it after each edit so the rendered
-text updates correctly.
-
-    import Html exposing (Html)
-    import XMarkdown.API exposing (MarkupMsg, defaultCompilerParameters)
-
-Your `Msg` type should include `| Render MarkupMsg`.
-
--}
-compileSimple : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
-compileSimple params sourceText =
-    XMarkdown.Compiler.compile params (String.lines sourceText) |> XMarkdown.Compiler.viewBodyOnly params.docWidth
-
-
 {-| Compile source text into a CompilerOutput structure.
 
 This is the main compilation function that parses and processes XMarkdown source text.
@@ -157,8 +105,31 @@ which can then be displayed using the view functions.
 
 -}
 compileOutput : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Types.CompilerOutput
-compileOutput params lines =
-    XMarkdown.Compiler.compile params lines
+compileOutput =
+    XMarkdown.Compiler.compile
+
+
+{-| defaultCompilerParameters =
+{ docWidth = 500
+, editCount = 0
+, selectedId = ""
+, selectedSlug = Nothing
+, theme = Light
+, backgroundColor = "rgba(255, 255, 255, 1.0)"
+, highlightColor = "rgba(200, 200, 255, 0.4)"
+, paddingAboveHeadings = 10
+, interBlockSpacing = 0
+, lineHeight = 1.5
+, fontSize = 16
+, windowWidth = 500
+, scale = 1
+, numberToLevel = 0
+, data = Dict.empty
+}
+-}
+defaultCompilerParameters : XMarkdown.Types.CompilerParameters
+defaultCompilerParameters =
+    XMarkdown.Types.defaultCompilerParameters
 
 
 {-| Render only the body content from a CompilerOutput.
@@ -199,6 +170,24 @@ viewTOC =
 compileString : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileString params str =
     XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
+
+
+{-| -}
+viewEditor : XMarkdown.Editor.Config msg -> Html msg
+viewEditor =
+    XMarkdown.Editor.view
+
+
+{-| -}
+fromMsgToSyncHighlight : Int -> MarkupMsg -> Maybe SyncHighlight
+fromMsgToSyncHighlight =
+    XMarkdown.Sync.fromMsg
+
+
+{-| -}
+renderedTextId : String
+renderedTextId =
+    XMarkdown.Editor.renderedTextId
 
 
 {-| -}

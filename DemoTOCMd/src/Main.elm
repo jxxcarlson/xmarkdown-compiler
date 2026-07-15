@@ -17,7 +17,7 @@ import List.Extra
 import Ports
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
-import XMarkdown.API exposing (defaultCompilerParameters, fromMsg)
+import XMarkdown.API exposing (defaultCompilerParameters, fromMsgToSyncHighlight)
 import XMarkdown.Types exposing (CompilerParameters, MarkupMsg(..), SyncHighlight, Theme(..))
 
 
@@ -242,7 +242,7 @@ update msg model =
                     ( { model | lrSyncMatches = matches, lrSyncIndex = newIndex, lrSyncText = searchText }, Cmd.none )
 
         Render msg_ ->
-            case fromMsg (model.tick + 1) msg_ of
+            case fromMsgToSyncHighlight (model.tick + 1) msg_ of
                 Just h ->
                     ( { model | syncHighlight = Just h, tick = model.tick + 1 }, Cmd.none )
 
@@ -310,7 +310,7 @@ view model =
 
         compilerOutput : XMarkdown.Types.CompilerOutput
         compilerOutput =
-            XMarkdown.API.compile params (String.lines model.sourceText)
+            XMarkdown.API.compileOutput params (String.lines model.sourceText)
     in
     div [ class "app" ]
         [ div [ class "app-header" ]
@@ -385,7 +385,7 @@ view model =
 
 editorView : Model -> Html Msg
 editorView model =
-    XMarkdown.API.editorView
+    XMarkdown.API.viewEditor
         { source = model.initialText
         , onInput = InputText
         , highlight = model.syncHighlight

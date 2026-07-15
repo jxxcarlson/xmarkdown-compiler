@@ -2,6 +2,8 @@ module Render.Theme exposing
     ( Display
     , RenderSettings
     , ThemedStyles
+    , darkTheme
+    , lightTheme
     , makeSettings
     , scaleFont
     , themedColor

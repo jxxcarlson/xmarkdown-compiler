@@ -2,10 +2,10 @@ module ToForestAndAccumulatorTest exposing (suite)
 
 import AST.Vector
 import Expect
+import Test exposing (..)
 import XMarkdown.API
 import XMarkdown.Compiler
 import XMarkdown.Types exposing (CompilerParameters, defaultCompilerParameters)
-import Test exposing (..)
 
 
 suite : Test
@@ -50,7 +50,7 @@ suite =
                             "# Introduction\n\nThis is a **bold** word in a paragraph.\n\n- item one\n- item two\n"
 
                         output =
-                            XMarkdown.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileString defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -62,7 +62,7 @@ suite =
                             "```\nlet x = 1\n```\n"
 
                         output =
-                            XMarkdown.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileString defaultCompilerParameters source
                     in
                     output
                         |> List.length
@@ -74,7 +74,7 @@ suite =
                             "$$\nE = mc^2\n$$\n"
 
                         output =
-                            XMarkdown.API.compileSimple defaultCompilerParameters source
+                            XMarkdown.API.compileString defaultCompilerParameters source
                     in
                     output
                         |> List.length

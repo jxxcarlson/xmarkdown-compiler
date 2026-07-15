@@ -14,7 +14,7 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Task
-import XMarkdown.API exposing (compile, defaultCompilerParameters, viewBodyOnly, viewTOC)
+import XMarkdown.API exposing (compileOutput, defaultCompilerParameters, viewBodyOnly, viewTOC)
 import XMarkdown.Types exposing (CompilerOutput, MarkupMsg(..))
 
 
@@ -110,7 +110,7 @@ view : Model -> Html Msg
 view model =
     let
         compilerOutput =
-            compile defaultCompilerParameters (String.lines model.sourceText)
+            compileOutput defaultCompilerParameters (String.lines model.sourceText)
 
         tocElements =
             viewTOC compilerOutput
@@ -130,7 +130,16 @@ view model =
             , style "flex-direction" "column"
             , style "gap" "16px"
             , style "padding" "20px"
-            , style "width" (String.fromInt (if shouldShowToc then panelWidth model + 250 + 2 * xPadding else panelWidth model + 2 * xPadding) ++ "px")
+            , style "width"
+                (String.fromInt
+                    (if shouldShowToc then
+                        panelWidth model + 250 + 2 * xPadding
+
+                     else
+                        panelWidth model + 2 * xPadding
+                    )
+                    ++ "px"
+                )
             , style "height" (String.fromInt model.windowHeight ++ "px")
             , style "background-color" "rgba(102, 102, 102, 1)"
             , style "font-size" "16px"
@@ -147,6 +156,7 @@ view model =
                  ]
                     ++ (if shouldShowToc then
                             [ Html.map Render (displayTOC tocElements) ]
+
                         else
                             []
                        )
@@ -225,27 +235,38 @@ displayTOC tocElements =
 scrollToElement : String -> Cmd Msg
 scrollToElement elementId =
     Browser.Dom.getElement elementId
-        |> Task.andThen (\targetElem ->
-            Browser.Dom.getElement "rendered-text"
-                |> Task.map (\containerElem -> (targetElem, containerElem)))
-        |> Task.andThen (\(targetElem, containerElem) ->
-            Browser.Dom.getViewportOf "rendered-text"
-                |> Task.map (\viewport -> (targetElem, containerElem, viewport)))
-        |> Task.andThen (\(targetElem, containerElem, viewport) ->
-            let
-                targetY =
-                    targetElem.element.y
-                containerY =
-                    containerElem.element.y
-                currentScroll =
-                    viewport.viewport.y
-                positionInContent =
-                    targetY - containerY + currentScroll
-                targetScroll =
-                    max 0 (positionInContent - 50)
-            in
-            Browser.Dom.setViewportOf "rendered-text" 0 targetScroll)
+        |> Task.andThen
+            (\targetElem ->
+                Browser.Dom.getElement "rendered-text"
+                    |> Task.map (\containerElem -> ( targetElem, containerElem ))
+            )
+        |> Task.andThen
+            (\( targetElem, containerElem ) ->
+                Browser.Dom.getViewportOf "rendered-text"
+                    |> Task.map (\viewport -> ( targetElem, containerElem, viewport ))
+            )
+        |> Task.andThen
+            (\( targetElem, containerElem, viewport ) ->
+                let
+                    targetY =
+                        targetElem.element.y
+
+                    containerY =
+                        containerElem.element.y
+
+                    currentScroll =
+                        viewport.viewport.y
+
+                    positionInContent =
+                        targetY - containerY + currentScroll
+
+                    targetScroll =
+                        max 0 (positionInContent - 50)
+                in
+                Browser.Dom.setViewportOf "rendered-text" 0 targetScroll
+            )
         |> Task.attempt (\_ -> NoOp)
+
 
 
 -- GEOMETRY
