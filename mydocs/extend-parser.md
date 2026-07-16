@@ -248,7 +248,7 @@ the homebrew-installed elm-test (0.19.1-revision10) generates a runner
 by adding a repo-local `package.json` with `elm-test@0.19.2-0`, which `npx`
 resolves ahead of the global binary.
 
-The demo document in `DemoMd/src/Data/Example.elm` gained a "LaTeX Math
+The demo document in `DemoTOC/src/Data/Example.elm` gained a "LaTeX Math
 Syntax" section exercising the new delimiters, viewable via
 `npx elm-watch hot` (port 9000).
 

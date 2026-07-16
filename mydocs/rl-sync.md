@@ -6,7 +6,7 @@ RL sync is the **preview → editor** direction: you click rendered text in the 
 
 # Notes
 
-The text beginning in the next section describes how RL sync works in the current  (6/23/2026) version of scripta-v4 (/Users/carlson/dev/elm-work/scripta/scripta-app-v4).  We are interested in implementing RL sync using new xmarkdown compiler plus some possible additions to it.  The test implementation of the browser code is the DemoTOCMd folder. 
+The text beginning in the next section describes how RL sync works in the current  (6/23/2026) version of scripta-v4 (/Users/carlson/dev/elm-work/scripta/scripta-app-v4).  We are interested in implementing RL sync using new xmarkdown compiler plus some possible additions to it.  The test implementation of the browser code is the DemoTOC+Sync folder. 
 
 Since the compiler is in Elm, so will be those additions.  An important part of this work is intercepting various evens in the DOM using Elm code.  For this you will need to use the elm/browser package (see https://package.elm-lang.org/packages/elm/browser/latest/). The function 
 

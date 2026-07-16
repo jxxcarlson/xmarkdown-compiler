@@ -225,5 +225,5 @@ These may be simplified or removed to reduce complexity:
 
 - [ ] Compile after each phase
 - [ ] Run tests after major changes
-- [ ] Compare rendered output in DemoTOCMd before/after (visual regression test)
+- [ ] Compare rendered output in DemoTOC+Sync before/after (visual regression test)
 - [ ] Verify message routing still works (MarkupMsg handling)

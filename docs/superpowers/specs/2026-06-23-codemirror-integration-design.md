@@ -1,15 +1,15 @@
-# Design: CodeMirror integration for DemoTOCMd (Phase 1)
+# Design: CodeMirror integration for DemoTOC+Sync (Phase 1)
 
 **Date:** 2026-06-23
 **Status:** Approved design, pre-implementation
-**Scope:** Phase 1 only — replace DemoTOCMd's `elm-ui` source input with a real
+**Scope:** Phase 1 only — replace DemoTOC+Sync's `elm-ui` source input with a real
 CodeMirror 6 editor, rebuild the app shell in plain `elm/html` + CSS, test,
 commit, push. **RL sync is Phase 2** and is explicitly out of scope here (but
 this phase leaves the seams for it).
 
 ## Goal
 
-Today `DemoTOCMd` edits source text in an `Element.Input.multiline` (a styled
+Today `DemoTOC+Sync` edits source text in an `Element.Input.multiline` (a styled
 `<textarea>`). RL sync (preview → editor: click rendered text, the editor
 selects/scrolls/highlights the matching source) needs a real editor we can drive
 programmatically. Phase 1 swaps in CodeMirror 6 via a custom element, following
@@ -40,7 +40,7 @@ the proven pattern in `scripta-app-v4` (`editor-prepare/editor.js` +
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│ DemoTOCMd/assets/index.html                                     │
+│ DemoTOC+Sync/assets/index.html                                     │
 │   <link rel="stylesheet" href="style.css">   (app + --cm-* vars)│
 │   <script src="editor.js">     defines <codemirror-editor>      │
 │   <script src="katex.js">      (existing)                       │
@@ -172,7 +172,7 @@ package dependencies). Added to `elm.json` `exposed-modules`.
            src/ScriptaV2/Msg.elm src/ScriptaV2/Language.elm src/Render/Theme.elm --output=/dev/null
   npx elm-test
   ```
-- **Demo build:** `cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js` → `Success!`
+- **Demo build:** `cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js` → `Success!`
   (this is what actually type-checks `ScriptaV2.Editor`, since Main imports it).
 - **Manual (the real acceptance):** `./run.sh`, then in the browser confirm:
   (a) the editor renders with the sample doc and CodeMirror chrome (line wrap,

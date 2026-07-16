@@ -145,7 +145,7 @@ $ elm repl
 ```
 
 Full suite: 47 tests pass (`npx elm-test`), including the EOF regression
-test. The DemoMd example document shows both display-math flavors back to
+test. The DemoTOC example document shows both display-math flavors back to
 back, rendering identically.
 
 ## 6. Takeaways

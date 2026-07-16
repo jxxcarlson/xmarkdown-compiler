@@ -1,4 +1,4 @@
-# DemoTOCMd — XMarkdown TOC Demo
+# DemoTOC+Sync — XMarkdown TOC Demo
 
 A small three-panel demo app for the standalone **XMarkdown** compiler:
 
@@ -30,7 +30,7 @@ extracted compiler supports.
 ## Run it
 
 ```bash
-cd DemoTOCMd
+cd DemoTOC+Sync
 ./run.sh        # starts `elm-watch hot` + a static HTTP server on :8200, opens http://localhost:8200/index.html
 ```
 

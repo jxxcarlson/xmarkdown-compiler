@@ -1,7 +1,7 @@
 module XMarkdown.Editor exposing (Config, view, textChangeDecoder, renderedTextId)
 
 {-| Reusable wiring for the `<codemirror-editor>` custom element (defined in JS,
-e.g. DemoTOCMd/assets/editor.js).
+e.g. DemoTOC+Sync/assets/editor.js).
 
 @docs Config, view, textChangeDecoder, renderedTextId
 

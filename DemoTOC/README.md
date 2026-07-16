@@ -1,4 +1,4 @@
-# DemoMd — XMarkdown file-reader demo
+# DemoTOC — XMarkdown file-reader demo
 
 A minimal Elm app: click a button, pick a `.md` file, and the XMarkdown
 (SMarkdown) compiler renders it to the screen.
@@ -11,7 +11,7 @@ package is extracted, this app works unchanged (same API, same language).
 ## Run
 
 ```bash
-cd DemoMd
+cd DemoTOC
 npx elm-watch hot          # hot-reloading dev server
 # then open assets/index.html in a browser
 ```

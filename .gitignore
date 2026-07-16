@@ -20,9 +20,9 @@ DemoScriptaLive/assets/main-tauri.js
 Benchmark/main.js
 **/.claude/settings.local.json
 xmarkdown.iml
-DemoMd/index.html
-DemoTOCMd/index.html
+DemoTOC/index.html
+DemoTOC+Sync/index.html
 node_modules/
-DemoTOCMd/node_modules/
-DemoTOCMd/assets/editor-bundle.js
-DemoTOCMd/dist/
+DemoTOC+Sync/node_modules/
+DemoTOC+Sync/assets/editor-bundle.js
+DemoTOC+Sync/dist/

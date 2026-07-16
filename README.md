@@ -75,7 +75,7 @@ $$
 
 ## Example Apps
  
-See the `DemoMd` and `DemoTOCMd` folders for more complete examples.
+See the `DemoTOC` and `DemoTOC+Sync` folders for more complete examples.
 The second of these shows how to construct an automatically updated
 active table of contents which in addition enables the user to 
 

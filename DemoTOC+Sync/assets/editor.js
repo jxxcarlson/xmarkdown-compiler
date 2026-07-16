@@ -1,4 +1,4 @@
-// Minimal CodeMirror 6 custom element for DemoTOCMd.
+// Minimal CodeMirror 6 custom element for DemoTOC+Sync.
 console.log("editor.js: starting to load dependencies");
 import { basicSetup, EditorView } from "../node_modules/codemirror/dist/index.js";
 import { EditorState, StateField, StateEffect } from "../node_modules/@codemirror/state/dist/index.js";

@@ -1,4 +1,4 @@
-# Design: RL Sync (rendered → editor) for DemoTOCMd
+# Design: RL Sync (rendered → editor) for DemoTOC+Sync
 
 **Date:** 2026-06-24
 **Status:** Approved design, pre-implementation
@@ -66,7 +66,7 @@ handler and produce a line-range highlight.
  └───────────────────────────┘        │   └──────────────────────────────┘
         │ Element.layout + Html.map Render   ▲
         ▼                                    │ highlight="{json}" attribute
-   DemoTOCMd update (Render msg_)            │
+   DemoTOC+Sync update (Render msg_)            │
         │  ScriptaV2.Sync.fromMsg tick msg_  │
         ▼                                    │
    model.syncHighlight : Maybe SyncHighlight │
@@ -129,7 +129,7 @@ failure → `Nothing` (no highlight rather than a wrong one).
 `codemirror-editor` node alongside the existing `load` attribute and
 `text-change` handler.
 
-### Component 4 — `DemoTOCMd/assets/editor.js` (extend)
+### Component 4 — `DemoTOC+Sync/assets/editor.js` (extend)
 
 - Add `"highlight"` to `observedAttributes`.
 - Add a sync-highlight `StateField` + `setSyncHighlight`/`clearSyncHighlight`
@@ -149,7 +149,7 @@ failure → `Nothing` (no highlight rather than a wrong one).
 - Clear the decoration on user edit (in the existing `updateListener` `docChanged`
   branch, when not a programmatic update) and on `Escape` (a keymap entry).
 
-### Component 5 — `DemoTOCMd/src/Main.elm` (extend)
+### Component 5 — `DemoTOC+Sync/src/Main.elm` (extend)
 
 - `Model` gains `syncHighlight : Maybe ScriptaV2.Sync.SyncHighlight` and
   `tick : Int` (seed `Nothing` / `0`).

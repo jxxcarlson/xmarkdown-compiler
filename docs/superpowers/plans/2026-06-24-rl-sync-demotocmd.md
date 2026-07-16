@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Click rendered text in DemoTOCMd → CodeMirror paints a background highlight over the corresponding source span (phrase-level for inline, line-range for blocks) and scrolls it into view.
+**Goal:** Click rendered text in DemoTOC+Sync → CodeMirror paints a background highlight over the corresponding source span (phrase-level for inline, line-range for blocks) and scrolls it into view.
 
 **Architecture:** Clicks already route through Elm as `MarkupMsg`. A new pure `ScriptaV2.Sync` module maps `SendMeta`/`SendLineNumber` → a `SyncHighlight` (line + columns), JSON-encoded into a `highlight` attribute on `<codemirror-editor>`; `editor.js` applies a `StateField` decoration + scroll. Inline `onClick` gains `stopPropagation` so phrase clicks beat the enclosing block.
 
@@ -20,8 +20,8 @@
 - `expressionIdPrefix` = `"e-"` (`ScriptaV2.Config`).
 - Compiler regression net must pass after every task:
   `elm make src/ScriptaV2/APISimple.elm src/ScriptaV2/API.elm src/ScriptaV2/Types.elm src/ScriptaV2/Msg.elm src/ScriptaV2/Language.elm src/Render/Theme.elm src/ScriptaV2/Editor.elm src/ScriptaV2/Sync.elm --output=/dev/null` then `npx elm-test`.
-- Demo build gate: `cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js` → `Success!`.
-- DemoTOCMd is served over **HTTP** for manual testing (`./run.sh`); ES modules don't load over `file://`.
+- Demo build gate: `cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js` → `Success!`.
+- DemoTOC+Sync is served over **HTTP** for manual testing (`./run.sh`); ES modules don't load over `file://`.
 
 ---
 
@@ -284,7 +284,7 @@ Run:
 ```bash
 elm make src/ScriptaV2/APISimple.elm src/ScriptaV2/API.elm src/ScriptaV2/Types.elm src/ScriptaV2/Msg.elm src/ScriptaV2/Language.elm src/Render/Theme.elm src/ScriptaV2/Editor.elm src/ScriptaV2/Sync.elm --output=/dev/null
 npx elm-test
-(cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js)
+(cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js)
 ```
 Expected: `Success!`, all tests pass, and the demo build prints `Success!`.
 
@@ -300,7 +300,7 @@ git commit -m "feat(compiler): stop inline click propagation so phrase clicks be
 ### Task 3: `editor.js` — sync-highlight decoration + scroll
 
 **Files:**
-- Modify: `DemoTOCMd/assets/editor.js`
+- Modify: `DemoTOC+Sync/assets/editor.js`
 
 **Interfaces:**
 - Consumes: a `highlight` attribute carrying JSON `{ line, colBegin, colEnd, lineCount, tick }` (1-indexed `line`; `colEnd` inclusive; `lineCount > 0` ⇒ block range). Set by `ScriptaV2.Sync` via `ScriptaV2.Editor` in Task 4.
@@ -308,7 +308,7 @@ git commit -m "feat(compiler): stop inline click propagation so phrase clicks be
 
 - [ ] **Step 1: Add the imports for StateField/StateEffect/Decoration/keymap**
 
-In `DemoTOCMd/assets/editor.js`, replace the two import lines:
+In `DemoTOC+Sync/assets/editor.js`, replace the two import lines:
 
 ```js
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
@@ -442,14 +442,14 @@ In `handleAttributeChange(attr, value)`, add a `highlight` branch after the exis
 
 - [ ] **Step 5: Syntax-check editor.js**
 
-Run: `node --check DemoTOCMd/assets/editor.js`
+Run: `node --check DemoTOC+Sync/assets/editor.js`
 Expected: no output, exit 0.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add DemoTOCMd/assets/editor.js
-git commit -m "feat(DemoTOCMd): editor.js sync-highlight decoration + scroll (RL sync)"
+git add DemoTOC+Sync/assets/editor.js
+git commit -m "feat(DemoTOC+Sync): editor.js sync-highlight decoration + scroll (RL sync)"
 ```
 
 ---
@@ -458,7 +458,7 @@ git commit -m "feat(DemoTOCMd): editor.js sync-highlight decoration + scroll (RL
 
 **Files:**
 - Modify: `src/ScriptaV2/Editor.elm` (Config gains `highlight`; view splats the attribute)
-- Modify: `DemoTOCMd/src/Main.elm` (model `syncHighlight` + `tick`; update; editorView)
+- Modify: `DemoTOC+Sync/src/Main.elm` (model `syncHighlight` + `tick`; update; editorView)
 
 **Interfaces:**
 - Consumes: `ScriptaV2.Sync.SyncHighlight`, `ScriptaV2.Sync.fromMsg`, `ScriptaV2.Sync.highlightAttribute` (Task 1); the `highlight` attribute contract (Task 3).
@@ -500,9 +500,9 @@ view config =
 
 Update the module's doc comment list/exposing is unchanged (Config/view names are the same).
 
-- [ ] **Step 2: Extend the DemoTOCMd model + init**
+- [ ] **Step 2: Extend the DemoTOC+Sync model + init**
 
-In `DemoTOCMd/src/Main.elm`:
+In `DemoTOC+Sync/src/Main.elm`:
 
 Add the import (with the other `ScriptaV2.*` imports):
 
@@ -585,13 +585,13 @@ Run:
 ```bash
 elm make src/ScriptaV2/APISimple.elm src/ScriptaV2/API.elm src/ScriptaV2/Types.elm src/ScriptaV2/Msg.elm src/ScriptaV2/Language.elm src/Render/Theme.elm src/ScriptaV2/Editor.elm src/ScriptaV2/Sync.elm --output=/dev/null
 npx elm-test
-(cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js)
+(cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js)
 ```
 Expected: `Success!`, all tests pass, demo build `Success!`.
 
 - [ ] **Step 6: Manual browser acceptance (human-run; the implementer reports build/test results and defers this)**
 
-Run `cd DemoTOCMd && ./run.sh` (serves over HTTP, opens `http://localhost:8200/index.html`). Confirm:
+Run `cd DemoTOC+Sync && ./run.sh` (serves over HTTP, opens `http://localhost:8200/index.html`). Confirm:
 - Click an inline **phrase** (e.g. a bold or linked word) → exactly that phrase's source span highlights in the editor and scrolls into view; the cursor is not moved.
 - Click a **block / image / math** → its source line(s) highlight.
 - Start **typing** → the highlight clears.
@@ -603,8 +603,8 @@ A subagent cannot run a browser; it completes Steps 1–5, commits, and lists St
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/ScriptaV2/Editor.elm DemoTOCMd/src/Main.elm
-git commit -m "feat(DemoTOCMd): wire RL sync — clicks drive the editor highlight"
+git add src/ScriptaV2/Editor.elm DemoTOC+Sync/src/Main.elm
+git commit -m "feat(DemoTOC+Sync): wire RL sync — clicks drive the editor highlight"
 ```
 
 ---

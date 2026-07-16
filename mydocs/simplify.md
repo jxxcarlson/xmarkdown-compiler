@@ -3,7 +3,7 @@
 Branch: `simplify` (off `main`). Goal: remove unused modules, dependencies, and
 (pending) unused exports/imports. Everything below is verified green after each
 step: compiler regression net (8 entry points), `npx elm-test` (18/18), and both
-`DemoTOCMd` and `DemoMd` build.
+`DemoTOC+Sync` and `DemoTOC` build.
 
 ## Already removed (committed on `simplify`)
 
@@ -93,6 +93,6 @@ structurally required. Left in place.
 - Modules: 124 → **95** (29 removed: 28 dead-module cascade + `Generic.Print`).
 - Dependencies removed: **3** (`elm/time`, `jinjor/elm-diff`, `rtfeldman/console-print`).
 - ~5.3k+ lines of dead code gone; public API (8 exposed modules) unchanged.
-- Verified green throughout: regression net, `elm-test` 18/18, `DemoTOCMd` +
-  `DemoMd` both build.
+- Verified green throughout: regression net, `elm-test` 18/18, `DemoTOC+Sync` +
+  `DemoTOC` both build.
 - Tooling: `review/` elm-review config added (`NoUnused.*`).

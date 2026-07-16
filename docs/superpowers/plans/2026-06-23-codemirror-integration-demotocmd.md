@@ -1,10 +1,10 @@
-# CodeMirror Integration for DemoTOCMd Implementation Plan
+# CodeMirror Integration for DemoTOC+Sync Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace DemoTOCMd's elm-ui `Input.multiline` source editor with a real CodeMirror 6 editor (a custom element), and rebuild the demo's app shell in plain `elm/html` + CSS.
+**Goal:** Replace DemoTOC+Sync's elm-ui `Input.multiline` source editor with a real CodeMirror 6 editor (a custom element), and rebuild the demo's app shell in plain `elm/html` + CSS.
 
-**Architecture:** A new `ScriptaV2.Editor` compiler module renders a `<codemirror-editor>` custom element and decodes its `text-change` events. A small hand-written `editor.js` ES module defines that element against CodeMirror 6 loaded from a CDN. DemoTOCMd's `Main.elm` is rewritten to `elm/html` + CSS; the compiler's still-elm-ui rendered `body`/`toc` are bridged into the html app via `Element.layout`.
+**Architecture:** A new `ScriptaV2.Editor` compiler module renders a `<codemirror-editor>` custom element and decodes its `text-change` events. A small hand-written `editor.js` ES module defines that element against CodeMirror 6 loaded from a CDN. DemoTOC+Sync's `Main.elm` is rewritten to `elm/html` + CSS; the compiler's still-elm-ui rendered `body`/`toc` are bridged into the html app via `Element.layout`.
 
 **Tech Stack:** Elm 0.19.1, `elm/html`, `elm/json`, `mdgriffith/elm-ui` (bridge only), CodeMirror 6 (esm.sh CDN), plain CSS.
 
@@ -17,7 +17,7 @@
 - Public entry points are exposed modules; `ScriptaV2.Editor` is added to `exposed-modules`.
 - The editor's `load` attribute is bound to an **uncontrolled, constant** initial-text value, never to the live-edited text — re-binding `load` per keystroke causes cursor jumps.
 - `editor.js` imports each CodeMirror package from esm.sh **without** `?bundle`, pinned to `@6`, so esm.sh serves a single shared `@codemirror/state` (avoids "unrecognized extension" from duplicate state instances).
-- DemoTOCMd build check: `cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js` → `Success!`.
+- DemoTOC+Sync build check: `cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js` → `Success!`.
 
 ---
 
@@ -77,7 +77,7 @@ Create `src/ScriptaV2/Editor.elm`:
 module ScriptaV2.Editor exposing (Config, view, textChangeDecoder, renderedTextId)
 
 {-| Reusable wiring for the `<codemirror-editor>` custom element (defined in JS,
-e.g. DemoTOCMd/assets/editor.js).
+e.g. DemoTOC+Sync/assets/editor.js).
 
 @docs Config, view, textChangeDecoder, renderedTextId
 
@@ -175,9 +175,9 @@ git commit -m "feat: add ScriptaV2.Editor — codemirror-editor custom-element w
 ### Task 2: `editor.js` custom element + index.html/style.css host
 
 **Files:**
-- Create: `DemoTOCMd/assets/editor.js`
-- Create: `DemoTOCMd/assets/style.css`
-- Modify: `DemoTOCMd/assets/index.html`
+- Create: `DemoTOC+Sync/assets/editor.js`
+- Create: `DemoTOC+Sync/assets/style.css`
+- Modify: `DemoTOC+Sync/assets/index.html`
 
 **Interfaces:**
 - Consumes: `ScriptaV2.Editor.view` renders `<codemirror-editor load="…">` and listens for `text-change`. This task defines that element and emits `text-change` with `{ detail: { source, position } }`.
@@ -185,10 +185,10 @@ git commit -m "feat: add ScriptaV2.Editor — codemirror-editor custom-element w
 
 - [ ] **Step 1: Write `editor.js`**
 
-Create `DemoTOCMd/assets/editor.js`:
+Create `DemoTOC+Sync/assets/editor.js`:
 
 ```js
-// Minimal CodeMirror 6 custom element for DemoTOCMd.
+// Minimal CodeMirror 6 custom element for DemoTOC+Sync.
 // Imports without ?bundle so esm.sh shares one @codemirror/state instance
 // (duplicate state instances cause "unrecognized extension" errors).
 import { basicSetup, EditorView } from "https://esm.sh/codemirror@6.0.1";
@@ -305,12 +305,12 @@ customElements.define("codemirror-editor", CodemirrorEditor);
 
 - [ ] **Step 2: Syntax-check `editor.js`**
 
-Run: `node --check DemoTOCMd/assets/editor.js`
+Run: `node --check DemoTOC+Sync/assets/editor.js`
 Expected: no output, exit 0 (valid ES-module syntax; `node --check` does not resolve imports).
 
 - [ ] **Step 3: Write `style.css`**
 
-Create `DemoTOCMd/assets/style.css`:
+Create `DemoTOC+Sync/assets/style.css`:
 
 ```css
 :root {
@@ -378,14 +378,14 @@ html, body {
 
 - [ ] **Step 4: Wire `index.html`**
 
-In `DemoTOCMd/assets/index.html`, add inside `<head>` (after the existing `<script src="katex.js"></script>` line) these two lines:
+In `DemoTOC+Sync/assets/index.html`, add inside `<head>` (after the existing `<script src="katex.js"></script>` line) these two lines:
 
 ```html
     <link rel="stylesheet" href="style.css">
     <script type="module" src="editor.js"></script>
 ```
 
-The final `<head>` of `DemoTOCMd/assets/index.html` should read:
+The final `<head>` of `DemoTOC+Sync/assets/index.html` should read:
 
 ```html
 <head>
@@ -409,24 +409,24 @@ The final `<head>` of `DemoTOCMd/assets/index.html` should read:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add DemoTOCMd/assets/editor.js DemoTOCMd/assets/style.css DemoTOCMd/assets/index.html
-git commit -m "feat(DemoTOCMd): add codemirror-editor custom element + CSS app shell"
+git add DemoTOC+Sync/assets/editor.js DemoTOC+Sync/assets/style.css DemoTOC+Sync/assets/index.html
+git commit -m "feat(DemoTOC+Sync): add codemirror-editor custom element + CSS app shell"
 ```
 
 ---
 
-### Task 3: Rewrite `DemoTOCMd/src/Main.elm` to elm/html
+### Task 3: Rewrite `DemoTOC+Sync/src/Main.elm` to elm/html
 
 **Files:**
-- Modify: `DemoTOCMd/src/Main.elm` (full rewrite)
+- Modify: `DemoTOC+Sync/src/Main.elm` (full rewrite)
 
 **Interfaces:**
 - Consumes: `ScriptaV2.Editor.view` (Task 1); CSS classes + `--cm-*` vars (Task 2); `ScriptaV2.Compiler.compile : CompilerParameters -> List String -> CompilerOutput` where `CompilerOutput.body : List (Element MarkupMsg)` and `CompilerOutput.toc : List (Element MarkupMsg)`.
-- Produces: the runnable DemoTOCMd app (no authored elm-ui except the `Element.layout` bridge).
+- Produces: the runnable DemoTOC+Sync app (no authored elm-ui except the `Element.layout` bridge).
 
 - [ ] **Step 1: Replace `Main.elm` with the elm/html version**
 
-Replace the entire contents of `DemoTOCMd/src/Main.elm` with:
+Replace the entire contents of `DemoTOC+Sync/src/Main.elm` with:
 
 ```elm
 module Main exposing (main)
@@ -643,7 +643,7 @@ jumpToTopOf elementId =
 
 - [ ] **Step 2: Build the demo**
 
-Run: `cd DemoTOCMd && elm make src/Main.elm --output=assets/main.js`
+Run: `cd DemoTOC+Sync && elm make src/Main.elm --output=assets/main.js`
 Expected: `Success!`
 
 If it fails on a `CompilerParameters` field name (e.g. `docWidth`, `editCount`, `selectedId`, `lang`, `idsOfOpenNodes`, `filter`), open `src/ScriptaV2/Types.elm`, find the `CompilerParameters`/`defaultCompilerParameters` record, and correct the field name to match — do not invent fields. These names are copied from the pre-rewrite `Main.elm`, so they should already match.
@@ -659,7 +659,7 @@ Expected: `Success!` and all tests pass.
 
 - [ ] **Step 4: Manual browser verification (acceptance)**
 
-Run: `cd DemoTOCMd && ./run.sh` (starts elm-watch, opens `assets/index.html`).
+Run: `cd DemoTOC+Sync && ./run.sh` (starts elm-watch, opens `assets/index.html`).
 Confirm in the browser:
 - (a) The left panel shows a CodeMirror editor pre-filled with the sample document, with line numbers and line wrapping.
 - (b) Typing in the editor live-updates the middle (Rendered Text) panel and the right (Table of Contents) panel.
@@ -672,11 +672,11 @@ If (c) fails (cursor jumps to end each keystroke), confirm `editorView` passes `
 - [ ] **Step 5: Commit**
 
 ```bash
-git add DemoTOCMd/src/Main.elm DemoTOCMd/assets/main.js
-git commit -m "feat(DemoTOCMd): rewrite app shell to elm/html + CodeMirror editor"
+git add DemoTOC+Sync/src/Main.elm DemoTOC+Sync/assets/main.js
+git commit -m "feat(DemoTOC+Sync): rewrite app shell to elm/html + CodeMirror editor"
 ```
 
-Note: `DemoTOCMd/assets/main.js` is git-ignored (`DemoTOCMd/.gitignore`), so the `git add` of it is a no-op — that is expected; only `Main.elm` is committed.
+Note: `DemoTOC+Sync/assets/main.js` is git-ignored (`DemoTOC+Sync/.gitignore`), so the `git add` of it is a no-op — that is expected; only `Main.elm` is committed.
 
 ---
 

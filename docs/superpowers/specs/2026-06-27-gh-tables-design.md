@@ -173,7 +173,7 @@ Pure unit tests (`tests/GHTableTest.elm`, elm-test):
 
 Regression net (CLAUDE.md) + both demo builds stay green.
 
-Manual browser acceptance (the real render gate): put a table in the DemoTOCMd
+Manual browser acceptance (the real render gate): put a table in the DemoTOC+Sync
 sample (or load one), confirm: columns align per the separator; header is
 distinguished; `$math$` and `[m …]` render inside cells; the music-theory example
 renders; ragged/headerless-data tables don't crash.
