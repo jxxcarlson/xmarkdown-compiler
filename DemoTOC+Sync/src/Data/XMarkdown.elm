@@ -77,7 +77,8 @@ XMarkdown provides for Github-style tables.  These tables may contain mathematic
 |:-------|----:|:-------------|-----:|
 | Alice |  28 | *Engineer*    | $n!$ |
 | Bob   |  34 | *Musician*    | $3:2$ |
-| Carol |  41 | *Mathematician* | $sqrt(2)$
+| Carol |  41 | *Mathematician* | $sqrt(2 + \\sqrt5)$
 
+This is math: $x^{2}$
 
  """

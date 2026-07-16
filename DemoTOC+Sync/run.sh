@@ -26,8 +26,24 @@ lsof -ti:${HTTP_PORT} | xargs kill -9 2>/dev/null || true
 npx elm-watch hot &
 ELM_WATCH_PID=$!
 
-# Serve assets/ over HTTP in the background.
-python3 -m http.server "${HTTP_PORT}" --directory assets &
+# Serve assets/ over HTTP in the background, with caching disabled.
+# (Plain `python3 -m http.server` sends no Cache-Control header, so Firefox
+# heuristically caches long-unmodified files like katex.js and serves stale
+# copies on reload after they change.)
+HTTP_PORT="${HTTP_PORT}" python3 - <<'PYEOF' &
+import functools
+import http.server
+import os
+
+class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
+port = int(os.environ["HTTP_PORT"])
+handler = functools.partial(NoCacheHandler, directory="assets")
+http.server.ThreadingHTTPServer(("", port), handler).serve_forever()
+PYEOF
 HTTP_PID=$!
 
 # Clean up both background processes when this script exits (Ctrl+C).
