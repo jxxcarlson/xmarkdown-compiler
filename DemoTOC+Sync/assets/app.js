@@ -59,5 +59,6 @@ function initializeApp() {
         console.log("Setting theme colors:", colors);
         document.documentElement.style.setProperty('--cm-fg', colors.fg);
         document.documentElement.style.setProperty('--cm-bg', colors.bg);
+        document.documentElement.style.setProperty('--cm-indent-guide', colors.indentGuide);
     });
 }

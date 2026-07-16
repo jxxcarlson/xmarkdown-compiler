@@ -10,4 +10,4 @@ port injectHighlightCSS : String -> Cmd msg
 port setEditorHighlightColor : String -> Cmd msg
 
 
-port setThemeColors : { fg : String, bg : String } -> Cmd msg
+port setThemeColors : { fg : String, bg : String, indentGuide : String } -> Cmd msg

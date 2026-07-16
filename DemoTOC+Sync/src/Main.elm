@@ -175,6 +175,7 @@ update msg model =
                     Ports.setThemeColors
                         { fg = currentTheme.text |> Color.toCssString
                         , bg = currentTheme.background |> Color.toCssString
+                        , indentGuide = currentTheme.indentGuide |> Color.toCssString
                         }
             in
             ( { model | theme = newTheme, compilerParameters = newParams }

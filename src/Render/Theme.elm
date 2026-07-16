@@ -73,6 +73,7 @@ type alias ThemedStyles =
     , link : Color
     , highlight : Color
     , border : Color
+    , indentGuide : Color
     }
 
 
@@ -130,6 +131,7 @@ lightTheme =
     , link = blue700 --blue500
     , highlight = indigo200
     , border = gray300
+    , indentGuide = Color.rgba 0 0 0 0.15
     }
 
 
@@ -144,6 +146,7 @@ darkTheme =
     , link = blue300
     , highlight = indigo500
     , border = gray700
+    , indentGuide = Color.rgba 1 1 1 0.15
     }
 
 
