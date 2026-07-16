@@ -2,6 +2,7 @@ module Render.Expression exposing (render)
 
 import AST.Language exposing (Expr(..), Expression)
 import Dict exposing (Dict)
+import ETeX.Transform
 import Html exposing (Html)
 import Html.Attributes
 import Render.Theme
@@ -18,11 +19,16 @@ render theme attrs expr =
 
         VFun name content _ ->
             if List.member name [ "math", "m", "chem" ] then
+                let
+                    -- ETeX -> LaTeX, exactly as block math does (Render.Math.getMathContent)
+                    mathContent =
+                        ETeX.Transform.transformETeX Dict.empty content
+                in
                 Html.node "math-text"
-                    [ Html.Attributes.attribute "data-content" content
+                    [ Html.Attributes.attribute "data-content" mathContent
                     , Html.Attributes.attribute "data-display" "false"
                     ]
-                    [ Html.text content ]
+                    [ Html.text mathContent ]
 
             else if name == "code" then
                 Html.code [] [ Html.text content ]
@@ -35,6 +41,7 @@ render theme attrs expr =
                 let
                     mathContent =
                         extractMathContent exprList
+                            |> ETeX.Transform.transformETeX Dict.empty
                 in
                 Html.node "math-text"
                     [ Html.Attributes.attribute "data-content" mathContent
