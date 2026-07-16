@@ -7,8 +7,19 @@
 # Static-server port. Kept outside 8000-8010 by request.
 HTTP_PORT=8200
 
-# Kill any process on the elm-watch port (56907) and our static-server port.
-lsof -ti:56907 | xargs kill -9 2>/dev/null || true
+# Free the elm-watch web-socket port. elm-watch saves the port it was
+# assigned in elm-stuff/elm-watch/stuff.json and insists on reusing it, so a
+# stray elm-watch (or anything else) holding that port aborts startup with
+# PORT CONFLICT. Read the saved port and kill whatever occupies it.
+ELM_WATCH_STUFF="elm-stuff/elm-watch/stuff.json"
+if [ -f "${ELM_WATCH_STUFF}" ]; then
+    SAVED_PORT=$(sed -n 's/.*"port"[^0-9]*\([0-9][0-9]*\).*/\1/p' "${ELM_WATCH_STUFF}" | head -1)
+    if [ -n "${SAVED_PORT}" ]; then
+        lsof -ti:"${SAVED_PORT}" | xargs kill -9 2>/dev/null || true
+    fi
+fi
+
+# Free our static-server port.
 lsof -ti:${HTTP_PORT} | xargs kill -9 2>/dev/null || true
 
 # Start elm-watch hot in the background (writes assets/main.js on change).
