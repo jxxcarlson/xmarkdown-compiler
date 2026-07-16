@@ -110,7 +110,7 @@ view : Model -> Html Msg
 view model =
     let
         compilerOutput =
-            compileOutput defaultCompilerParameters (String.lines model.sourceText)
+            compileOutput defaultCompilerParameters model.sourceText
 
         tocElements =
             viewTOC compilerOutput

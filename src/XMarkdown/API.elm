@@ -104,9 +104,15 @@ which can then be displayed using the view functions.
             ]
 
 -}
-compileOutput : XMarkdown.Types.CompilerParameters -> List String -> XMarkdown.Types.CompilerOutput
+compileOutput : XMarkdown.Types.CompilerParameters -> String -> XMarkdown.Types.CompilerOutput
 compileOutput =
     XMarkdown.Compiler.compile
+
+
+{-| -}
+compileString : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
+compileString params str =
+    XMarkdown.Compiler.compile params str |> XMarkdown.Compiler.view params.docWidth
 
 
 {-| defaultCompilerParameters =
@@ -167,12 +173,6 @@ viewTOC =
 
 
 {-| -}
-compileString : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
-compileString params str =
-    XMarkdown.Compiler.compile params (String.lines str) |> XMarkdown.Compiler.view params.docWidth
-
-
-{-| -}
 viewEditor : XMarkdown.Editor.Config msg -> Html msg
 viewEditor =
     XMarkdown.Editor.view
@@ -193,7 +193,7 @@ renderedTextId =
 {-| -}
 compileStringWithTitle : String -> XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileStringWithTitle title params str =
-    XMarkdown.Compiler.compile params (String.lines str)
+    XMarkdown.Compiler.compile params str
         |> XMarkdown.Compiler.viewBodyOnly params.docWidth
         |> (\x -> Html.div [ Html.Attributes.style "height" "130px", Html.Attributes.style "font-size" "24px", Html.Attributes.style "padding" "8px 0 24px 0" ] [ Html.text title ] :: x)
 

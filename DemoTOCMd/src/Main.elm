@@ -1,7 +1,5 @@
 module Main exposing (main)
 
---import XMarkdown.Compiler
-
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -13,7 +11,6 @@ import File.Select
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
-import List.Extra
 import Ports
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
@@ -310,7 +307,7 @@ view model =
 
         compilerOutput : XMarkdown.Types.CompilerOutput
         compilerOutput =
-            XMarkdown.API.compileOutput params (String.lines model.sourceText)
+            XMarkdown.API.compileOutput params model.sourceText
     in
     div [ class "app" ]
         [ div [ class "app-header" ]

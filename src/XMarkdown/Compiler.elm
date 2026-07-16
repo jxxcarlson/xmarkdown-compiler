@@ -80,9 +80,9 @@ viewTOC compiled =
 
 {-| Compile XMarkdown source lines into renderable output (body, banner, TOC, title).
 -}
-compile : CompilerParameters -> List String -> CompilerOutput
-compile params lines =
-    render params (parseToForestWithAccumulator params lines)
+compile : CompilerParameters -> String -> CompilerOutput
+compile params sourceText =
+    render params (parseToForestWithAccumulator params (String.lines sourceText))
 
 
 {-| -}
