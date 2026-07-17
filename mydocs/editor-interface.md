@@ -51,7 +51,7 @@ four channels:
 ### (a) Elm → editor: attributes on the custom element
 
 Elm's virtual DOM writes two attributes; the custom element observes them
-(`observedAttributes`, editor.js:388–390) and reacts:
+(`observedAttributes`, editor.js:445–447) and reacts:
 
 | Attribute | Payload | Meaning |
 |---|---|---|
@@ -118,11 +118,11 @@ port setThemeColors : { fg : String, bg : String } -> Cmd msg  -- Elm → JS
   `--cm-sync-highlight-bg` so the editor's RL-sync highlight color matches the
   compiler's `params.highlightColor` (app.js:53–56).
 - `setThemeColors` — sets `--cm-fg` / `--cm-bg` on `:root` when the user
-  toggles Light/Dark, so the editor theme follows the app theme (app.js:58–62).
+  toggles Light/Dark, so the editor theme follows the app theme (app.js:58–63).
 
 Only `lrSyncRequest` is essential to the sync interface; the other three are
 styling conveniences (the CodeMirror theme reads all colors from CSS variables
-with fallbacks, editor.js:278–303).
+with fallbacks, editor.js:335–361).
 
 ### The two sync directions, end to end
 
@@ -134,7 +134,7 @@ in Main as `Render (SendLineNumber ...)`. Main maps it with
 (bumping `tick`), and re-renders — which writes the `highlight` attribute.
 The custom element decodes it, computes CodeMirror `from`/`to` offsets, paints
 a `.cm-sync-highlight` decoration, and scrolls it into view
-(editor.js:473–502).
+(editor.js:531–578).
 
 The `MarkupMsg` variants relevant to sync (`XMarkdown.Types`,
 src/XMarkdown/Types.elm:102–108):
@@ -200,7 +200,7 @@ into `lrSyncRequest`; Main's `LRSync` handler
 ## 2. What the CodeMirror side must implement
 
 One ES module defining the `codemirror-editor` custom element. The reference
-is `DemoTOC+Sync/assets/editor.js` (517 lines, most of it optional syntax
+is `DemoTOC+Sync/assets/editor.js` (592 lines, most of it optional syntax
 highlighting and theme). The *required* behavior is:
 
 ### 2.1 Custom element skeleton
@@ -242,7 +242,7 @@ No shadow DOM — the EditorView is appended directly to the element
 
 ### 2.2 `text-change`: report user edits, suppress programmatic echo
 
-Two cooperating pieces (editor.js:375–385, 443–450, 464–472):
+Two cooperating pieces (editor.js:432–442, 501–508, 522–529):
 
 ```js
 function sendText(editor) {
@@ -303,7 +303,7 @@ const syncHighlightField = StateField.define({
 });
 ```
 
-Attribute handler (editor.js:473–502). This is where the two coordinate
+Attribute handler (editor.js:531–578). This is where the two coordinate
 systems from Section 1 are resolved into CodeMirror offsets — get the clamping
 and the inclusive/exclusive conventions exactly right:
 
@@ -325,9 +325,20 @@ if (attr === "highlight" && typeof value === "string") {
         from = Math.max(0, Math.min(h.start, doc.length));
         to   = Math.max(from, Math.min(h.end, doc.length));
     }
-    this.editor.dispatch({
-        effects: [ setSyncHighlight.of({ from, to }),
-                   EditorView.scrollIntoView(from, { y: "center" }) ],
+    this.editor.dispatch({ effects: [setSyncHighlight.of({ from, to })] });
+    // Center the target line by writing the scroller's scrollTop directly.
+    this.editor.requestMeasure({
+        read: (view) => {
+            const block = view.lineBlockAt(from);
+            const scroller = view.scrollDOM;
+            return {
+                scroller,
+                target: block.top - (scroller.clientHeight - block.height) / 2,
+            };
+        },
+        write: ({ scroller, target }) => {
+            scroller.scrollTop = target;   // browser clamps to [0, max]
+        },
     });
 }
 ```
@@ -336,9 +347,18 @@ Note the clamping: the highlight was computed against the text *the compiler
 last saw*; if the user has since edited, raw offsets could be out of range and
 CodeMirror throws on invalid positions.
 
+**Why not `EditorView.scrollIntoView(from, { y: "center" })`?** That effect
+walks the editor's *ancestor* elements too, and `overflow: hidden` boxes are
+still programmatically scrollable — so centering a line near the end of the
+document maxes out the editor's own scroller and then drags the app shell
+itself upward, scrolling the page layout out of view. A direct `scrollTop`
+write inside `requestMeasure` (CodeMirror's sanctioned read-then-write cycle)
+is clamped by the browser to the scroller's own valid range: true centering
+mid-document, a graceful clamp at the ends, and the ancestors never move.
+
 ### 2.4 Keybindings: Escape and Mod-S (LR sync)
 
-(editor.js:416–442)
+(editor.js:474–500)
 
 ```js
 keymap.of([
@@ -365,13 +385,13 @@ keymap.of([
 2. **Buffer early attribute writes.** Elm sets `load` (and possibly
    `highlight`) on the element *before* your deferred EditorView exists.
    `attributeChangedCallback` must stash values in `pendingAttributes` and
-   replay them once the editor is up (editor.js:392–397, 455–460, 505–511).
+   replay them once the editor is up (editor.js:449–454, 514–518, 581–587).
    Without this, the initial document silently fails to load.
 
 ### 2.6 Theme via CSS variables
 
 Style the editor with an `EditorView.theme` whose colors are CSS variables
-with fallbacks (editor.js:278–303), so the page (via ports) can restyle it
+with fallbacks (editor.js:335–361), so the page (via ports) can restyle it
 without touching CodeMirror:
 
 ```js
@@ -398,7 +418,7 @@ do not load over `file://` — the app **must be served over HTTP**
 ### 2.8 The glue script (app.js)
 
 Not part of the custom element, but part of the JS side's contract
-(`DemoTOC+Sync/assets/app.js`, 63 lines total):
+(`DemoTOC+Sync/assets/app.js`, 64 lines total):
 
 ```js
 var app = Elm.Main.init({ node: root, flags: { window: { windowWidth: ..., windowHeight: ... } } });
