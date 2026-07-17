@@ -45,6 +45,7 @@ type alias Model =
     , selectId : String
     , syncHighlight : Maybe SyncHighlight
     , tick : Int
+    , numberedSections : Bool
     , compilerParameters : CompilerParameters
     , currentTheme : Theme
     , theme : Theme
@@ -68,6 +69,7 @@ type Msg
     | FileNameChanged String
     | LRSync String
     | ToggleTheme
+    | ToggleNumberSections
 
 
 type alias Flags =
@@ -77,8 +79,11 @@ type alias Flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
+        -- set initial compiler parameters here by
+        -- modifying the defaultCompilerParameters, e.g.,
+        -- params = { defaultCompilerParameters | numberToLevel = 3 }
         params =
-            { defaultCompilerParameters | numberToLevel = 0 }
+            defaultCompilerParameters
     in
     ( { initialText = Data.XMarkdown.text
       , sourceText = Data.XMarkdown.text
@@ -94,6 +99,7 @@ init flags =
       , lrSyncMatches = []
       , lrSyncIndex = 0
       , lrSyncText = ""
+      , numberedSections = False
       , compilerParameters = params
       }
     , Ports.setEditorHighlightColor params.highlightColor
@@ -147,6 +153,28 @@ update msg model =
         FileNameChanged newFileName ->
             ( { model | fileName = newFileName }, Cmd.none )
 
+        ToggleNumberSections ->
+            let
+                oldCompilerParameters =
+                    model.compilerParameters
+            in
+            case model.numberedSections of
+                False ->
+                    ( { model
+                        | compilerParameters = { oldCompilerParameters | numberToLevel = 3 }
+                        , numberedSections = True
+                      }
+                    , Cmd.none
+                    )
+
+                True ->
+                    ( { model
+                        | compilerParameters = { oldCompilerParameters | numberToLevel = 0 }
+                        , numberedSections = False
+                      }
+                    , Cmd.none
+                    )
+
         ToggleTheme ->
             let
                 newTheme =
@@ -191,8 +219,7 @@ update msg model =
                         , selectedId = "selectedId"
                         , interBlockSpacing = 0
                         , paddingAboveHeadings = 18
-
-                        -- JCX -- , numberToLevel = 0
+                        , numberToLevel = 0
                     }
 
                 matches =
@@ -296,15 +323,19 @@ view model =
         g =
             geometry model
 
-        -- Customize compiler parameters here
+        -- Base the compiler parameters on the model's settings (numberToLevel
+        -- etc.), overriding only the per-render state. Customize durable
+        -- settings in `init`, not here.
         params =
-            { defaultCompilerParameters
+            { compilerParameters
                 | docWidth = g.docWidth -- width of rendered text in pixels
                 , editCount = model.count -- incremented on each edit; rendered text won't update withoug this
                 , selectedId = model.selectId -- id of rendered text on which user clicked
                 , theme = model.theme -- Dark or Light
-                , numberToLevel = 3 -- automatically number sections to level 3. Omit if you don't want sections numbered
             }
+
+        compilerParameters =
+            model.compilerParameters
 
         compilerOutput : XMarkdown.Types.CompilerOutput
         compilerOutput =
@@ -314,8 +345,7 @@ view model =
         [ div [ class "app-header" ]
             [ div [ class "toolbar" ]
                 [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
-                , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File" ]
-                , button [ class "toolbar-button", Html.Events.onClick NewFileRequested ] [ text "New File" ]
+                , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File As" ]
                 , input
                     [ id "fileName"
                     , style "margin-left" "8px"
@@ -328,6 +358,7 @@ view model =
                     , placeholder "File name..."
                     ]
                     []
+                , button [ class "toolbar-button", Html.Events.onClick NewFileRequested ] [ text "New File" ]
                 , button
                     [ class "toolbar-button theme-toggle"
                     , Html.Events.onClick ToggleTheme
@@ -349,6 +380,18 @@ view model =
 
                             Dark ->
                                 "☀️"
+                        )
+                    ]
+                , button
+                    [ class "toolbar-button"
+                    , Html.Events.onClick ToggleNumberSections
+                    ]
+                    [ text
+                        (if model.numberedSections then
+                            "Section numbering: Yes"
+
+                         else
+                            "Section numbering: No"
                         )
                     ]
                 ]
