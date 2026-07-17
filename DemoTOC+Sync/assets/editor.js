@@ -552,10 +552,28 @@ class CodemirrorEditor extends HTMLElement {
                 to = Math.max(from, Math.min(h.end, doc.length));
             }
             editor.dispatch({
-                effects: [
-                    setSyncHighlight.of({ from, to }),
-                    EditorView.scrollIntoView(from, { y: "center" }),
-                ],
+                effects: [setSyncHighlight.of({ from, to })],
+            });
+            // Center the target line by writing the editor scroller's scrollTop
+            // directly, instead of EditorView.scrollIntoView. CM's scrollIntoView
+            // walks ancestor elements too (even overflow:hidden ones are
+            // programmatically scrollable), which dragged the whole app shell up
+            // when the target was near the end of the document. A direct
+            // scrollTop write is clamped by the browser to the scroller's own
+            // valid range: true centering everywhere, graceful clamp at the ends,
+            // and the shell never moves.
+            editor.requestMeasure({
+                read: (view) => {
+                    const block = view.lineBlockAt(from);
+                    const scroller = view.scrollDOM;
+                    return {
+                        scroller,
+                        target: block.top - (scroller.clientHeight - block.height) / 2,
+                    };
+                },
+                write: ({ scroller, target }) => {
+                    scroller.scrollTop = target; // browser clamps to [0, max]
+                },
             });
         }
     }
