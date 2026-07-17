@@ -6,7 +6,8 @@
     "version": "1.0.1",
     "exposed-modules": [
         "XMarkdown.API",
-        "XMarkdown.Types"
+        "XMarkdown.Types",
+        "Render.Theme"
     ],
     "elm-version": "0.19.1 <= v < 0.20.0",
     "dependencies": {

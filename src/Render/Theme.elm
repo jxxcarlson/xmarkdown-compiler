@@ -1,6 +1,5 @@
 module Render.Theme exposing
-    ( Display
-    , RenderSettings
+    ( RenderSettings
     , ThemedStyles
     , darkTheme
     , lightTheme
@@ -9,23 +8,31 @@ module Render.Theme exposing
     , themedColor
     )
 
-{-| Theme support for Scripta rendering.
+{-| Light and dark theming for the XMarkdown renderer.
 
-This module provides light and dark themes for rendering Scripta documents,
-with support for both raw Color values and elm-ui Element.Color.
-
-
-# Types
-
-@docs Theme, ActualTheme
-
-
-# Theme Selection
-
-@docs getColor, getElementColor
+The compiler turns `CompilerParameters` into a [`RenderSettings`](#RenderSettings)
+record with [`makeSettings`](#makeSettings), and the `Render.*` modules read
+their sizes and colors from it. Applications that embed the editor (see the
+`DemoTOC+Sync` example) additionally read the raw [`ThemedStyles`](#ThemedStyles)
+palettes — [`lightTheme`](#lightTheme) / [`darkTheme`](#darkTheme) — and the
+[`themedColor`](#themedColor) helper to keep their own chrome in step with the
+document's current theme.
 
 
-# Predefined Themes
+# Render settings
+
+The fully-resolved bundle of sizes and colors handed to every renderer.
+
+@docs RenderSettings, makeSettings, scaleFont
+
+
+# Theme palettes
+
+`ThemedStyles` is a raw color palette; `lightTheme` and `darkTheme` are the two
+built-in instances, and `themedColor` looks up one field for a given theme,
+returning a CSS color string.
+
+@docs ThemedStyles, lightTheme, darkTheme, themedColor
 
 -}
 
@@ -34,9 +41,10 @@ import Render.NewColor exposing (..)
 import XMarkdown.Types exposing (CompilerParameters, Theme(..))
 
 
-{-| A record of information needed to render a document.
-For instance, the`width`field defines the width of the
-page in which the document is e
+{-| Everything a renderer needs to lay out and color a document: sizes
+(`width`, `fontSize`, `titleSize`, spacing, margins), the resolved theme
+colors (`textColor`, `backgroundColor`, `linkColor`, …), and the current
+selection/`theme`. Build one with [`makeSettings`](#makeSettings).
 -}
 type alias RenderSettings =
     { interBlockSpacing : Float
@@ -63,6 +71,12 @@ type alias RenderSettings =
     }
 
 
+{-| A raw color palette for one theme. Each field is an
+[`avh4/elm-color`](https://package.elm-lang.org/packages/avh4/elm-color/latest/)
+`Color`. See [`lightTheme`](#lightTheme) and [`darkTheme`](#darkTheme) for the
+built-in instances, and [`themedColor`](#themedColor) to read a field as a CSS
+string.
+-}
 type alias ThemedStyles =
     { background : Color
     , text : Color
@@ -89,6 +103,12 @@ getThemedColor keyAccess theme =
         )
 
 
+{-| Look up one palette field for a theme and render it as a CSS color string
+(`rgb(...)` or `rgba(...)`). Pass a `ThemedStyles` field accessor:
+
+    themedColor .background model.theme --> "rgb(230, 230, 230)"
+
+-}
 themedColor : (ThemedStyles -> Color) -> Theme -> String
 themedColor keyAccess theme =
     let
@@ -135,6 +155,8 @@ lightTheme =
     }
 
 
+{-| A dark theme with a near-black background and light text.
+-}
 darkTheme : ThemedStyles
 darkTheme =
     { background = gray900
@@ -174,7 +196,10 @@ scaleFont settings designSize =
     round (toFloat settings.fontSize * toFloat designSize / referenceFontSize)
 
 
-{-| -}
+{-| Resolve a `CompilerParameters` into a [`RenderSettings`](#RenderSettings):
+scale the font/title sizes, parse the highlight color (falling back to the
+theme), and pull the theme's colors for the chosen `theme`.
+-}
 makeSettings : CompilerParameters -> RenderSettings
 makeSettings params =
     let
