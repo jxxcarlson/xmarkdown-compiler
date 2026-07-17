@@ -12,6 +12,8 @@
 html, body {
     margin: 0;
     height: 100%;
+    overflow: hidden;          /* the document itself never scrolls */
+    overscroll-behavior: none; /* no rubber-band / scroll-chaining to the page */
 }
 
 .app {
@@ -34,7 +36,7 @@ html, body {
 
 .app-header .app-title {
     flex: 1;
-    text-align: center;
+    text-align: right;
 }
 
 .toolbar {
@@ -74,6 +76,7 @@ html, body {
     background: #ffffff;
     border-radius: 4px;
     overflow: auto;
+    overscroll-behavior: contain; /* keep scroll inside the panel at its edges */
     min-height: 0;
 }
 

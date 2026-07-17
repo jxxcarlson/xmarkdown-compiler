@@ -352,7 +352,7 @@ view model =
                         )
                     ]
                 ]
-            , div [ class "app-title" ] [ text "XMarkdown TOC Demo" ]
+            , div [ class "app-title" ] [ text "XMarkdown TOC+Sync Demo" ]
             ]
         , div [ class "panels" ]
             [ div [ class "panel editor-panel", style "width" (px g.editorW) ]
@@ -370,6 +370,7 @@ view model =
                 [ -- class "panel toc-panel"
                   style "width" (px g.tocW)
                 , style "overflow" "auto"
+                , style "overscroll-behavior" "contain"
                 , style "min-height" "0"
                 , style "background" (Render.Theme.themedColor .background model.theme)
                 ]
