@@ -18,6 +18,7 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow: hidden; /* pin the shell to the viewport; panels scroll internally */
     background: #666666;
     font-family: ui-sans-serif, system-ui, sans-serif;
 }

@@ -369,6 +369,8 @@ view model =
             , div
                 [ -- class "panel toc-panel"
                   style "width" (px g.tocW)
+                , style "overflow" "auto"
+                , style "min-height" "0"
                 , style "background" (Render.Theme.themedColor .background model.theme)
                 ]
                 [ Html.map Render (renderPanel model.compilerParameters compilerOutput.toc) ]
