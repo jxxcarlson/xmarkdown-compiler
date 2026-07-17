@@ -8,6 +8,7 @@ text =
 
 XMarkdown is a version of Markdown which handles mathematical text and other features.  These are described below.
 
+Feel free to edit this text.  Your changes will not be saved.
 
 # Math
 

@@ -1,79 +1,72 @@
 module XMarkdown.API exposing
-    ( compileOutput
-    , viewBodyOnly, viewTOC, BlockMatch, renderedTextId, searchBlocksContainingText
-    , viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters
-    , fromMsgToSyncHighlight
+    ( compileOutput, compileString, compileStringWithTitle, defaultCompilerParameters
+    , viewEditor, viewBodyOnly, viewTOC, BlockMatch, fromMsgToSyncHighlight, renderedTextId, searchBlocksContainingText
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
-(SMarkdown) source text into renderable Html.
+source text into renderable Html. See [xmarkdowndemo.netlify.app](https://xmarkdowndemo.netlify.app/)
+for a working example.
 
 
 # Overview
 
-The API follows a two-step workflow:
+The simplest way to compile XMarkdown text is to use `compileString`, e.g.
 
-1.  **Compile** source text into a `CompilerOutput` using `compileOutput`
-2.  **View** the compiled output using `viewBodyOnly` or `viewTOC`
+    compileString defaultCompilerParameters
+        "# Mathematics\n\nPythagoras sez that $a^2 + b^2 = c^2$"
 
-This separation allows you to compile once and render different parts (body, table
-of contents) independently, which is useful for building rich document viewers with
-navigation panels.
+See below for more information on compiler parameters. The DemoTOC and DemoTOC+Sync+Sync examples require a two-step workflow:
+(1) Compile source text into a CompilerOutput structure using the function `compileOutput`, (2) view the CompilerOutput structure using the function
+`viewBodyOnly` for the body of the text `viewTOC`, for the table of contents, etc.
+
+
+# Example
+
+        import XMarkdown.API
+        import XMarkdown.Types exposing (defaultCompilerParameters)
+
+
+        -- Configure compiler
+        params =
+            { defaultCompilerParameters
+                | docWidth = 600
+            }
+
+        -- Compile source text
+        output =
+            XMarkdown.API.compileOutput params
+              """
+              # Introduction"
+
+              XMarkdown can render mathematical formulas in **real time.**
+
+              ## Examples
+
+              Pythagoras says that $a^2 + b^2 = c^2$.
+              Integration of polynomials depends on the formula
+
+              $$
+              int x^n dx = frac(1,n+1) x^{n+1} + C
+              $$
+              """
 
 
 # Compilation
 
-@docs compileOutput
+@docs compileOutput, compileString, compileStringWithTitle, defaultCompilerParameters
 
 
 # Viewing
 
-@docs viewBodyOnly, viewTOC, BlockMatch, compile, fromMsg, renderedTextId, searchBlocksContainingText
-@docs viewEditor, compileString, compileStringWithTitle, defaultCompilerParameters, editorView
+@docs viewEditor, viewBodyOnly, viewTOC, BlockMatch, fromMsgToSyncHighlight, renderedTextId, searchBlocksContainingText
 
+        -- Render the document body
+        body =
+            XMarkdown.API.viewBodyOnly 600 output
 
-# Usage Example
-
-    import XMarkdown.API
-    import XMarkdown.Types exposing (defaultCompilerParameters)
-
-
-    -- Configure compiler
-    params =
-        { defaultCompilerParameters
-            | docWidth = 600
-            , editCount = 0
-        }
-
-    -- Compile source text
-    output =
-        XMarkdown.API.compileOutput params
-            [ "# Introduction"
-            , "This is a document with **bold** text."
-            , ""
-            , "## Details"
-            , "More content here."
-            ]
-
-    -- Render the document body
-    bodyElements =
-        XMarkdown.API.viewBodyOnly 600 output
-
-    -- Render table of contents separately
-    tocElements =
-        XMarkdown.API.viewTOC output
-
-
-# Compiler parameters
-
-To automatically number section headings imitate this example:
-
-
-# See Also
-
-For one-step compilation that parses and renders together, use `compileSimple`.
-
-@docs compileSimple
+        -- Render table of contents separately
+        toc =
+            XMarkdown.API.viewTOC output
 
 -}
 
@@ -90,18 +83,6 @@ import XMarkdown.Types exposing (MarkupMsg, SyncHighlight)
 This is the main compilation function that parses and processes XMarkdown source text.
 The output contains the rendered body, optional banner, table of contents, and title,
 which can then be displayed using the view functions.
-
-    params =
-        { defaultCompilerParameters
-            | docWidth = 600
-        }
-
-    output =
-        compileOutput params
-            [ "# My Document"
-            , "## Introduction"
-            , "Content here."
-            ]
 
 -}
 compileOutput : XMarkdown.Types.CompilerParameters -> String -> XMarkdown.Types.CompilerOutput
@@ -143,7 +124,7 @@ defaultCompilerParameters =
 Takes a width parameter (in pixels) and returns a list of Html elements
 representing the document body without the title or banner.
 
-    bodyElements =
+    body =
         viewBodyOnly 600 output
 
 This is useful when you want to display the main content separately from other
@@ -160,7 +141,7 @@ viewBodyOnly =
 Generates a navigable table of contents based on the document structure
 (sections, subsections, etc.).
 
-    tocElements =
+    toc =
         viewTOC output
 
 The table of contents automatically includes links to document sections and
