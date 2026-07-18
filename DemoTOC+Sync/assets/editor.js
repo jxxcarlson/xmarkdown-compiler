@@ -282,12 +282,21 @@ const xmarkdownSyntax = StateField.define({
 const INDENT_UNIT = 2; // spaces per indent level
 const GUIDE_OFFSET_PX = 4; // aligns the first bar with the .cm-line left padding; tuned by eye
 
-function indentGuideStyle(levels) {
-    // Paint `levels` 1px-wide vertical bars at character columns 0, 2, 4, ...
+function indentGuideStyle(levels, w) {
+    // Paint a faint background band across the `w` leading spaces, then `levels`
+    // 1px-wide vertical bars at character columns 0, 2, 4, ... on top of it.
     // Monospace font => 1ch == one character advance, so bars land on the grid.
+    // The band reuses the theme guide color at reduced strength so it tracks the
+    // theme (deep blue light / deep orange dark) without extra plumbing.
     const images = [];
     const positions = [];
     const sizes = [];
+    if (w > 0) {
+        const band = "color-mix(in srgb, var(--cm-indent-guide, rgba(0,0,0,0.15)) 22%, transparent)";
+        images.push(`linear-gradient(${band}, ${band})`);
+        positions.push(`${GUIDE_OFFSET_PX}px 0`);
+        sizes.push(`${w}ch 100%`);
+    }
     const bar = "linear-gradient(var(--cm-indent-guide, rgba(0,0,0,0.15)), var(--cm-indent-guide, rgba(0,0,0,0.15)))";
     for (let i = 0; i < levels; i++) {
         images.push(bar);
@@ -309,9 +318,9 @@ function buildIndentGuides(state) {
         let w = 0;
         while (w < text.length && text[w] === " ") w++;
         const levels = Math.floor(w / INDENT_UNIT);
-        if (levels > 0) {
+        if (w > 0) {
             decorations.push(
-                Decoration.line({ attributes: { style: indentGuideStyle(levels) } }).range(line.from)
+                Decoration.line({ attributes: { style: indentGuideStyle(levels, w) } }).range(line.from)
             );
         }
     }
