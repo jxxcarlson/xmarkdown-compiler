@@ -151,7 +151,7 @@ lightTheme =
     , link = blue700 --blue500
     , highlight = indigo200
     , border = gray300
-    , indentGuide = Color.rgba 0 0 0 0.15
+    , indentGuide = Color.rgba 0.1 0.1 0.45 0.8
     }
 
 
@@ -168,7 +168,7 @@ darkTheme =
     , link = blue300
     , highlight = indigo500
     , border = gray700
-    , indentGuide = Color.rgba 1 1 1 0.15
+    , indentGuide = Color.rgba 0.95 0.45 0.1 1.0
     }
 
 

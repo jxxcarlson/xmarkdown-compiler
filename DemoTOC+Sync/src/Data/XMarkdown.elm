@@ -107,8 +107,7 @@ Source text in XMarkdown is divided into blocks.  Here is an example
   examined a thin slice of cork with one of the first
   compound microscopes ...
 
-
-  ## Antonie van Leeuwenhoek
+  ## Antoine van Leeuwenhoek
 
   A few years later, the Dutch scientist
   Antoine van Leeuwenhoek built microscopes
