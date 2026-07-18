@@ -117,8 +117,11 @@ port setThemeColors : { fg : String, bg : String } -> Cmd msg  -- Elm → JS
 - `setEditorHighlightColor` — sets the CSS variable
   `--cm-sync-highlight-bg` so the editor's RL-sync highlight color matches the
   compiler's `params.highlightColor` (app.js:53–56).
-- `setThemeColors` — sets `--cm-fg` / `--cm-bg` on `:root` when the user
-  toggles Light/Dark, so the editor theme follows the app theme (app.js:58–63).
+- `setThemeColors` — sets `--cm-fg` / `--cm-bg` (and `--cm-indent-guide`) on
+  `:root` when the user toggles Light/Dark, so the editor theme follows the app
+  theme (app.js:58–63). `--cm-indent-guide` drives both the indentation-guide
+  bars and the leading-space shading — see
+  [`editor-interface2.md`](editor-interface2.md).
 
 Only `lrSyncRequest` is essential to the sync interface; the other three are
 styling conveniences (the CodeMirror theme reads all colors from CSS variables
@@ -430,7 +433,7 @@ document.addEventListener('lr-sync', (e) => {
 
 app.ports.injectHighlightCSS.subscribe((css) => { /* replace #lr-sync-highlight-style <style> tag */ });
 app.ports.setEditorHighlightColor.subscribe((c) => document.documentElement.style.setProperty('--cm-sync-highlight-bg', c));
-app.ports.setThemeColors.subscribe((c) => { /* set --cm-fg, --cm-bg */ });
+app.ports.setThemeColors.subscribe((c) => { /* set --cm-fg, --cm-bg, --cm-indent-guide */ });
 ```
 
 (If your rendered text includes math, you also need the `math-text` custom
@@ -677,7 +680,7 @@ Everything both sides must agree on, in one table:
 | Block line marker | `data-line-number="N"` on rendered blocks | Render pipeline | highlight CSS + scroll fallback |
 | Block/TOC element id | `"e-<lineNumber>.<editCount>"` | Render pipeline / `BlockMatch.id` | scroll code |
 | Highlight color variable | `--cm-sync-highlight-bg` | app.js (from `setEditorHighlightColor`) | editor theme CSS |
-| Theme variables | `--cm-fg`, `--cm-bg` | app.js (from `setThemeColors`) | editor theme CSS |
+| Theme variables | `--cm-fg`, `--cm-bg`, `--cm-indent-guide` | app.js (from `setThemeColors`) | editor theme CSS; indent guides + leading-space band (see [addendum](editor-interface2.md)) |
 
 ## 5. Pitfalls checklist
 
