@@ -5,15 +5,26 @@ exampleMarkdown : String
 exampleMarkdown =
     """
 
+
+
 # Sample Document
 
-XMarkdown extends Markdown to handle mathematical text. Inline math can use either `$...$` syntax like $a^2 + b^2 = c^2$ or LaTeX-style `\\(...\\)` syntax like \\(a^2 + b^2 = c^2\\). Display math:
+XMarkdown is a version of Markdown which handles mathematical text and other features.  These are described below.
+
+To see how any piece of rendered text is constructed, click on it to look at the corresponding source text.
+
+Feel free to edit this text. Your changes will not be saved. Refresh your browser to return to the original text.
+
+# Math
+
+XMarkdown handles both inline and displayed mathematical text, e.g., $a^2 + b^2 = c^2$
+and
 
 $$
 cos(x) = sum_{n=0}^infty (-1)^n frac(x^{2n},(2n)!)
 $$
 
-Here is the source text:
+Here is the source text: `$a^2 + b^2 = c^2$` for inline formulas and
 
 ```
 $$
@@ -21,51 +32,74 @@ cos(x) = sum_{n=0}^infty (-1)^n frac(x^{2n},(2n)!)
 $$
 ```
 
-You can also use standard TeX format:
+for displayed formulas. The source text looks like TeX but without most of the backslashes and curly braces that are customary.  This is [ETeX](https://package.elm-lang.org/packages/jxxcarlson/etex/latest/), an Elm package which implements this simplified syntax.  You may also use regular TeX:
 
 ```
 $$
-\\cos(x) = \\sum_{n=0}^\\infty (-1)^n \\frac{x^{2n}}{(2n)!}
+\\cos{x} = \\sum_{n=0}^\\infty(-1)^n \\frac{x^{2n}}{(2n)!}
 $$
 ```
 
-## Images
+In ETeX curly braces are used for grouping.
 
-Images are handled somewhat differently:
+
+# Images
 
 ![European Robin — click to open in new tab width:400](https://fathersonbirding.com/wp-content/uploads/2020/01/European-Robin-Amsterdam-2019_12_282743-1536x1238.jpg)
 
-The element `[...]` holds the caption for the image as well as optional properties such as `width:400`.
+The syntax for images is
 
-## LaTeX Math Syntax
+```
+[CAPTION width:WIDTH_IN_PIXELS](URL)
+```
 
-You can also use LaTeX-style delimiters for inline math:
+The phrase `width:WIDTH_IN_PIXELS` is optional.
 
-- Using dollars: $e = mc^2$
-- Using backslash parens: \\(e = mc^2\\)
-- Complex expression: \\(\\sum_{i=0}^n x_i = \\frac{n(n+1)}{2}\\)
-- Mixed on same line: The formula $E=mc^2$ is equivalent to \\(E=mc^2\\).
+# Tables
 
-Display math also comes in two flavors. Dollar delimiters:
-
-$$
-a^2 + b^2 = c^2
-$$
-
-and LaTeX-style bracket delimiters:
-
-\\[
-x^2 + y^2 = z^2
-\\]
-
-## Tables
+XMarkdown provides for Github-style tables.  These tables may contain mathematical text.
 
 **Ages, Occupations, and Favorite Formulas**
 
-| Name  | Age | Occupation  | F.V|
-|-------|----:|-------------|
+| Name  | Age | Occupation  | F.F.|
+|:-------|----:|:-------------|-----:|
 | Alice |  28 | *Engineer*    | $n!$ |
 | Bob   |  34 | *Musician*    | $3:2$ |
-| Carol |  41 | *Mathematician* | $sqrt(2)$
+| Carol |  41 | *Mathematician* | $sqrt(2 + \\sqrt5)$
+
+# Table of Contents
+
+XMarkdown provides for an optional real-time active table of contents.  If you create, edit, or remove sections, these changes will be reflected immediately in the table of contents.  Click on an entry in the table of contents and the corresponding source and rendered text will be scrolled into view.
+
+Also note the search and replace features of the editor. Type cmd-F to bring up the editor, ESC to dismiss it.
+
+*You can edit whatever you like in this document.  Your edits will not be saved.*
+
+# Blocks and Indentation
+
+Source text in XMarkdown is divided into blocks.  Here is an example
+
+```
+  # Introduction
+  
+  Cells are the fundamental units of life.
+  Every living organism, ..
+  
+  # The Discovery of Cells
+  
+  ## Robert Hooke and the First Observation
+  
+  In 1665, the English scientist Robert Hooke
+  examined a thin slice of cork with one of the first
+  compound microscopes ...
+  
+  ## Antoine van Leeuwenhoek
+  
+  A few years later, the Dutch scientist
+  Antoine van Leeuwenhoek built microscopes
+  of much higher quality ...
+```
+
+
 
 """

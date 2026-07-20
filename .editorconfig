@@ -1,0 +1,4 @@
+root = true
+
+[*.elm]
+trim_trailing_whitespace = false

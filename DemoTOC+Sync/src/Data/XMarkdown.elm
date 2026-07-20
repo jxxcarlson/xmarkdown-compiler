@@ -95,20 +95,20 @@ Source text in XMarkdown is divided into blocks.  Here is an example
 
 ```
   # Introduction
-
+  
   Cells are the fundamental units of life.
   Every living organism, ..
-
+  
   # The Discovery of Cells
-
+  
   ## Robert Hooke and the First Observation
-
+  
   In 1665, the English scientist Robert Hooke
   examined a thin slice of cork with one of the first
   compound microscopes ...
-
+  
   ## Antoine van Leeuwenhoek
-
+  
   A few years later, the Dutch scientist
   Antoine van Leeuwenhoek built microscopes
   of much higher quality ...

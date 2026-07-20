@@ -172,7 +172,15 @@ header model =
         , style "gap" "20px"
         , style "width" "100%"
         ]
-        [ openButton
+        [ div
+            [ style "color" "rgb(255, 255, 255)"
+            , style "font-size" "24px"
+            , style "display" "flex"
+            , style "padding-right" "24px"
+            , style "align-items" "center"
+            ]
+            [ text "XMarkown File Reader" ]
+        , openButton
         , div
             [ style "color" "rgb(255, 255, 255)"
             , style "font-size" "14px"
