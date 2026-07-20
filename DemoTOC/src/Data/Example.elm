@@ -11,7 +11,7 @@ exampleMarkdown =
 
 XMarkdown is a version of Markdown which handles mathematical text and other features.  These are described below.
 
-For a more advanced example, see DemoTOC+Sync in this repo or open its online version at 
+For a more advanced example, see DemoTOC+Sync in this repo or open its [online version](https://xmarkdowndemo.netlify.app/).
 
 
 # Math
