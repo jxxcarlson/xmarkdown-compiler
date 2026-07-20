@@ -11,9 +11,8 @@ exampleMarkdown =
 
 XMarkdown is a version of Markdown which handles mathematical text and other features.  These are described below.
 
-To see how any piece of rendered text is constructed, click on it to look at the corresponding source text.
+For a more advanced example, see DemoTOC+Sync in this repo or open its online version at 
 
-Feel free to edit this text. Your changes will not be saved. Refresh your browser to return to the original text.
 
 # Math
 
@@ -70,10 +69,6 @@ XMarkdown provides for Github-style tables.  These tables may contain mathematic
 # Table of Contents
 
 XMarkdown provides for an optional real-time active table of contents.  If you create, edit, or remove sections, these changes will be reflected immediately in the table of contents.  Click on an entry in the table of contents and the corresponding source and rendered text will be scrolled into view.
-
-Also note the search and replace features of the editor. Type cmd-F to bring up the editor, ESC to dismiss it.
-
-*You can edit whatever you like in this document.  Your edits will not be saved.*
 
 # Blocks and Indentation
 

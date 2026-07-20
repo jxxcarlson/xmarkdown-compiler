@@ -7,11 +7,11 @@ text =
 
 # Sample Document
 
-XMarkdown is a version of Markdown which handles mathematical text and other features.  These are described below.
+XMarkdown is a version of Markdown which handles mathematical text.  This and other features are described below. See also [this online version](https://xmarkdowndemo.netlify.app/).
 
-To see how any piece of rendered text is constructed, click on it to look at the corresponding source text.
+To understand how any piece of rendered text is constructed, click on it to see the corresponding source text.
 
-Feel free to edit this text. Your changes will not be saved. Refresh your browser to return to the original text.
+Feel free to add to or edit this text. Your changes will not be saved. Refresh your browser to return to the original text.
 
 # Math
 
