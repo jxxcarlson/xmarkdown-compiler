@@ -120,8 +120,8 @@ item count _ settings attr block =
             ]
     in
     Html.li
-        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
-         , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
+        ([ -- Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
+           Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
          , Html.Attributes.style "width" (String.fromInt (settings.width - indentation) ++ "px")
          , Html.Attributes.style "list-style" "none"
          , Html.Attributes.id blockId

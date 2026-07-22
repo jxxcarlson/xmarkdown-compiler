@@ -44,16 +44,17 @@ renderTree params settings accumulator tree =
         , Html.Attributes.style "font-style" fontStyle
         , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
         ]
-        [ renderTree_ params settings accumulator tree ]
+        [ renderTree_ params settings accumulator 0 tree ]
 
 
 renderTree_ :
     XMarkdown.Types.CompilerParameters
     -> Render.Theme.RenderSettings
     -> Accumulator
+    -> Int
     -> RoseTree.Tree.Tree ExpressionBlock
     -> Html MarkupMsg
-renderTree_ params settings accumulator tree =
+renderTree_ params settings accumulator depth tree =
     let
         root =
             RoseTree.Tree.value tree
@@ -61,28 +62,46 @@ renderTree_ params settings accumulator tree =
     case RoseTree.Tree.children tree of
         [] ->
             -- Leaf node: just render the block
-            renderLeafNode params settings accumulator root
+            renderLeafNode params settings accumulator depth root
 
         children ->
             -- Branch node: render based on block type
-            renderBranchNode params settings accumulator root children
+            renderBranchNode params settings accumulator depth root children
 
 
-{-| Render a leaf node (a block with no children) - returns Html
+{-| Render a leaf node (a block with no children) - returns Html.
+`depth` is the number of ancestors of the node in its tree (root = 0).
 -}
 renderLeafNode :
     XMarkdown.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
+    -> Int
     -> ExpressionBlock
     -> Html MarkupMsg
-renderLeafNode params settings accumulator root =
+renderLeafNode params settings accumulator depth root =
     let
         attrs =
             Render.TreeSupport.renderAttributes settings root
     in
-    Html.div attrs
+    Html.div (attrs ++ indentAttributes depth)
         (Render.TreeSupport.renderBody params settings accumulator root)
+
+
+{-| Relative indentation: a node at depth > 0 carries one constant unit of
+left padding on its own container; deeper nesting accumulates through the
+containment of child divs inside their parent's div, so a node at depth d
+sits at d units absolute.
+-}
+indentAttributes : Int -> List (Html.Attribute MarkupMsg)
+indentAttributes depth =
+    if depth == 0 then
+        []
+
+    else
+        [ Html.Attributes.style "padding-left" "12px"
+        , Html.Attributes.style "box-sizing" "border-box"
+        ]
 
 
 {-| Render a branch node (a block with children) - returns Html
@@ -91,11 +110,12 @@ renderBranchNode :
     XMarkdown.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
+    -> Int
     -> ExpressionBlock
     -> List (Tree ExpressionBlock)
     -> Html MarkupMsg
-renderBranchNode params settings accumulator root children =
-    renderStandardBranch params settings accumulator root children
+renderBranchNode params settings accumulator depth root children =
+    renderStandardBranch params settings accumulator depth root children
 
 
 {-|
@@ -111,10 +131,11 @@ renderStandardBranch :
     XMarkdown.Types.CompilerParameters
     -> RenderSettings
     -> Accumulator
+    -> Int
     -> ExpressionBlock
     -> List (Tree ExpressionBlock)
     -> Html MarkupMsg
-renderStandardBranch params settings accumulator root children =
+renderStandardBranch params settings accumulator depth root children =
     Html.div
         (Render.TreeSupport.renderAttributes settings root
             ++ [ Html.Attributes.style "display" "flex"
@@ -122,7 +143,8 @@ renderStandardBranch params settings accumulator root children =
                , Html.Attributes.style "width" "100%"
                , Html.Attributes.style "gap" (String.fromFloat settings.interBlockSpacing ++ "px")
                ]
+            ++ indentAttributes depth
         )
         (Render.TreeSupport.renderBody params settings accumulator root
-            ++ List.map (renderTree_ params settings accumulator) children
+            ++ List.map (renderTree_ params settings accumulator (depth + 1)) children
         )

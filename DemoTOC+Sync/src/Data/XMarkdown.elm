@@ -53,6 +53,74 @@ The syntax for images is
 
 The phrase `width:WIDTH_IN_PIXELS` is optional.
 
+# Itemized Lists
+
+## Ordinary
+
+- Fruits
+
+  - Oranges
+
+  - Apples
+
+    - Green
+    - Red
+
+      - Yada
+      - Mada 
+
+## Numbered
+
+. Vegetables
+
+  . Green Beans
+
+  . Brocolli
+
+    . US
+
+    . Mexican
+
+# Compact
+
+
+## Ordinary
+
+- Fruits
+
+  - Oranges
+  - Apples
+
+    - Green
+    - Red
+
+      - Yada
+      - Mada 
+
+## Numbered
+
+. Vegetables
+
+  . Green Beans
+  . Brocolli
+
+    . US
+    . Mexican
+
+
+Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
+
+  Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
+
+    Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges
+  
+
+Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
+
+  Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
+
+    Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges
+
 # Tables
 
 XMarkdown provides for Github-style tables.  These tables may contain mathematical text.
