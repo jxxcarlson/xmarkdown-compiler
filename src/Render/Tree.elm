@@ -31,15 +31,6 @@ renderTree params settings accumulator tree =
         root =
             RoseTree.Tree.value tree
 
-        isBoxLike : ExpressionBlock -> Bool
-        isBoxLike block =
-            case AST.Language.getName block of
-                Nothing ->
-                    False
-
-                Just name ->
-                    name == "box"
-
         fontStyle =
             case Dict.get "style" root.properties of
                 Just "italic" ->
@@ -47,41 +38,13 @@ renderTree params settings accumulator tree =
 
                 _ ->
                     "normal"
-
-        borderColor =
-            case params.theme of
-                Light ->
-                    "rgba(179, 204, 230, 1)"
-
-                Dark ->
-                    "rgba(153, 153, 153, 0.5)"
-
-        blockAttrs =
-            [ Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
-            , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
-            , Html.Attributes.style "font-style" fontStyle
-            ]
     in
-    if isBoxLike root then
-        Html.div blockAttrs
-            [ Html.div
-                [ Html.Attributes.style "padding-bottom" "0px"
-                , Html.Attributes.style "border" ("4px solid " ++ borderColor)
-                , Html.Attributes.style "margin-left" "auto"
-                , Html.Attributes.style "margin-right" "auto"
-                , Html.Attributes.style "width" (String.fromInt (settings.width - 60) ++ "px")
-                ]
-                [ renderTree_ params settings accumulator tree
-                ]
-            ]
-
-    else
-        Html.div
-            [ Html.Attributes.style "width" "100%"
-            , Html.Attributes.style "font-style" fontStyle
-            , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
-            ]
-            [ renderTree_ params settings accumulator tree ]
+    Html.div
+        [ Html.Attributes.style "width" "100%"
+        , Html.Attributes.style "font-style" fontStyle
+        , Html.Attributes.style "font-size" (String.fromInt settings.fontSize ++ "px")
+        ]
+        [ renderTree_ params settings accumulator tree ]
 
 
 renderTree_ :
