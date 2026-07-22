@@ -1,9 +1,9 @@
 module Parser.Block.Pipeline exposing (toExpressionBlock)
 
+import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
 import Dict
 import Either exposing (Either(..))
 import Parser.Block.GFMTable
-import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..), PrimitiveBlock)
 
 
 toExpressionBlock : (Int -> String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
@@ -128,6 +128,7 @@ parseListItems marker parse sourceText =
         |> List.foldl folder ( 0, [] )
         |> Tuple.second
         |> List.reverse
+        |> Debug.log "ITEMS"
 
 
 fixItems : List String -> List String

@@ -24,7 +24,7 @@ import XMarkdown.Types exposing (MarkupMsg)
 {-| Type alias for a block renderer function (returns Html)
 -}
 type alias BlockRenderer =
-    Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+    Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 
 
 {-| Type alias for the block registry

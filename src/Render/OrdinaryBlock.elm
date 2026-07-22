@@ -43,8 +43,8 @@ initRegistry =
 
 {-| Render an ordinary block using the registry (returns Html)
 -}
-render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-render count acc settings attr block =
+render : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+render count acc depth settings attr block =
     let
         registry =
             initRegistry
@@ -65,12 +65,12 @@ render count acc settings attr block =
                                         -- Find the env renderer as our fallback
                                         envRenderer =
                                             Render.BlockRegistry.lookup "env" registry
-                                                |> Maybe.withDefault (\_ _ _ _ _ -> Html.text "")
+                                                |> Maybe.withDefault (\_ _ _ _ _ _ -> Html.text "")
                                     in
-                                    envRenderer count acc settings attr block
+                                    envRenderer count acc depth settings attr block
 
                                 Just renderer ->
-                                    renderer count acc settings attr block
+                                    renderer count acc depth settings attr block
                     in
                     renderedBlock
 

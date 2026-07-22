@@ -142,7 +142,7 @@ render params ( accumulator_, forest_ ) =
         banner : Maybe (Html MarkupMsg)
         banner =
             AST.ASTTools.banner forest_
-                |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ renderSettings [])
+                |> Maybe.map (Render.Block.renderBody params.editCount accumulator_ 0 renderSettings [])
                 |> Maybe.andThen List.head
                 |> Maybe.map (\elem -> Html.div [ Html.Attributes.style "height" "40px" ] [ elem ])
 

@@ -111,8 +111,8 @@ renderMath content isDisplay attrs =
 
 {-| Render chemistry notation
 -}
-chem : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-chem count _ _ attrs block =
+chem : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+chem count _ _ _ attrs block =
     let
         content =
             getMathContent block
@@ -153,8 +153,8 @@ displayedMath count attrs block =
 
 {-| Render equation
 -}
-equation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-equation count _ _ attrs block =
+equation : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+equation count _ _ _ attrs block =
     let
         content =
             getMathContent block
@@ -174,8 +174,8 @@ equation count _ _ attrs block =
 
 {-| Render aligned math
 -}
-aligned : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-aligned count _ _ attrs block =
+aligned : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+aligned count _ _ _ attrs block =
     let
         content =
             getMathContent block
@@ -195,8 +195,8 @@ aligned count _ _ attrs block =
 
 {-| Render array/matrix
 -}
-array : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-array count _ _ attrs block =
+array : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+array count _ _ _ attrs block =
     let
         content =
             getMathContent block

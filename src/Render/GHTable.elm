@@ -13,8 +13,8 @@ import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 {-| Render a GFM table
 -}
-render : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-render count _ settings _ block =
+render : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+render count _ _ settings _ block =
     case block.body of
         Right [ Fun "table" rows _ ] ->
             let

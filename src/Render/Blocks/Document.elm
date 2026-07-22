@@ -25,8 +25,8 @@ registerRenderers registry =
 
 {-| Render a section heading
 -}
-section : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-section count _ settings attr block =
+section : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+section count _ _ settings attr block =
     let
         level : Int
         level =
@@ -93,6 +93,6 @@ section count _ settings attr block =
 
 {-| Render an unnumbered section heading
 -}
-unnumberedSection : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-unnumberedSection count acc settings attr block =
-    section count acc settings attr block
+unnumberedSection : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+unnumberedSection count acc depth settings attr block =
+    section count acc depth settings attr block

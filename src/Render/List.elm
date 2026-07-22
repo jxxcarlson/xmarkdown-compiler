@@ -82,14 +82,15 @@ bulletSymbol theme level =
 
 {-| Render a list item
 -}
-item : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-item count _ settings attr block =
+item : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+item count _ depth settings attr block =
     let
         level =
             block.indent // 2
 
         indentation =
-            (round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
+            --(round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
+            (round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation
 
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -111,7 +112,7 @@ item count _ settings attr block =
                     [ Html.Attributes.style "flex-shrink" "0"
                     , Html.Attributes.style "white-space" "nowrap"
                     ]
-                    [ bulletSymbol settings.theme level ]
+                    [ bulletSymbol settings.theme depth ]
                 , Html.div
                     [ Html.Attributes.style "flex-grow" "1"
                     ]
@@ -120,9 +121,9 @@ item count _ settings attr block =
             ]
     in
     Html.li
-        ([ -- Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
-           Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
-         , Html.Attributes.style "width" (String.fromInt (settings.width - indentation) ++ "px")
+        ([ Html.Attributes.style "margin-left" (String.fromInt settings.leftIndentation ++ "px")
+         , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
+         , Html.Attributes.style "width" (String.fromInt (settings.width - depth) ++ "px")
          , Html.Attributes.style "list-style" "none"
          , Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
@@ -134,14 +135,15 @@ item count _ settings attr block =
 
 {-| Render a numbered list item
 -}
-numbered : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numbered count acc settings attr block =
+numbered : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+numbered count acc depth settings attr block =
     let
         level =
             block.indent // 2
 
         indentation =
-            (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
+            -- (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
+            (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation
 
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -160,7 +162,7 @@ numbered count acc settings attr block =
                     [ Html.text "" ]
 
         formattedNumber =
-            formatListNumber level itemNumber
+            formatListNumber depth itemNumber
 
         hangingIndentContent =
             [ Html.div
@@ -180,7 +182,7 @@ numbered count acc settings attr block =
             ]
     in
     Html.li
-        ([ Html.Attributes.style "margin-left" (String.fromInt indentation ++ "px")
+        ([ Html.Attributes.style "margin-left" (String.fromInt settings.leftIndentation ++ "px")
          , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
          , Html.Attributes.style "width" (String.fromInt (settings.width - (6 + indentation)) ++ "px")
          , Html.Attributes.style "list-style" "none"
@@ -194,8 +196,8 @@ numbered count acc settings attr block =
 
 {-| Render a description list item
 -}
-desc : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-desc count _ settings attr block =
+desc : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+desc count _ _ settings attr block =
     let
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count

@@ -28,8 +28,8 @@ registerRenderers registry =
 
 {-| Render a quotation block (returns Html)
 -}
-quotation : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-quotation count _ settings _ block =
+quotation : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+quotation count _ _ settings _ block =
     let
         content =
             Dict.get "firstLine" block.properties

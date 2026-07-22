@@ -35,15 +35,16 @@ syncAttributes settings block =
            ]
 
 
-{-| Render block body using the real block renderer
+{-| Render block body using the real block renderer.
+`depth` is the number of ancestors of the block's node in its tree (root = 0).
 -}
-renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> ExpressionBlock -> List (Html MarkupMsg)
-renderBody params settings acc block =
-    renderBodyWithAttrs params settings acc (renderAttributes settings block) block
+renderBody : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> Int -> ExpressionBlock -> List (Html MarkupMsg)
+renderBody params settings acc depth block =
+    renderBodyWithAttrs params settings acc depth (renderAttributes settings block) block
 
 
-renderBodyWithAttrs : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
-renderBodyWithAttrs params settings acc attrs block =
+renderBodyWithAttrs : XMarkdown.Types.CompilerParameters -> RenderSettings -> Accumulator -> Int -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
+renderBodyWithAttrs params settings acc depth attrs block =
     let
         isHeading =
             Dict.member "level" block.properties
@@ -55,4 +56,4 @@ renderBodyWithAttrs params settings acc attrs block =
             else
                 []
     in
-    spacer ++ Render.Block.renderBody params.editCount acc settings attrs block
+    spacer ++ Render.Block.renderBody params.editCount acc depth settings attrs block

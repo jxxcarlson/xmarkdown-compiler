@@ -53,20 +53,12 @@ render theme attrs expr =
                 Html.code []
                     (List.map (render theme attrs) exprList)
 
-            else if List.member name [ "anchor", "mark" ] then
-                Html.span []
-                    [ Html.text ("(" ++ name ++ " content)") ]
-
             else if List.member name [ "b", "strong", "bold" ] then
                 Html.strong []
                     (List.map (render theme attrs) exprList)
 
             else if List.member name [ "i", "em", "italic" ] then
                 Html.em []
-                    (List.map (render theme attrs) exprList)
-
-            else if List.member name [ "strike", "strikethrough" ] then
-                Html.span [ Html.Attributes.style "text-decoration" "line-through" ]
                     (List.map (render theme attrs) exprList)
 
             else if name == "a" || name == "link" then

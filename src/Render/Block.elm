@@ -13,14 +13,14 @@ import Render.VerbatimBlock as VerbatimBlock
 import XMarkdown.Types exposing (MarkupMsg)
 
 
-renderBody : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
-renderBody count acc settings attrs block =
+renderBody : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> List (Html MarkupMsg)
+renderBody count acc depth settings attrs block =
     case block.heading of
         Paragraph ->
             [ renderParagraphBody count settings attrs block ]
 
         Ordinary _ ->
-            [ Render.OrdinaryBlock.render count acc settings attrs block ]
+            [ Render.OrdinaryBlock.render count acc depth settings attrs block ]
 
         Verbatim _ ->
             [ VerbatimBlock.render count settings attrs block |> Render.Helper.showError settings.theme block.meta.error ]

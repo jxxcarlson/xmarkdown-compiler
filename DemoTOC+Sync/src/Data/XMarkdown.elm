@@ -81,7 +81,7 @@ The phrase `width:WIDTH_IN_PIXELS` is optional.
 
     . Mexican
 
-# Compact
+# Compact Lists
 
 
 ## Ordinary
@@ -107,6 +107,7 @@ The phrase `width:WIDTH_IN_PIXELS` is optional.
     . US
     . Mexican
 
+# Indentation
 
 Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
 
@@ -114,13 +115,6 @@ Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
 
     Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges
   
-
-Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
-
-  Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges 
-
-    Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges
-
 # Tables
 
 XMarkdown provides for Github-style tables.  These tables may contain mathematical text.

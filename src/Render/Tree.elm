@@ -85,7 +85,7 @@ renderLeafNode params settings accumulator depth root =
             Render.TreeSupport.renderAttributes settings root
     in
     Html.div (attrs ++ indentAttributes depth)
-        (Render.TreeSupport.renderBody params settings accumulator root)
+        (Render.TreeSupport.renderBody params settings accumulator depth root)
 
 
 {-| Relative indentation: a node at depth > 0 carries one constant unit of
@@ -145,6 +145,6 @@ renderStandardBranch params settings accumulator depth root children =
                ]
             ++ indentAttributes depth
         )
-        (Render.TreeSupport.renderBody params settings accumulator root
+        (Render.TreeSupport.renderBody params settings accumulator depth root
             ++ List.map (renderTree_ params settings accumulator (depth + 1)) children
         )

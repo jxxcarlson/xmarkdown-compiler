@@ -28,8 +28,8 @@ makeItem x =
 
 {-| Render an item list
 -}
-itemList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-itemList _ _ settings attrs block =
+itemList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+itemList _ _ _ settings attrs block =
     let
         content =
             case block.body of
@@ -48,8 +48,8 @@ itemList _ _ settings attrs block =
 
 {-| Render a numbered list
 -}
-numberedList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numberedList _ _ settings attrs block =
+numberedList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+numberedList _ _ _ settings attrs block =
     let
         content =
             case block.body of
@@ -65,8 +65,8 @@ numberedList _ _ settings attrs block =
 
 {-| Render a description list
 -}
-descriptionList : Int -> Accumulator -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-descriptionList _ _ settings attrs block =
+descriptionList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+descriptionList _ _ _ settings attrs block =
     let
         content =
             case block.body of
