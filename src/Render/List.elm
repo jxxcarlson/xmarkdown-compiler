@@ -1,4 +1,4 @@
-module Render.List exposing (desc, item, numbered)
+module Render.List exposing (bulletSymbol, desc, item, numbered)
 
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
@@ -61,21 +61,27 @@ bulletSymbol theme level =
             Html.span
                 [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
                 , Html.Attributes.style "font-weight" "bold"
-                , Html.Attributes.style "font-size" "0.5em"
+                , Html.Attributes.style "font-size" "0.6em"
+                , Html.Attributes.style "display" "inline-flex"
+                , Html.Attributes.style "align-items" "center"
                 ]
                 [ Html.text "●" ]
 
         1 ->
             Html.span
                 [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
-                , Html.Attributes.style "font-size" "0.5em"
+                , Html.Attributes.style "font-size" "0.7em"
+                , Html.Attributes.style "display" "inline-flex"
+                , Html.Attributes.style "align-items" "center"
                 ]
                 [ Html.text "□" ]
 
         _ ->
             Html.span
                 [ Html.Attributes.style "color" (Render.Theme.themedColor .offsetText theme)
-                , Html.Attributes.style "font-size" "0.84em"
+                , Html.Attributes.style "font-size" "0.7em"
+                , Html.Attributes.style "display" "inline-flex"
+                , Html.Attributes.style "align-items" "center"
                 ]
                 [ Html.text "◇" ]
 
@@ -85,20 +91,13 @@ bulletSymbol theme level =
 item : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 item count _ depth settings attr block =
     let
-        level =
-            block.indent // 2
-
-        indentation =
-            --(round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
-            (round <| 2.2 * toFloat settings.leftIndentation) + settings.leftIndentation
-
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
 
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attr) exprs
+                    List.map (Render.Expression.render settings.theme depth attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -106,15 +105,20 @@ item count _ depth settings attr block =
         hangingIndentContent =
             [ Html.div
                 [ Html.Attributes.style "display" "flex"
+                , Html.Attributes.style "align-items" "flex-start"
                 , Html.Attributes.style "gap" "8px"
                 ]
                 [ Html.div
                     [ Html.Attributes.style "flex-shrink" "0"
                     , Html.Attributes.style "white-space" "nowrap"
+                    , Html.Attributes.style "display" "flex"
+                    , Html.Attributes.style "align-items" "center"
+                    , Html.Attributes.style "height" "1.4em"
                     ]
                     [ bulletSymbol settings.theme depth ]
                 , Html.div
                     [ Html.Attributes.style "flex-grow" "1"
+                    , Html.Attributes.style "line-height" "1.4"
                     ]
                     content
                 ]
@@ -138,9 +142,6 @@ item count _ depth settings attr block =
 numbered : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
 numbered count acc depth settings attr block =
     let
-        level =
-            block.indent // 2
-
         indentation =
             -- (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation * (level - 1)
             (round <| 2.1 * toFloat settings.leftIndentation) + settings.leftIndentation
@@ -156,7 +157,7 @@ numbered count acc depth settings attr block =
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attr) exprs
+                    List.map (Render.Expression.render settings.theme depth attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -197,7 +198,7 @@ numbered count acc depth settings attr block =
 {-| Render a description list item
 -}
 desc : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-desc count _ _ settings attr block =
+desc count _ depth settings attr block =
     let
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -205,7 +206,7 @@ desc count _ _ settings attr block =
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attr) exprs
+                    List.map (Render.Expression.render settings.theme depth attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]

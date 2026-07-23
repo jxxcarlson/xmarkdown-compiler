@@ -57,6 +57,8 @@ The phrase `width:WIDTH_IN_PIXELS` is optional.
 
 ## Ordinary
 
+blah blah blah blah blah blah blah blah blah 
+
 - Fruits
 
   - Oranges
@@ -64,12 +66,18 @@ The phrase `width:WIDTH_IN_PIXELS` is optional.
   - Apples
 
     - Green
+
     - Red
 
       - Yada
+
       - Mada 
 
+blah blah blah blah blah blah blah blah 
+
 ## Numbered
+
+blah blah blah blah blah blah blah blah blah blah 
 
 . Vegetables
 
@@ -80,32 +88,39 @@ The phrase `width:WIDTH_IN_PIXELS` is optional.
     . US
 
     . Mexican
+
+blah blah blah blah blah blah blah blah 
 
 # Compact Lists
 
 
 ## Ordinary
 
-- Fruits
 
-  - Oranges
-  - Apples
+blah blah blah blah blah blah blah blah blah 
 
+- Apples
+  - YOLO $= y^2$
+    - MOV $c^2$
     - Green
     - Red
 
       - Yada
       - Mada 
 
+blah blah blah blah blah blah blah blah 
+
 ## Numbered
 
-. Vegetables
+blah blah blah blah blah blah blah blah blah 
 
+. Vegetables
   . Green Beans
   . Brocolli
-
     . US
     . Mexican
+
+blah blah blah blah blah blah blah blah blah 
 
 # Indentation
 

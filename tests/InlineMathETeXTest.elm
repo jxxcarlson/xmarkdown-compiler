@@ -18,7 +18,7 @@ import XMarkdown.Types exposing (Theme(..))
 
 renderInlineMath : String -> Query.Single XMarkdown.Types.MarkupMsg
 renderInlineMath content =
-    Render.Expression.render Light [] (VFun "math" content { begin = 0, end = 0, id = "e-0.0", index = 0 })
+    Render.Expression.render Light 0 [] (VFun "math" content { begin = 0, end = 0, id = "e-0.0", index = 0 })
         |> Query.fromHtml
 
 

@@ -7,6 +7,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
 import Render.Expression
+import Render.List
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
@@ -21,40 +22,83 @@ registerRenderers registry =
         registry
 
 
-makeItem : Html msg -> Html msg
-makeItem x =
-    Html.li [ Html.Attributes.style "margin-bottom" "4px" ] [ x ]
+makeItem : RenderSettings -> Int -> Html MarkupMsg -> Html MarkupMsg
+makeItem settings depth x =
+    Html.div
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "align-items" "flex-start"
+        , Html.Attributes.style "margin-bottom" "4px"
+        , Html.Attributes.style "gap" "8px"
+        , Html.Attributes.style "paddingLeft" (String.fromInt (depth * settings.leftIndentation) ++ "px")
+        ]
+        [ Html.div
+            [ Html.Attributes.style "flex-shrink" "0"
+            , Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "align-items" "center"
+            , Html.Attributes.style "height" "1.4em"
+            ]
+            [ Render.List.bulletSymbol settings.theme depth ]
+        , Html.div
+            [ Html.Attributes.style "flex-grow" "1"
+            , Html.Attributes.style "line-height" "1.4"
+            ]
+            [ x ]
+        ]
 
 
 {-| Render an item list
 -}
 itemList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-itemList _ _ _ settings attrs block =
+itemList _ _ depth settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attrs >> makeItem) exprs
+                    let
+                        lev expr =
+                            case expr of
+                                AST.Language.ExprList k _ _ ->
+                                    k // 2
+
+                                _ ->
+                                    0
+
+                        levels =
+                            List.map lev exprs
+
+                        renderItem : Int -> AST.Language.Expression -> Html MarkupMsg
+                        renderItem lev_ expr_ =
+                            let
+                                yada : Html MarkupMsg -> Html MarkupMsg
+                                yada =
+                                    makeItem settings lev_
+
+                                polo : AST.Language.Expression -> Html MarkupMsg
+                                polo =
+                                    Render.Expression.render settings.theme depth attrs
+                            in
+                            (polo >> yada) expr_
+                    in
+                    Html.div [] (List.map2 renderItem levels exprs)
 
                 Either.Left _ ->
-                    [ Html.text "" ]
+                    Html.text ""
     in
     Html.div
-        [ Html.Attributes.style "margin-left" "36px"
-        , Html.Attributes.style "margin-bottom" "24px"
+        [ Html.Attributes.style "flex-grow" "1"
         ]
-        content
+        [ content ]
 
 
 {-| Render a numbered list
 -}
 numberedList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-numberedList _ _ _ settings attrs block =
+numberedList _ _ depth settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attrs >> makeItem) exprs
+                    List.map (Render.Expression.render settings.theme depth attrs >> makeItem settings depth) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
@@ -66,12 +110,12 @@ numberedList _ _ _ settings attrs block =
 {-| Render a description list
 -}
 descriptionList : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-descriptionList _ _ _ settings attrs block =
+descriptionList _ _ depth settings attrs block =
     let
         content =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attrs) exprs
+                    List.map (Render.Expression.render settings.theme depth attrs) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]

@@ -14,7 +14,7 @@ import XMarkdown.Types exposing (MarkupMsg, Theme)
 {-| Render a GFM table
 -}
 render : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-render count _ _ settings _ block =
+render count _ depth settings _ block =
     case block.body of
         Right [ Fun "table" rows _ ] ->
             let
@@ -25,7 +25,7 @@ render count _ _ settings _ block =
                         |> List.map String.trim
 
                 rowElements =
-                    List.indexedMap (renderTableRow settings.theme alignments) rows
+                    List.indexedMap (renderTableRow settings.theme depth alignments) rows
 
                 blockId =
                     "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count
@@ -55,8 +55,8 @@ render count _ _ settings _ block =
 
 {-| Render a single table row
 -}
-renderTableRow : Theme -> List String -> Int -> Expression -> Html MarkupMsg
-renderTableRow theme alignments rowIndex expr =
+renderTableRow : Theme -> Int -> List String -> Int -> Expression -> Html MarkupMsg
+renderTableRow theme depth alignments rowIndex expr =
     case expr of
         Fun "row" cells _ ->
             let
@@ -64,7 +64,7 @@ renderTableRow theme alignments rowIndex expr =
                     rowIndex == 0
 
                 cellElements =
-                    List.indexedMap (renderTableCell theme alignments isHeader) cells
+                    List.indexedMap (renderTableCell theme depth alignments isHeader) cells
 
                 element =
                     if isHeader then
@@ -81,13 +81,13 @@ renderTableRow theme alignments rowIndex expr =
 
 {-| Render a single table cell
 -}
-renderTableCell : Theme -> List String -> Bool -> Int -> Expression -> Html MarkupMsg
-renderTableCell theme alignments isHeader colIndex expr =
+renderTableCell : Theme -> Int -> List String -> Bool -> Int -> Expression -> Html MarkupMsg
+renderTableCell theme depth alignments isHeader colIndex expr =
     case expr of
         Fun "cell" content _ ->
             let
                 renderedContent =
-                    List.map (Render.Expression.render theme []) content
+                    List.map (Render.Expression.render theme depth []) content
 
                 element =
                     if isHeader then

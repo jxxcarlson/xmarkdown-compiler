@@ -11,8 +11,8 @@ import XMarkdown.Types exposing (MarkupMsg, Theme)
 
 {-| Render an expression to Html
 -}
-render : Theme -> List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
-render theme attrs expr =
+render : Theme -> Int -> List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
+render theme depth attrs expr =
     case expr of
         Text string _ ->
             Html.span attrs [ Html.text (string ++ " ") ]
@@ -51,15 +51,15 @@ render theme attrs expr =
 
             else if name == "code" then
                 Html.code []
-                    (List.map (render theme attrs) exprList)
+                    (List.map (render theme depth attrs) exprList)
 
             else if List.member name [ "b", "strong", "bold" ] then
                 Html.strong []
-                    (List.map (render theme attrs) exprList)
+                    (List.map (render theme depth attrs) exprList)
 
             else if List.member name [ "i", "em", "italic" ] then
                 Html.em []
-                    (List.map (render theme attrs) exprList)
+                    (List.map (render theme depth attrs) exprList)
 
             else if name == "a" || name == "link" then
                 let
@@ -120,10 +120,14 @@ render theme attrs expr =
 
             else
                 Html.span []
-                    (List.map (render theme attrs) exprList)
+                    (List.map (render theme depth attrs) exprList)
 
-        ExprList _ exprList _ ->
-            Html.div [] (List.map (render theme attrs) exprList)
+        ExprList indentation exprList _ ->
+            let
+                pseudoDepth =
+                    indentation // 2
+            in
+            Html.div [] (List.map (render theme pseudoDepth attrs) exprList)
 
 
 {-| Extract link text and URL from expressions

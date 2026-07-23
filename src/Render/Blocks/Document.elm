@@ -26,7 +26,7 @@ registerRenderers registry =
 {-| Render a section heading
 -}
 section : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-section count _ _ settings attr block =
+section count _ depth settings attr block =
     let
         level : Int
         level =
@@ -66,7 +66,7 @@ section count _ _ settings attr block =
         contentExprs =
             case block.body of
                 Either.Right exprs ->
-                    List.map (Render.Expression.render settings.theme attr) exprs
+                    List.map (Render.Expression.render settings.theme depth attr) exprs
 
                 Either.Left _ ->
                     [ Html.text "" ]
