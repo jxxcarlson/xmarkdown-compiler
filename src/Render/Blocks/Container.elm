@@ -68,16 +68,7 @@ itemList _ _ depth settings attrs block =
 
                         renderItem : Int -> AST.Language.Expression -> Html MarkupMsg
                         renderItem lev_ expr_ =
-                            let
-                                yada : Html MarkupMsg -> Html MarkupMsg
-                                yada =
-                                    makeItem settings lev_
-
-                                polo : AST.Language.Expression -> Html MarkupMsg
-                                polo =
-                                    Render.Expression.render settings.theme depth attrs
-                            in
-                            (polo >> yada) expr_
+                            (Render.Expression.render settings.theme depth attrs >> makeItem settings lev_) expr_
                     in
                     Html.div [] (List.map2 renderItem levels exprs)
 
