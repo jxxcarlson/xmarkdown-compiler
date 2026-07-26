@@ -560,25 +560,41 @@ transformBlock block =
             { block | properties = Dict.insert "level" "3" block.properties, heading = Ordinary "section" }
 
         Just "item" ->
-            { block
-                | body =
-                    (block.firstLine
+            let
+                stripped =
+                    block.firstLine
                         |> String.trim
                         |> String.replace "| item" ""
                         |> Tools.Utility.replaceLeadingDashSpace
-                    )
-                        :: block.body
+
+                indent =
+                    String.length block.firstLine - String.length (String.trimLeft block.firstLine)
+
+                markerOffset =
+                    indent + (String.length (String.trim block.firstLine) - String.length stripped)
+            in
+            { block
+                | body = stripped :: block.body
+                , properties = Dict.insert "markerOffset" (String.fromInt markerOffset) block.properties
             }
 
         Just "numbered" ->
-            { block
-                | body =
-                    (block.firstLine
+            let
+                stripped =
+                    block.firstLine
                         |> String.trim
                         |> String.replace "| numbered" ""
                         |> Tools.Utility.replaceLeadingNumberedMarker
-                    )
-                        :: block.body
+
+                indent =
+                    String.length block.firstLine - String.length (String.trimLeft block.firstLine)
+
+                markerOffset =
+                    indent + (String.length (String.trim block.firstLine) - String.length stripped)
+            in
+            { block
+                | body = stripped :: block.body
+                , properties = Dict.insert "markerOffset" (String.fromInt markerOffset) block.properties
             }
 
         _ ->

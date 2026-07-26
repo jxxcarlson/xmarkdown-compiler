@@ -76,4 +76,47 @@ suite =
             \_ ->
                 mismatches "# Head\n\nsome **bold** words here\n"
                     |> Expect.equal []
+        , test "title marker" <|
+            \_ ->
+                mismatches "!! My Title\n\nbody text\n"
+                    |> Expect.equal []
+        , test "block quote" <|
+            \_ ->
+                mismatches "> quoted words here\n"
+                    |> Expect.equal []
+        , test "title block" <|
+            \_ ->
+                mismatches "!! The Title\n\nbody text\n"
+                    |> Expect.equal []
+        , test "bulleted list" <|
+            \_ ->
+                mismatches "intro\n\n- alpha beta\n- gamma delta\n"
+                    |> Expect.equal []
+        , test "numbered list, dot marker" <|
+            \_ ->
+                mismatches "intro\n\n. alpha beta\n. gamma delta\n"
+                    |> Expect.equal []
+        , test "numbered list, 1. marker" <|
+            \_ ->
+                mismatches "intro\n\n1. alpha beta\n2. gamma delta\n"
+                    |> Expect.equal []
+        , test "indented nested list" <|
+            \_ ->
+                mismatches "- outer item\n  - inner item\n"
+                    |> Expect.equal []
+        , test "bold inside a list item" <|
+            \_ ->
+                mismatches "- item with **bold** inside\n"
+                    |> Expect.equal []
+
+        -- A lone numbered item (no second numbered line follows) stays
+        -- classified as the single-item "numbered" block, routed through
+        -- PrimitiveBlock.transformBlock rather than Pipeline's
+        -- "numberedList" branch. This is the numbered counterpart of
+        -- "bold inside a list item" above, added to cover the symmetric
+        -- fix applied to transformBlock's `Just "numbered"` case.
+        , test "lone numbered item" <|
+            \_ ->
+                mismatches ". only item here\n"
+                    |> Expect.equal []
         ]

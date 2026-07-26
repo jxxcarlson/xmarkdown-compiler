@@ -56,28 +56,13 @@ toExpressionBlock_ parse primitiveBlock =
                 Ordinary "itemList" ->
                     Right (parseListItems "- " parse primitiveBlock.meta.sourceText)
 
-                -- Nested numbered lists: parse indentation to support proper nesting
+                -- Nested numbered lists: parse indentation to support proper nesting.
+                -- Each item is parsed from its own (marker-stripped) substring, so its
+                -- expression offsets start at 0; shift each item's expressions by the
+                -- offset of its content within the block's sourceText, mirroring
+                -- parseListItems above (needed for rendered→editor sync).
                 Ordinary "numberedList" ->
-                    let
-                        extractIndentAndContent : String -> ( Int, String )
-                        extractIndentAndContent str =
-                            ( numberOfLeadingSpaces str, String.trimLeft str |> Tools.Utility.replaceLeadingNumberedMarker )
-
-                        numberOfLeadingSpaces : String -> Int
-                        numberOfLeadingSpaces str =
-                            String.length str - String.length (String.trimLeft str)
-
-                        items : List ( Int, String )
-                        items =
-                            String.split "\n" primitiveBlock.meta.sourceText
-                                |> List.map extractIndentAndContent
-
-                        content_ : List ( Int, List Expression )
-                        content_ =
-                            List.map (\( indent, str ) -> ( indent, parse str )) items
-                    in
-                    -- Store indentation in ExprList's Int parameter for rendering
-                    Right (List.map (\( indent, exprList ) -> ExprList indent exprList AST.Language.emptyExprMeta) content_)
+                    Right (parseNumberedListItems parse primitiveBlock.meta.sourceText)
 
                 Ordinary _ ->
                     let
@@ -145,6 +130,45 @@ parseListItems marker parse sourceText =
         |> Tuple.second
         |> List.reverse
         |> Debug.log "ITEMS"
+
+
+{-| Numbered-list counterpart of `parseListItems`. The marker is variable
+length ("`. `", "`1. `", "`12. `", ...) so, unlike the fixed `"- "` marker,
+its length is measured per line rather than passed in.
+-}
+parseNumberedListItems : (String -> List Expression) -> String -> List Expression
+parseNumberedListItems parse sourceText =
+    let
+        folder : String -> ( Int, List Expression ) -> ( Int, List Expression )
+        folder line ( offset, acc ) =
+            let
+                trimmed =
+                    String.trimLeft line
+
+                indent =
+                    String.length line - String.length trimmed
+
+                content =
+                    Tools.Utility.replaceLeadingNumberedMarker trimmed
+
+                markerLen =
+                    String.length trimmed - String.length content
+
+                delta =
+                    offset + indent + markerLen
+
+                exprs =
+                    parse content |> List.map (AST.Language.shiftExpressionPositions delta)
+
+                nextOffset =
+                    offset + String.length line + 1
+            in
+            ( nextOffset, ExprList indent exprs AST.Language.emptyExprMeta :: acc )
+    in
+    String.split "\n" sourceText
+        |> List.foldl folder ( 0, [] )
+        |> Tuple.second
+        |> List.reverse
 
 
 fixItems : List String -> List String
