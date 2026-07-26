@@ -420,8 +420,12 @@ commitBlock state currentLine =
                                         |> transformBlock
 
                         Verbatim _ ->
+                            -- `body` is in reverse line order here, so its head is the
+                            -- closing fence.
                             if List.head block_.body == Just "```" then
-                                { block_ | body = List.filter (\l -> l /= "```") block_.body }
+                                -- Drop both fences. The opening one may carry a
+                                -- language tag (```elm), so match on the prefix.
+                                { block_ | body = List.filter (not << String.startsWith "```") block_.body }
                                     |> finalize
 
                             else
@@ -551,7 +555,7 @@ transformBlock block =
                     (block.firstLine
                         |> String.trim
                         |> String.replace "| numbered" ""
-                        |> Tools.Utility.replaceLeadingDotSpace
+                        |> Tools.Utility.replaceLeadingNumberedMarker
                     )
                         :: block.body
             }
@@ -703,19 +707,7 @@ getHeadingData line_ =
                                             }
 
                                 "." ->
-                                    let
-                                        reducedLine =
-                                            String.replace ". " "" line
-                                    in
-                                    if String.isEmpty reducedLine then
-                                        Err HENoContent
-
-                                    else
-                                        Ok <|
-                                            { heading = Ordinary "numbered"
-                                            , args = []
-                                            , properties = Dict.singleton "firstLine" reducedLine
-                                            }
+                                    numberedItem (Tools.Utility.replaceLeadingNumberedMarker line)
 
                                 "$$" ->
                                     Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
@@ -724,11 +716,65 @@ getHeadingData line_ =
                                 "\\[" ->
                                     Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
 
-                                "```" ->
-                                    Ok <| { heading = Verbatim "code", args = [], properties = Dict.empty }
-
                                 _ ->
-                                    Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
+                                    if String.startsWith "```" prefix then
+                                        -- A fence may carry a language tag, e.g. ```elm.
+                                        -- The tag is kept as an argument so that renderers
+                                        -- can use it; it is not part of the code itself.
+                                        Ok <|
+                                            { heading = Verbatim "code"
+                                            , args = codeFenceArgs prefix
+                                            , properties = Dict.empty
+                                            }
+
+                                    else if isNumberedItemPrefix prefix then
+                                        -- Standard Markdown ordered lists: "1. alpha", "2) beta"
+                                        numberedItem (Tools.Utility.replaceLeadingNumberedMarker line)
+
+                                    else
+                                        Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
+
+
+{-| A numbered list item carrying `reducedLine`, its text with the list marker
+stripped. Both the XMarkdown marker (`. alpha`) and the standard Markdown
+markers (`1. alpha`) produce the same block.
+-}
+numberedItem : String -> Result HeadingError HeadingData
+numberedItem reducedLine =
+    if String.isEmpty reducedLine then
+        Err HENoContent
+
+    else
+        Ok <|
+            { heading = Ordinary "numbered"
+            , args = []
+            , properties = Dict.singleton "firstLine" reducedLine
+            }
+
+
+{-| The language tag of a code fence, if it has one: "```elm" -> ["elm"].
+-}
+codeFenceArgs : String -> List String
+codeFenceArgs prefix =
+    case String.dropLeft 3 prefix |> String.trim of
+        "" ->
+            []
+
+        language ->
+            [ language ]
+
+
+{-| Whether a line's first word is a standard Markdown ordered-list marker.
+-}
+isNumberedItemPrefix : String -> Bool
+isNumberedItemPrefix prefix =
+    Regex.contains numberedItemPrefixRegex prefix
+
+
+numberedItemPrefixRegex : Regex.Regex
+numberedItemPrefixRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "^\\d+[.)]$"
 
 
 sectionRegex : Regex.Regex

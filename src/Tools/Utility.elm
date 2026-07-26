@@ -1,8 +1,8 @@
 module Tools.Utility exposing
     ( findOrdinaryTagAtEnd
     , replaceLeadingDashSpace
-    , replaceLeadingDotSpace
     , replaceLeadingGreaterThanSign
+    , replaceLeadingNumberedMarker
     )
 
 import Regex
@@ -23,11 +23,15 @@ findOrdinaryTagAtEnd string =
         |> Maybe.map String.trim
 
 
-replaceLeadingDotSpace : String -> String
-replaceLeadingDotSpace str =
+{-| Strip a leading ordered-list marker: XMarkdown's ". " or standard
+Markdown's "1. ", "2) ", etc. Only the marker is removed, so periods later in
+the line survive.
+-}
+replaceLeadingNumberedMarker : String -> String
+replaceLeadingNumberedMarker str =
     let
         regex =
-            Regex.fromString "^\\. " |> Maybe.withDefault Regex.never
+            Regex.fromString "^(\\d+[.)]|\\.) " |> Maybe.withDefault Regex.never
     in
     Regex.replace regex (\_ -> "") str
 

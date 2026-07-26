@@ -4,6 +4,7 @@ import AST.Language exposing (Expr(..), Expression, ExpressionBlock, Heading(..)
 import Dict
 import Either exposing (Either(..))
 import Parser.Block.GFMTable
+import Tools.Utility
 
 
 toExpressionBlock : (Int -> String -> List Expression) -> PrimitiveBlock -> ExpressionBlock
@@ -60,7 +61,7 @@ toExpressionBlock_ parse primitiveBlock =
                     let
                         extractIndentAndContent : String -> ( Int, String )
                         extractIndentAndContent str =
-                            ( numberOfLeadingSpaces str, String.trimLeft str |> String.replace ". " "" )
+                            ( numberOfLeadingSpaces str, String.trimLeft str |> Tools.Utility.replaceLeadingNumberedMarker )
 
                         numberOfLeadingSpaces : String -> Int
                         numberOfLeadingSpaces str =
