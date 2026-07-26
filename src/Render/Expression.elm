@@ -14,8 +14,17 @@ import XMarkdown.Types exposing (MarkupMsg, Theme)
 render : Theme -> Int -> List (Html.Attribute MarkupMsg) -> Expression -> Html MarkupMsg
 render theme depth attrs expr =
     case expr of
-        Text string _ ->
-            Html.span attrs [ Html.text (string ++ " ") ]
+        Text string meta ->
+            -- Absolute source offsets of this run, inclusive of `end`, so the
+            -- app's RL sync can select exactly this text in the editor. Named
+            -- data-src-* rather than data-begin/data-end because the app reads
+            -- those as Scripta's within-line column offsets.
+            Html.span
+                (Html.Attributes.attribute "data-src-begin" (String.fromInt meta.begin)
+                    :: Html.Attributes.attribute "data-src-end" (String.fromInt meta.end)
+                    :: attrs
+                )
+                [ Html.text (string ++ " ") ]
 
         VFun name content _ ->
             if List.member name [ "math", "m", "chem" ] then
