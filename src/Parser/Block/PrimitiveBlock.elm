@@ -502,17 +502,38 @@ fixMarkdownTitleBlock block =
             block
 
         Just prefix ->
+            let
+                -- Strip the marker only at the front. The offsets of every run
+                -- parsed from `stripped` are relative to it, so the number of
+                -- characters removed here is exactly what Pipeline must add back.
+                stripped =
+                    if String.startsWith prefix block.firstLine then
+                        String.dropLeft (String.length prefix) block.firstLine
+
+                    else
+                        block.firstLine
+
+                markerOffset =
+                    String.length block.firstLine - String.length stripped
+
+                withMarker b =
+                    { b
+                        | body = stripped :: b.body
+                        , properties =
+                            Dict.insert "markerOffset" (String.fromInt markerOffset) b.properties
+                    }
+            in
             if prefix == "!!" then
-                { block | heading = Ordinary "title", body = String.replace prefix "" block.firstLine :: block.body }
+                withMarker { block | heading = Ordinary "title" }
 
             else if String.left 1 (String.trim prefix) == "#" then
-                { block | heading = Ordinary "section", body = String.replace prefix "" block.firstLine :: block.body }
+                withMarker { block | heading = Ordinary "section" }
 
             else if String.left 1 (String.trim prefix) == "*" then
-                { block | heading = Ordinary "section*", body = String.replace prefix "" block.firstLine :: block.body }
+                withMarker { block | heading = Ordinary "section*" }
 
             else
-                { block | body = String.replace prefix "" block.firstLine :: block.body }
+                withMarker block
 
 
 {-|

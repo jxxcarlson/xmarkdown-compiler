@@ -80,7 +80,22 @@ toExpressionBlock_ parse primitiveBlock =
                     Right (List.map (\( indent, exprList ) -> ExprList indent exprList AST.Language.emptyExprMeta) content_)
 
                 Ordinary _ ->
-                    Right (String.join "\n" primitiveBlock.body |> parse)
+                    let
+                        -- Set by PrimitiveBlock.fixMarkdownTitleBlock when it strips
+                        -- a leading marker ("# ", "!! "). Runs parsed from the
+                        -- stripped text start at 0 relative to it, and boostBlock
+                        -- only adds the block's own position, so the stripped
+                        -- marker's length has to be added back here.
+                        markerOffset =
+                            Dict.get "markerOffset" primitiveBlock.properties
+                                |> Maybe.andThen String.toInt
+                                |> Maybe.withDefault 0
+                    in
+                    Right
+                        (String.join "\n" primitiveBlock.body
+                            |> parse
+                            |> List.map (AST.Language.shiftExpressionPositions markerOffset)
+                        )
 
                 Verbatim _ ->
                     Left <| String.join "\n" primitiveBlock.body
