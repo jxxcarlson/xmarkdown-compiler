@@ -8,10 +8,11 @@ module Render.Blocks.Text exposing (registerRenderers)
 
 import AST.Acc exposing (Accumulator)
 import AST.Language exposing (ExpressionBlock)
-import Dict
+import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
 import Render.BlockRegistry exposing (BlockRegistry)
+import Render.Expression
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
@@ -29,12 +30,19 @@ registerRenderers registry =
 {-| Render a quotation block (returns Html)
 -}
 quotation : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
-quotation count _ _ settings _ block =
+quotation count _ depth settings _ block =
     let
+        -- Render the parsed body, not the "firstLine" property. The property
+        -- holds only the block's first line as raw text, so quoting more than
+        -- one line silently dropped everything after the first, and inline
+        -- markup inside a quotation rendered literally ("**bold**").
         content =
-            Dict.get "firstLine" block.properties
-                |> Maybe.map (\text -> [ Html.text text ])
-                |> Maybe.withDefault []
+            case block.body of
+                Right exprs ->
+                    List.map (Render.Expression.render settings.theme depth []) exprs
+
+                Left text ->
+                    [ Html.text text ]
 
         blockId =
             "e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count

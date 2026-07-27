@@ -64,6 +64,15 @@ toExpressionBlock_ parse primitiveBlock =
                 Ordinary "numberedList" ->
                     Right (parseNumberedListItems parse primitiveBlock.meta.sourceText)
 
+                -- Quotations: the committed body kept only the CONTINUATION
+                -- lines -- the raw first line is dropped at commit time and,
+                -- unlike headings and list items, nothing restores it -- and no
+                -- line ever had its "> " marker stripped. Rebuild from
+                -- sourceText, which retains every line, stripping each marker
+                -- and shifting that line's expressions past it.
+                Ordinary "quotation" ->
+                    Right (parseQuotationLines parse primitiveBlock.meta.sourceText)
+
                 Ordinary _ ->
                     let
                         -- Set by PrimitiveBlock.fixMarkdownTitleBlock when it strips
@@ -129,7 +138,50 @@ parseListItems marker parse sourceText =
         |> List.foldl folder ( 0, [] )
         |> Tuple.second
         |> List.reverse
-        |> Debug.log "ITEMS"
+
+
+{-| Parse a quotation's lines into one flat expression flow. Each line is parsed
+from its own marker-stripped substring, so its offsets start at 0; they are then
+shifted past the line's position and its "> " marker, giving true source
+positions (needed for rendered→editor sync).
+
+One consequence of parsing per line: inline markup that spans a line break
+within a quotation is not joined across lines.
+
+-}
+parseQuotationLines : (String -> List Expression) -> String -> List Expression
+parseQuotationLines parse sourceText =
+    let
+        folder : String -> ( Int, List Expression ) -> ( Int, List Expression )
+        folder line ( offset, acc ) =
+            let
+                trimmed =
+                    String.trimLeft line
+
+                indent =
+                    String.length line - String.length trimmed
+
+                content =
+                    Tools.Utility.replaceLeadingGreaterThanSign trimmed
+
+                markerLen =
+                    String.length trimmed - String.length content
+
+                delta =
+                    offset + indent + markerLen
+
+                exprs =
+                    parse content |> List.map (AST.Language.shiftExpressionPositions delta)
+
+                nextOffset =
+                    offset + String.length line + 1
+            in
+            ( nextOffset, List.foldl (::) acc exprs )
+    in
+    String.split "\n" sourceText
+        |> List.foldl folder ( 0, [] )
+        |> Tuple.second
+        |> List.reverse
 
 
 {-| Numbered-list counterpart of `parseListItems`. The marker is variable

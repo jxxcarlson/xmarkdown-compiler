@@ -51,6 +51,57 @@ splitRow str =
     String.split "|" b |> List.map String.trim
 
 
+{-| Split a pipe-row into `(offset, cellText)` pairs, where `offset` is where the
+trimmed cell text begins in the ORIGINAL row string. Cell text is parsed from its
+own substring, so its expression offsets start at 0; shifting them by this offset
+(plus the row's offset within the block) lands them at true source positions,
+which is what rendered→editor sync needs.
+
+The cell texts are identical to `splitRow`'s — this only adds their positions.
+
+-}
+splitRowWithOffsets : String -> List ( Int, String )
+splitRowWithOffsets str =
+    let
+        leadingWs =
+            String.length str - String.length (String.trimLeft str)
+
+        t =
+            String.trim str
+
+        -- Drop the outer pipes exactly as splitRow does, tracking how many
+        -- characters that removes from the front.
+        ( afterLeading, frontOffset ) =
+            if String.startsWith "|" t then
+                ( String.dropLeft 1 t, leadingWs + 1 )
+
+            else
+                ( t, leadingWs )
+
+        b =
+            if String.endsWith "|" afterLeading then
+                String.dropRight 1 afterLeading
+
+            else
+                afterLeading
+
+        step : String -> ( Int, List ( Int, String ) ) -> ( Int, List ( Int, String ) )
+        step segment ( cursor, acc ) =
+            let
+                -- Trimming shifts the cell's start right by its leading spaces.
+                innerOffset =
+                    String.length segment - String.length (String.trimLeft segment)
+            in
+            ( cursor + String.length segment + 1
+            , ( frontOffset + cursor + innerOffset, String.trim segment ) :: acc
+            )
+    in
+    String.split "|" b
+        |> List.foldl step ( 0, [] )
+        |> Tuple.second
+        |> List.reverse
+
+
 {-| A separator row: every cell is non-empty and made only of '-' and ':' with at
 least one '-'.
 -}
@@ -128,6 +179,19 @@ padRow n cells =
         cells ++ List.repeat (n - List.length cells) ""
 
 
+{-| `padRow` for cells that carry their source offset. Padding cells are empty,
+so the offset given to them is never used to place any expression; it just keeps
+the pair well-formed.
+-}
+padCells : Int -> Int -> List ( Int, String ) -> List ( Int, String )
+padCells n endOffset cells =
+    if List.length cells >= n then
+        List.take n cells
+
+    else
+        cells ++ List.repeat (n - List.length cells) ( endOffset, "" )
+
+
 {-| All source rows in order: header, separator, data…
 
 The header is always `firstLine`. The body's orientation is not stable: a
@@ -189,16 +253,49 @@ toExpressionBlock parse pb =
         ncols =
             splitRow header |> List.length
 
-        toRowExpr : String -> Expression
-        toRowExpr rowSrc =
+        -- Where each row starts, relative to the block's own position. Rows are
+        -- consumed in source order INCLUDING the separator, which is not
+        -- rendered but does occupy source lines, so the data rows below it land
+        -- at the right offsets. boostBlock later adds the block's position,
+        -- making these absolute.
+        rowOffsets : List ( Int, String )
+        rowOffsets =
+            rows
+                |> List.foldl
+                    (\row ( cursor, acc ) -> ( cursor + String.length row + 1, ( cursor, row ) :: acc ))
+                    ( 0, [] )
+                |> Tuple.second
+                |> List.reverse
+
+        toRowExpr : ( Int, String ) -> Expression
+        toRowExpr ( rowOffset, rowSrc ) =
             let
+                -- Pad with cells carrying the row's end offset: they have no
+                -- source text, so they contribute no expressions to shift.
                 cells =
-                    splitRow rowSrc |> padRow ncols
+                    splitRowWithOffsets rowSrc
+                        |> List.map (\( o, text ) -> ( rowOffset + o, text ))
+                        |> padCells ncols (rowOffset + String.length rowSrc)
+
+                toCellExpr ( cellOffset, cellText ) =
+                    Fun "cell"
+                        (parse cellText |> List.map (AST.Language.shiftExpressionPositions cellOffset))
+                        emptyExprMeta
             in
-            Fun "row" (List.map (\cellText -> Fun "cell" (parse cellText) emptyExprMeta) cells) emptyExprMeta
+            Fun "row" (List.map toCellExpr cells) emptyExprMeta
+
+        -- The separator row is dropped from the AST but kept in rowOffsets, so
+        -- select the header and the data rows by position rather than by value.
+        renderedRows =
+            case rowOffsets of
+                headerRow :: _ :: rest ->
+                    headerRow :: rest
+
+                other ->
+                    other
 
         tableExpr =
-            Fun "table" (List.map toRowExpr (header :: dataRows)) emptyExprMeta
+            Fun "table" (List.map toRowExpr renderedRows) emptyExprMeta
     in
     { heading = Ordinary "table"
     , indent = pb.indent

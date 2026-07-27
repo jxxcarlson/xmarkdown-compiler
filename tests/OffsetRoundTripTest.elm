@@ -119,4 +119,20 @@ suite =
             \_ ->
                 mismatches ". only item here\n"
                     |> Expect.equal []
+        , test "GFM table cells" <|
+            \_ ->
+                mismatches "| a one | b two |\n|---|---|\n| c three | d four |\n"
+                    |> Expect.equal []
+        , test "multi-line block quote" <|
+            \_ ->
+                mismatches "> quoted words\n> more words\n"
+                    |> Expect.equal []
+        , test "a block quote produces text runs at all" <|
+            \_ ->
+                List.length (roundTrip "> quoted words here\n")
+                    |> Expect.greaterThan 0
+        , test "a table produces text runs at all" <|
+            \_ ->
+                List.length (roundTrip "| a | b |\n|---|---|\n| c | d |\n")
+                    |> Expect.greaterThan 0
         ]
