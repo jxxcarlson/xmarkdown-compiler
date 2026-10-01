@@ -22,6 +22,9 @@ function initializeApp() {
     });
     init(app);
 
+    // Follow file:// links in rendered documents (Open Folder)
+    initFileLinks(app);
+
     // Listen for LR sync events from the editor
     document.addEventListener('lr-sync', (e) => {
         console.log("lr-sync event received:", e.detail);

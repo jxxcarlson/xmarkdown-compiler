@@ -34,6 +34,8 @@ subscriptions model =
     Sub.batch
         [ Browser.Events.onResize GotNewWindowDimensions
         , Ports.lrSyncRequest LRSync
+        , Ports.folderOpened FolderOpened
+        , Ports.linkedFile LinkedFileClicked
         , case model.dragging of
             Just _ ->
                 Sub.batch
@@ -67,6 +69,8 @@ type alias Model =
     , editorWidth : Int
     , tocWidth : Int
     , dragging : Maybe Divider
+    , folderName : Maybe String
+    , notice : Maybe String
     }
 
 
@@ -95,6 +99,9 @@ type Msg
     | StartDrag Divider
     | DragMove Float
     | StopDrag
+    | OpenFolderRequested
+    | FolderOpened String
+    | LinkedFileClicked { name : String, content : Maybe String, folder : Maybe String }
 
 
 type alias Flags =
@@ -130,6 +137,8 @@ init flags =
       , editorWidth = max minEditorW ((flags.window.windowWidth - initialTocW - 2 * pagePad - 2 * dividerW) // 2)
       , tocWidth = initialTocW
       , dragging = Nothing
+      , folderName = Nothing
+      , notice = Nothing
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -188,16 +197,24 @@ update msg model =
             ( { model | fileName = File.name file }, Task.perform FileLoaded (File.toString file) )
 
         FileLoaded content ->
-            -- Changing initialText re-pushes the editor's `load` attribute, so
-            -- editor.js replaces the document with the opened file's contents.
-            ( { model
-                | initialText = content
-                , sourceText = content
-                , count = model.count + 1
-                , syncHighlight = Nothing
-              }
-            , Cmd.none
-            )
+            ( loadDocument content model, Cmd.none )
+
+        OpenFolderRequested ->
+            ( model, Ports.openFolder () )
+
+        FolderOpened name ->
+            ( { model | folderName = Just name, notice = Nothing }, Cmd.none )
+
+        LinkedFileClicked { name, content, folder } ->
+            case ( content, folder ) of
+                ( Just fileText, _ ) ->
+                    ( loadDocument fileText { model | fileName = name }, Cmd.none )
+
+                ( Nothing, Nothing ) ->
+                    ( { model | notice = Just ("To follow links to files such as " ++ name ++ ", first use Open Folder.") }, Cmd.none )
+
+                ( Nothing, Just folderName ) ->
+                    ( { model | notice = Just (name ++ " was not found in " ++ folderName ++ ".") }, Cmd.none )
 
         SaveFileRequested ->
             ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
@@ -352,6 +369,21 @@ update msg model =
 
 
 
+{-| Replace the document. Changing initialText re-pushes the editor's `load`
+attribute, so editor.js replaces its contents too.
+-}
+loadDocument : String -> Model -> Model
+loadDocument content model =
+    { model
+        | initialText = content
+        , sourceText = content
+        , count = model.count + 1
+        , syncHighlight = Nothing
+        , notice = Nothing
+    }
+
+
+
 -- GEOMETRY
 
 
@@ -499,6 +531,12 @@ view model =
                         )
                     ]
                 , button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
+                , button
+                    [ class "toolbar-button"
+                    , Html.Events.onClick OpenFolderRequested
+                    , Html.Attributes.title "Choose the folder that file:// links in the document refer to"
+                    ]
+                    [ text "Open Folder" ]
                 , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File As" ]
                 , input
                     [ id "fileName"
@@ -549,6 +587,18 @@ view model =
                         )
                     ]
                 ]
+            , case model.folderName of
+                Just name ->
+                    div [ class "folder-name", Html.Attributes.title "file:// links are opened from this folder" ] [ text ("Folder: " ++ name) ]
+
+                Nothing ->
+                    text ""
+            , case model.notice of
+                Just message ->
+                    div [ class "notice" ] [ text message ]
+
+                Nothing ->
+                    text ""
             , div [ class "app-title" ] [ text "XMarkdown TOC+Sync Demo" ]
             ]
         , div [ class "panels" ]

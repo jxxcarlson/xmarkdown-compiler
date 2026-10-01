@@ -34,6 +34,17 @@ html, body {
     padding: 8px 16px;
 }
 
+.app-header .folder-name {
+    color: #e0e0e0;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.app-header .notice {
+    color: #ffd27a;
+    font-size: 13px;
+}
+
 .app-header .app-title {
     flex: 1;
     text-align: right;
