@@ -45,6 +45,21 @@ subscriptions model =
 
             Nothing ->
                 Sub.none
+        , if model.fileMenuOpen || model.dialog /= Nothing then
+            Browser.Events.onKeyDown
+                (Decode.field "key" Decode.string
+                    |> Decode.andThen
+                        (\key ->
+                            if key == "Escape" then
+                                Decode.succeed EscapePressed
+
+                            else
+                                Decode.fail "not Escape"
+                        )
+                )
+
+          else
+            Sub.none
         ]
 
 
@@ -71,7 +86,21 @@ type alias Model =
     , dragging : Maybe Divider
     , folderName : Maybe String
     , notice : Maybe String
+    , fileMenuOpen : Bool
+    , dialog : Maybe FileNameDialog
     }
+
+
+{-| A small window asking for a file name: for File > New or File > Save As.
+`name` is the text in its field.
+-}
+type alias FileNameDialog =
+    { purpose : DialogPurpose, name : String }
+
+
+type DialogPurpose
+    = NewFileDialog
+    | SaveAsDialog
 
 
 {-| The draggable dividers between the panels.
@@ -89,9 +118,15 @@ type Msg
     | OpenFileRequested
     | FileSelected File
     | FileLoaded String
-    | SaveFileRequested
-    | NewFileRequested
-    | FileNameChanged String
+    | SaveRequested
+    | NewRequested
+    | SaveAsRequested
+    | ToggleFileMenu
+    | FileMenuChose Msg
+    | EscapePressed
+    | DialogNameChanged String
+    | DialogConfirmed
+    | DialogCancelled
     | LRSync String
     | ToggleTheme
     | ToggleNumberSections
@@ -139,6 +174,8 @@ init flags =
       , dragging = Nothing
       , folderName = Nothing
       , notice = Nothing
+      , fileMenuOpen = False
+      , dialog = Nothing
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -216,26 +253,69 @@ update msg model =
                 ( Nothing, Just folderName ) ->
                     ( { model | notice = Just (name ++ " was not found in " ++ folderName ++ ".") }, Cmd.none )
 
-        SaveFileRequested ->
-            ( model, File.Download.string model.fileName "text/markdown" model.sourceText )
+        SaveRequested ->
+            ( model, saveFile model )
 
-        NewFileRequested ->
-            ( { model
-                | initialText = ""
-                , sourceText = ""
-                , count = model.count + 1
-                , syncHighlight = Nothing
-                , fileName = "untitled.md"
-                , editorOpen = True
-              }
-            , Cmd.none
-            )
+        NewRequested ->
+            openDialog NewFileDialog "untitled.md" model
+
+        SaveAsRequested ->
+            openDialog SaveAsDialog model.fileName model
+
+        ToggleFileMenu ->
+            ( { model | fileMenuOpen = not model.fileMenuOpen }, Cmd.none )
+
+        FileMenuChose itemMsg ->
+            update itemMsg { model | fileMenuOpen = False }
+
+        EscapePressed ->
+            ( { model | fileMenuOpen = False, dialog = Nothing }, Cmd.none )
+
+        DialogNameChanged name ->
+            ( { model | dialog = Maybe.map (\d -> { d | name = name }) model.dialog }, Cmd.none )
+
+        DialogCancelled ->
+            ( { model | dialog = Nothing }, Cmd.none )
+
+        DialogConfirmed ->
+            case model.dialog of
+                Just { purpose, name } ->
+                    let
+                        fileName =
+                            String.trim name
+                    in
+                    if String.isEmpty fileName then
+                        ( model, Cmd.none )
+
+                    else
+                        case purpose of
+                            NewFileDialog ->
+                                ( clampWidths
+                                    { model
+                                        | initialText = ""
+                                        , sourceText = ""
+                                        , count = model.count + 1
+                                        , syncHighlight = Nothing
+                                        , notice = Nothing
+                                        , fileName = fileName
+                                        , editorOpen = True
+                                        , dialog = Nothing
+                                    }
+                                , Cmd.none
+                                )
+
+                            SaveAsDialog ->
+                                let
+                                    renamed =
+                                        { model | fileName = fileName, dialog = Nothing }
+                                in
+                                ( renamed, saveFile renamed )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         ToggleEditor ->
             ( clampWidths { model | editorOpen = not model.editorOpen }, Cmd.none )
-
-        FileNameChanged newFileName ->
-            ( { model | fileName = newFileName }, Cmd.none )
 
         ToggleNumberSections ->
             let
@@ -367,6 +447,26 @@ update msg model =
                         _ ->
                             ( model, Cmd.none )
 
+
+
+{-| Browsers can't write to disk directly: saving downloads the document
+under the current file name.
+-}
+saveFile : Model -> Cmd Msg
+saveFile model =
+    File.Download.string model.fileName "text/markdown" model.sourceText
+
+
+openDialog : DialogPurpose -> String -> Model -> ( Model, Cmd Msg )
+openDialog purpose name model =
+    ( { model | dialog = Just { purpose = purpose, name = name } }
+    , Task.attempt (\_ -> NoOp) (Browser.Dom.focus dialogInputId)
+    )
+
+
+dialogInputId : String
+dialogInputId =
+    "dialog-file-name"
 
 
 {-| Replace the document. Changing initialText re-pushes the editor's `load`
@@ -520,86 +620,66 @@ view model =
     in
     div [ class "app", Html.Attributes.classList [ ( "dragging", model.dragging /= Nothing ) ] ]
         [ div [ class "app-header" ]
-            [ div [ class "toolbar" ]
-                [ button [ class "toolbar-button", Html.Events.onClick ToggleEditor ]
-                    [ text
-                        (if model.editorOpen then
-                            "Close Editor"
+            [ div [ class "app-label" ] [ text "XMarkdown" ]
+            , button [ class "toolbar-button", Html.Events.onClick ToggleEditor ]
+                [ text
+                    (if model.editorOpen then
+                        "Close Editor"
 
-                         else
-                            "Open Editor"
-                        )
-                    ]
-                , button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
-                , button
-                    [ class "toolbar-button"
-                    , Html.Events.onClick OpenFolderRequested
-                    , Html.Attributes.title "Choose the folder that file:// links in the document refer to"
-                    ]
-                    [ text "Open Folder" ]
-                , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File As" ]
-                , input
-                    [ id "fileName"
-                    , style "margin-left" "8px"
-                    , style "padding" "6px"
-                    , style "border" "1px solid #ccc"
-                    , style "border-radius" "4px"
-                    , style "font-size" "14px"
-                    , value model.fileName
-                    , Html.Events.onInput FileNameChanged
-                    , placeholder "File name..."
-                    ]
-                    []
-                , button [ class "toolbar-button", Html.Events.onClick NewFileRequested ] [ text "New File" ]
-                , button
-                    [ class "toolbar-button theme-toggle"
-                    , Html.Events.onClick ToggleTheme
-                    , Html.Attributes.title
-                        (case model.theme of
-                            Light ->
-                                "Switch to Dark Mode"
-
-                            Dark ->
-                                "Switch to Light Mode"
-                        )
-                    , Html.Attributes.style "background-color" "black"
-                    , style "margin-left" "auto"
-                    ]
-                    [ text
-                        (case model.theme of
-                            Light ->
-                                "🌙"
-
-                            Dark ->
-                                "☀️"
-                        )
-                    ]
-                , button
-                    [ class "toolbar-button"
-                    , Html.Events.onClick ToggleNumberSections
-                    ]
-                    [ text
-                        (if model.numberedSections then
-                            "Section numbering: Yes"
-
-                         else
-                            "Section numbering: No"
-                        )
-                    ]
+                     else
+                        "Open Editor"
+                    )
                 ]
+            , fileMenu model
             , case model.folderName of
                 Just name ->
-                    div [ class "folder-name", Html.Attributes.title "file:// links are opened from this folder" ] [ text ("Folder: " ++ name) ]
+                    div [ class "header-item", Html.Attributes.title "file:// links are opened from this folder" ]
+                        [ Html.span [ class "header-key" ] [ text "Folder " ], text name ]
 
                 Nothing ->
                     text ""
+            , div [ class "header-item", id "fileName" ]
+                [ Html.span [ class "header-key" ] [ text "File " ], text model.fileName ]
+            , button
+                [ class "toolbar-button theme-toggle"
+                , Html.Events.onClick ToggleTheme
+                , Html.Attributes.title
+                    (case model.theme of
+                        Light ->
+                            "Switch to Dark Mode"
+
+                        Dark ->
+                            "Switch to Light Mode"
+                    )
+                , Html.Attributes.style "background-color" "black"
+                ]
+                [ text
+                    (case model.theme of
+                        Light ->
+                            "🌙"
+
+                        Dark ->
+                            "☀️"
+                    )
+                ]
+            , button
+                [ class "toolbar-button"
+                , Html.Events.onClick ToggleNumberSections
+                ]
+                [ text
+                    (if model.numberedSections then
+                        "Section numbering: Yes"
+
+                     else
+                        "Section numbering: No"
+                    )
+                ]
             , case model.notice of
                 Just message ->
                     div [ class "notice" ] [ text message ]
 
                 Nothing ->
                     text ""
-            , div [ class "app-title" ] [ text "XMarkdown TOC+Sync Demo" ]
             ]
         , div [ class "panels" ]
             [ -- Hidden rather than removed when closed, so CodeMirror keeps the
@@ -637,12 +717,85 @@ view model =
                 ]
                 [ Html.map Render (renderPanel model.compilerParameters compilerOutput.toc) ]
             ]
+        , case model.dialog of
+            Just dialog ->
+                fileNameDialogView dialog
+
+            Nothing ->
+                text ""
         ]
 
 
 
 --renderPanel : Render.Theme.RenderSettings -> List (Html MarkupMsg) -> Html MarkupMsg
 --renderPanel settings elements
+
+
+fileMenu : Model -> Html Msg
+fileMenu model =
+    let
+        item label msg =
+            button [ class "menu-item", Html.Events.onClick (FileMenuChose msg) ] [ text label ]
+    in
+    div [ class "menu" ]
+        [ button
+            [ class "toolbar-button"
+            , Html.Attributes.classList [ ( "open", model.fileMenuOpen ) ]
+            , Html.Events.onClick ToggleFileMenu
+            ]
+            [ text "File ▾" ]
+        , if model.fileMenuOpen then
+            -- The backdrop catches clicks outside the menu and closes it.
+            div []
+                [ div [ class "menu-backdrop", Html.Events.onClick ToggleFileMenu ] []
+                , div [ class "menu-list" ]
+                    [ item "New…" NewRequested
+                    , item "Open…" OpenFileRequested
+                    , item "Open Folder…" OpenFolderRequested
+                    , item "Save" SaveRequested
+                    , item "Save As…" SaveAsRequested
+                    ]
+                ]
+
+          else
+            text ""
+        ]
+
+
+fileNameDialogView : FileNameDialog -> Html Msg
+fileNameDialogView dialog =
+    let
+        title =
+            case dialog.purpose of
+                NewFileDialog ->
+                    "New File"
+
+                SaveAsDialog ->
+                    "Save As"
+    in
+    div [ class "dialog-backdrop" ]
+        [ Html.form [ class "dialog", Html.Events.onSubmit DialogConfirmed ]
+            [ Html.h2 [] [ text title ]
+            , Html.label [ Html.Attributes.for dialogInputId ] [ text "File name" ]
+            , input
+                [ id dialogInputId
+                , value dialog.name
+                , Html.Events.onInput DialogNameChanged
+                , placeholder "name.md"
+                , Html.Attributes.autocomplete False
+                ]
+                []
+            , div [ class "dialog-buttons" ]
+                [ button [ class "toolbar-button", Html.Attributes.type_ "button", Html.Events.onClick DialogCancelled ] [ text "Cancel" ]
+                , button
+                    [ class "toolbar-button primary"
+                    , Html.Attributes.type_ "submit"
+                    , Html.Attributes.disabled (String.isEmpty (String.trim dialog.name))
+                    ]
+                    [ text "Do it" ]
+                ]
+            ]
+        ]
 
 
 {-| A draggable divider. Hidden (not removed) when not `visible`, so the
