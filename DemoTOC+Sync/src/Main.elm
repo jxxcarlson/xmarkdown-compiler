@@ -53,6 +53,7 @@ type alias Model =
     , lrSyncMatches : List XMarkdown.API.BlockMatch
     , lrSyncIndex : Int
     , lrSyncText : String
+    , editorOpen : Bool
     }
 
 
@@ -70,6 +71,7 @@ type Msg
     | LRSync String
     | ToggleTheme
     | ToggleNumberSections
+    | ToggleEditor
 
 
 type alias Flags =
@@ -101,6 +103,7 @@ init flags =
       , lrSyncText = ""
       , numberedSections = False
       , compilerParameters = params
+      , editorOpen = False
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -146,9 +149,13 @@ update msg model =
                 , count = model.count + 1
                 , syncHighlight = Nothing
                 , fileName = "untitled.md"
+                , editorOpen = True
               }
             , Cmd.none
             )
+
+        ToggleEditor ->
+            ( { model | editorOpen = not model.editorOpen }, Cmd.none )
 
         FileNameChanged newFileName ->
             ( { model | fileName = newFileName }, Cmd.none )
@@ -309,8 +316,23 @@ geometry model =
 
         half =
             max 240 (avail // 2)
+
+        -- With the editor hidden, the rendered panel takes its width plus
+        -- the gap that separated them.
+        renderedW =
+            if model.editorOpen then
+                half
+
+            else
+                max 240 (avail + gap)
     in
-    { editorW = half, renderedW = half, tocW = tocW, docWidth = half - 2 * pad }
+    { editorW = half
+    , renderedW = renderedW
+    , tocW = tocW
+
+    -- Cap the text column at a readable width; renderPanel centers it.
+    , docWidth = min 800 (renderedW - 2 * pad)
+    }
 
 
 
@@ -329,6 +351,7 @@ view model =
         params =
             { compilerParameters
                 | docWidth = g.docWidth -- width of rendered text in pixels
+                , windowWidth = g.docWidth -- block width used by the renderer
                 , editCount = model.count -- incremented on each edit; rendered text won't update withoug this
                 , selectedId = model.selectId -- id of rendered text on which user clicked
                 , theme = model.theme -- Dark or Light
@@ -344,7 +367,16 @@ view model =
     div [ class "app" ]
         [ div [ class "app-header" ]
             [ div [ class "toolbar" ]
-                [ button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
+                [ button [ class "toolbar-button", Html.Events.onClick ToggleEditor ]
+                    [ text
+                        (if model.editorOpen then
+                            "Close Editor"
+
+                         else
+                            "Open Editor"
+                        )
+                    ]
+                , button [ class "toolbar-button", Html.Events.onClick OpenFileRequested ] [ text "Open File" ]
                 , button [ class "toolbar-button", Html.Events.onClick SaveFileRequested ] [ text "Save File As" ]
                 , input
                     [ id "fileName"
@@ -398,7 +430,19 @@ view model =
             , div [ class "app-title" ] [ text "XMarkdown TOC+Sync Demo" ]
             ]
         , div [ class "panels" ]
-            [ div [ class "panel editor-panel", style "width" (px g.editorW) ]
+            [ -- Hidden rather than removed when closed, so CodeMirror keeps the
+              -- document, cursor and undo history.
+              div
+                [ class "panel editor-panel"
+                , style "width" (px g.editorW)
+                , style "display"
+                    (if model.editorOpen then
+                        "block"
+
+                     else
+                        "none"
+                    )
+                ]
                 [ editorView model ]
             , div
                 [ class "panel rendered-panel"
@@ -407,7 +451,7 @@ view model =
                 , style "background-color" (Render.Theme.themedColor .background model.theme)
                 ]
                 [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
-                  Html.map Render (renderPanel model.compilerParameters compilerOutput.body)
+                  Html.map Render (renderPanel params compilerOutput.body)
                 ]
             , div
                 [ -- class "panel toc-panel"
@@ -450,6 +494,8 @@ renderPanel params elements =
         , Html.Attributes.style "flex-direction" "column"
         , Html.Attributes.style "gap" (String.fromInt (round settings.interBlockSpacing) ++ "px")
         , Html.Attributes.style "width" "100%"
+        , Html.Attributes.style "max-width" (px params.docWidth)
+        , Html.Attributes.style "margin" "0 auto"
         , Html.Attributes.style "background-color" (Render.Theme.themedColor .background settings.theme)
         , Html.Attributes.style "color" (Render.Theme.themedColor .text settings.theme)
         ]
