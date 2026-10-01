@@ -66,7 +66,7 @@ html, body {
 
 .panels {
     display: flex;
-    gap: 16px;
+    gap: 0; /* the .divider elements provide the spacing */
     padding: 0 16px 16px;
     flex: 1;
     min-height: 0;
@@ -81,6 +81,7 @@ html, body {
 }
 
 .editor-panel {
+    flex: none;
     padding: 0;
     overflow: hidden; /* CodeMirror manages its own scrolling */
 }
@@ -94,4 +95,40 @@ html, body {
 .toc-panel {
     padding: 16px 24px;
     font-size: 14px;
+}
+
+.rendered-panel {
+    flex: 1; /* takes whatever the editor and TOC leave */
+    min-width: 0;
+}
+
+/* Draggable divider between panels; a thin line appears on hover/drag. */
+.divider {
+    flex: none;
+    width: 16px;
+    cursor: col-resize;
+    position: relative;
+}
+
+.divider::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 7px;
+    width: 2px;
+    border-radius: 1px;
+    background: transparent;
+    transition: background 0.15s;
+}
+
+.divider:hover::after,
+.divider.active::after {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* While dragging, keep the resize cursor everywhere and don't select text. */
+.app.dragging {
+    cursor: col-resize;
+    user-select: none;
 }

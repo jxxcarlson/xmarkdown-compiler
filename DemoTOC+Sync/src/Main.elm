@@ -11,6 +11,7 @@ import File.Select
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
+import Json.Decode as Decode
 import Ports
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
@@ -29,10 +30,19 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
         [ Browser.Events.onResize GotNewWindowDimensions
         , Ports.lrSyncRequest LRSync
+        , case model.dragging of
+            Just _ ->
+                Sub.batch
+                    [ Browser.Events.onMouseMove (Decode.map DragMove (Decode.field "clientX" Decode.float))
+                    , Browser.Events.onMouseUp (Decode.succeed StopDrag)
+                    ]
+
+            Nothing ->
+                Sub.none
         ]
 
 
@@ -54,7 +64,17 @@ type alias Model =
     , lrSyncIndex : Int
     , lrSyncText : String
     , editorOpen : Bool
+    , editorWidth : Int
+    , tocWidth : Int
+    , dragging : Maybe Divider
     }
+
+
+{-| The draggable dividers between the panels.
+-}
+type Divider
+    = EditorDivider
+    | TocDivider
 
 
 type Msg
@@ -72,6 +92,9 @@ type Msg
     | ToggleTheme
     | ToggleNumberSections
     | ToggleEditor
+    | StartDrag Divider
+    | DragMove Float
+    | StopDrag
 
 
 type alias Flags =
@@ -104,6 +127,9 @@ init flags =
       , numberedSections = False
       , compilerParameters = params
       , editorOpen = False
+      , editorWidth = max minEditorW ((flags.window.windowWidth - initialTocW - 2 * pagePad - 2 * dividerW) // 2)
+      , tocWidth = initialTocW
+      , dragging = Nothing
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -116,7 +142,41 @@ update msg model =
             ( model, Cmd.none )
 
         GotNewWindowDimensions width height ->
-            ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
+            ( clampWidths { model | windowWidth = width, windowHeight = height }, Cmd.none )
+
+        StartDrag divider ->
+            ( { model | dragging = Just divider }, Cmd.none )
+
+        DragMove x ->
+            case model.dragging of
+                -- A drag only moves the panel on its side of the divider; the
+                -- rendered panel absorbs the change, down to its minimum.
+                Just EditorDivider ->
+                    let
+                        maxEditor =
+                            max minEditorW (panelSpace model - model.tocWidth - minRenderedW)
+                    in
+                    ( { model | editorWidth = clamp minEditorW maxEditor (round x - pagePad - dividerW // 2) }, Cmd.none )
+
+                Just TocDivider ->
+                    let
+                        editorW =
+                            if model.editorOpen then
+                                model.editorWidth
+
+                            else
+                                0
+
+                        maxToc =
+                            max minTocW (panelSpace model - editorW - minRenderedW)
+                    in
+                    ( { model | tocWidth = clamp minTocW maxToc (model.windowWidth - pagePad - dividerW // 2 - round x) }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        StopDrag ->
+            ( { model | dragging = Nothing }, Cmd.none )
 
         InputText str ->
             ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
@@ -155,7 +215,7 @@ update msg model =
             )
 
         ToggleEditor ->
-            ( { model | editorOpen = not model.editorOpen }, Cmd.none )
+            ( clampWidths { model | editorOpen = not model.editorOpen }, Cmd.none )
 
         FileNameChanged newFileName ->
             ( { model | fileName = newFileName }, Cmd.none )
@@ -299,36 +359,98 @@ type alias Geometry =
     { editorW : Int, renderedW : Int, tocW : Int, docWidth : Int }
 
 
+{-| Horizontal padding of the panel row (each side), and width of a divider.
+-}
+pagePad : Int
+pagePad =
+    16
+
+
+dividerW : Int
+dividerW =
+    16
+
+
+minEditorW : Int
+minEditorW =
+    200
+
+
+minRenderedW : Int
+minRenderedW =
+    300
+
+
+minTocW : Int
+minTocW =
+    120
+
+
+initialTocW : Int
+initialTocW =
+    200
+
+
+{-| Space available for the panels themselves: the window minus the row's
+padding and the visible dividers.
+-}
+panelSpace : Model -> Int
+panelSpace model =
+    if model.editorOpen then
+        model.windowWidth - 2 * pagePad - 2 * dividerW
+
+    else
+        model.windowWidth - 2 * pagePad - dividerW
+
+
+{-| Keep the editor and TOC within their minimums while leaving the rendered
+panel at least `minRenderedW`. The TOC yields first when space runs out.
+-}
+clampWidths : Model -> Model
+clampWidths model =
+    let
+        editorW =
+            if model.editorOpen then
+                model.editorWidth
+
+            else
+                0
+
+        maxToc =
+            max minTocW (panelSpace model - editorW - minRenderedW)
+
+        tocWidth =
+            clamp minTocW maxToc model.tocWidth
+
+        maxEditor =
+            max minEditorW (panelSpace model - tocWidth - minRenderedW)
+    in
+    { model
+        | tocWidth = tocWidth
+        , editorWidth = clamp minEditorW maxEditor model.editorWidth
+    }
+
+
 geometry : Model -> Geometry
 geometry model =
     let
-        tocW =
-            200
-
-        gap =
-            16
-
         pad =
             24
 
-        avail =
-            model.windowWidth - tocW - 4 * gap
-
-        half =
-            max 240 (avail // 2)
-
-        -- With the editor hidden, the rendered panel takes its width plus
-        -- the gap that separated them.
-        renderedW =
+        editorW =
             if model.editorOpen then
-                half
+                model.editorWidth
 
             else
-                max 240 (avail + gap)
+                0
+
+        -- The rendered panel fills whatever the editor and TOC leave.
+        renderedW =
+            max minRenderedW (panelSpace model - editorW - model.tocWidth)
     in
-    { editorW = half
+    { editorW = editorW
     , renderedW = renderedW
-    , tocW = tocW
+    , tocW = model.tocWidth
 
     -- Cap the text column at a readable width; renderPanel centers it.
     , docWidth = min 800 (renderedW - 2 * pad)
@@ -364,7 +486,7 @@ view model =
         compilerOutput =
             XMarkdown.API.compileOutput params model.sourceText
     in
-    div [ class "app" ]
+    div [ class "app", Html.Attributes.classList [ ( "dragging", model.dragging /= Nothing ) ] ]
         [ div [ class "app-header" ]
             [ div [ class "toolbar" ]
                 [ button [ class "toolbar-button", Html.Events.onClick ToggleEditor ]
@@ -444,18 +566,20 @@ view model =
                     )
                 ]
                 [ editorView model ]
+            , dividerView model EditorDivider model.editorOpen
             , div
                 [ class "panel rendered-panel"
                 , id XMarkdown.API.renderedTextId
-                , style "width" (px g.renderedW)
                 , style "background-color" (Render.Theme.themedColor .background model.theme)
                 ]
                 [ -- Html.map Render (renderPanel (round compilerOutput.interBlockSpacing) compilerOutput.body)
                   Html.map Render (renderPanel params compilerOutput.body)
                 ]
+            , dividerView model TocDivider True
             , div
                 [ -- class "panel toc-panel"
                   style "width" (px g.tocW)
+                , style "flex" "none"
                 , style "overflow" "auto"
                 , style "overscroll-behavior" "contain"
                 , style "min-height" "0"
@@ -469,6 +593,30 @@ view model =
 
 --renderPanel : Render.Theme.RenderSettings -> List (Html MarkupMsg) -> Html MarkupMsg
 --renderPanel settings elements
+
+
+{-| A draggable divider. Hidden (not removed) when not `visible`, so the
+panels' positions in the child list stay fixed and Elm never recreates the
+editor element.
+-}
+dividerView : Model -> Divider -> Bool -> Html Msg
+dividerView model divider visible =
+    div
+        [ class "divider"
+        , Html.Attributes.classList [ ( "active", model.dragging == Just divider ) ]
+        , Html.Attributes.title "Drag to resize"
+        , style "display"
+            (if visible then
+                "block"
+
+             else
+                "none"
+            )
+
+        -- preventDefault stops the drag from selecting text.
+        , Html.Events.preventDefaultOn "mousedown" (Decode.succeed ( StartDrag divider, True ))
+        ]
+        []
 
 
 editorView : Model -> Html Msg
