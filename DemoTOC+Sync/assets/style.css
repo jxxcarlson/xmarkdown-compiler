@@ -50,6 +50,10 @@ html, body {
     max-width: 260px;
 }
 
+.app-header .dirty {
+    color: #ffd27a;
+}
+
 .app-header .header-key {
     color: #bdbdbd;
 }

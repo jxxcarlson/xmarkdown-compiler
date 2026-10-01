@@ -11,15 +11,18 @@ import File.Select
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
+import Html.Keyed
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Ports
+import Process
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
 import Task
 import XMarkdown.API exposing (defaultCompilerParameters, fromMsgToSyncHighlight)
 import XMarkdown.Types exposing (CompilerParameters, MarkupMsg(..), SyncHighlight, Theme(..))
 
 
-main : Program Flags Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.element
         { init = init
@@ -35,6 +38,7 @@ subscriptions model =
         [ Browser.Events.onResize GotNewWindowDimensions
         , Ports.lrSyncRequest LRSync
         , Ports.folderOpened FolderOpened
+        , Ports.desktopResponse (Decode.decodeValue desktopEventDecoder >> Result.withDefault DesktopCancelled >> GotDesktopEvent)
         , Ports.linkedFile LinkedFileClicked
         , case model.dragging of
             Just _ ->
@@ -88,7 +92,38 @@ type alias Model =
     , notice : Maybe String
     , fileMenuOpen : Bool
     , dialog : Maybe FileNameDialog
+    , platform : Platform
+    , filePath : Maybe String
+    , folderPath : Maybe String
+    , dirty : Bool
+    , docVersion : Int
+    , editVersion : Int
     }
+
+
+{-| Web: the browser app (Open via file picker, Save downloads).
+Desktop: the Tauri app (assets/desktop.js does native dialogs and file I/O).
+-}
+type Platform
+    = Web
+    | Desktop
+
+
+{-| Replies from assets/desktop.js on the `desktopResponse` port.
+-}
+type DesktopEvent
+    = DesktopOpened FileLocation String
+    | DesktopSaved { path : String, token : Int }
+    | DesktopSavedAs FileLocation Int
+    | DesktopCreated FileLocation
+    | DesktopCloseRequested String
+    | DesktopFolderChosen { folder : String, folderName : String }
+    | DesktopError String
+    | DesktopCancelled
+
+
+type alias FileLocation =
+    { path : String, name : String, folder : String, folderName : String }
 
 
 {-| A small window asking for a file name: for File > New or File > Save As.
@@ -137,15 +172,48 @@ type Msg
     | OpenFolderRequested
     | FolderOpened String
     | LinkedFileClicked { name : String, content : Maybe String, folder : Maybe String }
+    | GotDesktopEvent DesktopEvent
+    | AutoSaveDue Int
 
 
+{-| Flags are decoded by hand so that `platform` is optional: pages that
+predate the desktop app (e.g. DemoTOC+Sync's app.js) omit it.
+-}
 type alias Flags =
-    { window : { windowWidth : Int, windowHeight : Int } }
+    { window : { windowWidth : Int, windowHeight : Int }, platform : Platform }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+flagsDecoder : Decode.Decoder Flags
+flagsDecoder =
+    Decode.map2 Flags
+        (Decode.field "window"
+            (Decode.map2 (\w h -> { windowWidth = w, windowHeight = h })
+                (Decode.field "windowWidth" Decode.int)
+                (Decode.field "windowHeight" Decode.int)
+            )
+        )
+        (Decode.oneOf
+            [ Decode.field "platform" Decode.string
+                |> Decode.map
+                    (\p ->
+                        if p == "desktop" then
+                            Desktop
+
+                        else
+                            Web
+                    )
+            , Decode.succeed Web
+            ]
+        )
+
+
+init : Decode.Value -> ( Model, Cmd Msg )
+init flagsValue =
     let
+        flags =
+            Decode.decodeValue flagsDecoder flagsValue
+                |> Result.withDefault { window = { windowWidth = 1200, windowHeight = 800 }, platform = Web }
+
         -- set initial compiler parameters here by
         -- modifying the defaultCompilerParameters, e.g.,
         -- params = { defaultCompilerParameters | numberToLevel = 3 }
@@ -176,6 +244,12 @@ init flags =
       , notice = Nothing
       , fileMenuOpen = False
       , dialog = Nothing
+      , platform = flags.platform
+      , filePath = Nothing
+      , folderPath = Nothing
+      , dirty = False
+      , docVersion = 0
+      , editVersion = 0
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -225,10 +299,27 @@ update msg model =
             ( { model | dragging = Nothing }, Cmd.none )
 
         InputText str ->
-            ( { model | sourceText = str, count = model.count + 1 }, Cmd.none )
+            let
+                edited =
+                    { model | sourceText = str, count = model.count + 1, dirty = True, editVersion = model.editVersion + 1 }
+            in
+            ( edited, scheduleAutoSave edited )
+
+        AutoSaveDue version ->
+            -- Only the timer of the latest edit saves: typing restarts the pause.
+            if version == model.editVersion then
+                ( model, autoSave model )
+
+            else
+                ( model, Cmd.none )
 
         OpenFileRequested ->
-            ( model, File.Select.file [ "text/markdown", "text/plain", ".md" ] FileSelected )
+            case model.platform of
+                Desktop ->
+                    ( model, desktopRequest "open" [] )
+
+                Web ->
+                    ( model, File.Select.file [ "text/markdown", "text/plain", ".md" ] FileSelected )
 
         FileSelected file ->
             ( { model | fileName = File.name file }, Task.perform FileLoaded (File.toString file) )
@@ -237,7 +328,12 @@ update msg model =
             ( loadDocument content model, Cmd.none )
 
         OpenFolderRequested ->
-            ( model, Ports.openFolder () )
+            case model.platform of
+                Desktop ->
+                    ( model, desktopRequest "openFolder" [] )
+
+                Web ->
+                    ( model, Ports.openFolder () )
 
         FolderOpened name ->
             ( { model | folderName = Just name, notice = Nothing }, Cmd.none )
@@ -245,7 +341,7 @@ update msg model =
         LinkedFileClicked { name, content, folder } ->
             case ( content, folder ) of
                 ( Just fileText, _ ) ->
-                    ( loadDocument fileText { model | fileName = name }, Cmd.none )
+                    ( loadDocument fileText { model | fileName = name, filePath = Nothing }, Cmd.none )
 
                 ( Nothing, Nothing ) ->
                     ( { model | notice = Just ("To follow links to files such as " ++ name ++ ", first use Open Folder.") }, Cmd.none )
@@ -254,13 +350,74 @@ update msg model =
                     ( { model | notice = Just (name ++ " was not found in " ++ folderName ++ ".") }, Cmd.none )
 
         SaveRequested ->
-            ( model, saveFile model )
+            case ( model.platform, model.filePath ) of
+                ( Desktop, Just path ) ->
+                    ( model, desktopSave path model [] )
+
+                ( Desktop, Nothing ) ->
+                    ( model, desktopSaveAs model )
+
+                ( Web, _ ) ->
+                    ( { model | dirty = False }, saveFile model )
 
         NewRequested ->
             openDialog NewFileDialog "untitled.md" model
 
         SaveAsRequested ->
-            openDialog SaveAsDialog model.fileName model
+            case model.platform of
+                Desktop ->
+                    ( model, desktopSaveAs model )
+
+                Web ->
+                    openDialog SaveAsDialog model.fileName model
+
+        GotDesktopEvent event ->
+            case event of
+                -- Switching documents: save the one being left first.
+                DesktopOpened location content ->
+                    ( loadDocument content (atLocation location model), autoSave model )
+
+                DesktopCreated location ->
+                    ( newDocument location.name (atLocation location model), autoSave model )
+
+                -- A save of the current file (a save of a document we've since
+                -- left must not touch the model). The token is the editVersion
+                -- that was written; if editing continued meanwhile, stay dirty.
+                DesktopSaved { path, token } ->
+                    if Just path == model.filePath then
+                        ( { model | dirty = token /= model.editVersion, notice = Nothing }, Cmd.none )
+
+                    else
+                        ( model, Cmd.none )
+
+                DesktopSavedAs location token ->
+                    ( { model | dirty = token /= model.editVersion, notice = Nothing } |> atLocation location, Cmd.none )
+
+                -- The window is closing or the app quitting: save, or ask before
+                -- discarding a document that has nowhere to be saved, then finish.
+                DesktopCloseRequested andThen ->
+                    let
+                        andThenArg =
+                            ( "then", Encode.string andThen )
+                    in
+                    case ( model.dirty, model.filePath ) of
+                        ( True, Just path ) ->
+                            ( model, desktopSave path model [ andThenArg ] )
+
+                        ( True, Nothing ) ->
+                            ( model, desktopRequest "confirmDiscard" [ ( "name", Encode.string model.fileName ), andThenArg ] )
+
+                        ( False, _ ) ->
+                            ( model, desktopRequest "finish" [ andThenArg ] )
+
+                DesktopFolderChosen { folder, folderName } ->
+                    ( { model | folderPath = Just folder, folderName = Just folderName, notice = Nothing }, Cmd.none )
+
+                DesktopError message ->
+                    ( { model | notice = Just message }, Cmd.none )
+
+                DesktopCancelled ->
+                    ( model, Cmd.none )
 
         ToggleFileMenu ->
             ( { model | fileMenuOpen = not model.fileMenuOpen }, Cmd.none )
@@ -288,26 +445,21 @@ update msg model =
                         ( model, Cmd.none )
 
                     else
-                        case purpose of
-                            NewFileDialog ->
-                                ( clampWidths
-                                    { model
-                                        | initialText = ""
-                                        , sourceText = ""
-                                        , count = model.count + 1
-                                        , syncHighlight = Nothing
-                                        , notice = Nothing
-                                        , fileName = fileName
-                                        , editorOpen = True
-                                        , dialog = Nothing
-                                    }
-                                , Cmd.none
+                        case ( purpose, model.platform, model.folderPath ) of
+                            -- On the desktop, New creates the file in the current
+                            -- folder; the document is cleared when that succeeds.
+                            ( NewFileDialog, Desktop, Just folder ) ->
+                                ( { model | dialog = Nothing }
+                                , desktopRequest "create" [ ( "folder", Encode.string folder ), ( "name", Encode.string fileName ) ]
                                 )
 
-                            SaveAsDialog ->
+                            ( NewFileDialog, _, _ ) ->
+                                ( newDocument fileName { model | dialog = Nothing, filePath = Nothing }, autoSave model )
+
+                            ( SaveAsDialog, _, _ ) ->
                                 let
                                     renamed =
-                                        { model | fileName = fileName, dialog = Nothing }
+                                        { model | fileName = fileName, dialog = Nothing, dirty = False }
                                 in
                                 ( renamed, saveFile renamed )
 
@@ -469,8 +621,9 @@ dialogInputId =
     "dialog-file-name"
 
 
-{-| Replace the document. Changing initialText re-pushes the editor's `load`
-attribute, so editor.js replaces its contents too.
+{-| Replace the document. Bumping docVersion re-creates the editor element
+(see editorPanel), so it shows `content` even when initialText is unchanged,
+e.g. two New files in a row.
 -}
 loadDocument : String -> Model -> Model
 loadDocument content model =
@@ -478,9 +631,149 @@ loadDocument content model =
         | initialText = content
         , sourceText = content
         , count = model.count + 1
+        , docVersion = model.docVersion + 1
         , syncHighlight = Nothing
         , notice = Nothing
+        , dirty = False
     }
+
+
+{-| An empty document named `name`, with the editor open for typing.
+-}
+newDocument : String -> Model -> Model
+newDocument name model =
+    loadDocument "" { model | fileName = name, editorOpen = True } |> clampWidths
+
+
+{-| Record where the current document lives on disk (desktop only).
+-}
+atLocation : FileLocation -> Model -> Model
+atLocation location model =
+    { model
+        | fileName = location.name
+        , filePath = Just location.path
+        , folderPath = Just location.folder
+        , folderName = Just location.folderName
+    }
+
+
+{-| Send a request to assets/desktop.js: `op` plus named arguments.
+-}
+desktopRequest : String -> List ( String, Encode.Value ) -> Cmd Msg
+desktopRequest op args =
+    Ports.desktopRequest (Encode.object (( "op", Encode.string op ) :: args))
+
+
+desktopSaveAs : Model -> Cmd Msg
+desktopSaveAs model =
+    desktopRequest "saveAs"
+        [ ( "folder", model.folderPath |> Maybe.map Encode.string |> Maybe.withDefault Encode.null )
+        , ( "name", Encode.string model.fileName )
+        , ( "content", Encode.string model.sourceText )
+        , ( "token", Encode.int model.editVersion )
+        ]
+
+
+{-| Write the current document to `path` (plus any extra request fields).
+-}
+desktopSave : String -> Model -> List ( String, Encode.Value ) -> Cmd Msg
+desktopSave path model extra =
+    desktopRequest "save"
+        ([ ( "path", Encode.string path )
+         , ( "content", Encode.string model.sourceText )
+         , ( "token", Encode.int model.editVersion )
+         ]
+            ++ extra
+        )
+
+
+
+-- AUTO-SAVE (desktop only)
+
+
+{-| Pause after the last keystroke before the document is saved.
+-}
+autoSaveDelay : Float
+autoSaveDelay =
+    1000
+
+
+{-| Start the pause timer for the edit just made (desktop, saved files only).
+-}
+scheduleAutoSave : Model -> Cmd Msg
+scheduleAutoSave model =
+    if autoSaves model then
+        Process.sleep autoSaveDelay |> Task.perform (\_ -> AutoSaveDue model.editVersion)
+
+    else
+        Cmd.none
+
+
+{-| Save now if there are unsaved changes that auto-save covers.
+-}
+autoSave : Model -> Cmd Msg
+autoSave model =
+    case ( autoSaves model, model.dirty, model.filePath ) of
+        ( True, True, Just path ) ->
+            desktopSave path model []
+
+        _ ->
+            Cmd.none
+
+
+{-| Auto-save applies only in the desktop app, and only to a document that
+already has a file on disk; the web app never auto-saves.
+-}
+autoSaves : Model -> Bool
+autoSaves model =
+    model.platform == Desktop && model.filePath /= Nothing
+
+
+desktopEventDecoder : Decode.Decoder DesktopEvent
+desktopEventDecoder =
+    let
+        tokenField =
+            Decode.oneOf [ Decode.field "token" Decode.int, Decode.succeed -1 ]
+
+        location =
+            Decode.map4 FileLocation
+                (Decode.field "path" Decode.string)
+                (Decode.field "name" Decode.string)
+                (Decode.field "folder" Decode.string)
+                (Decode.field "folderName" Decode.string)
+    in
+    Decode.field "kind" Decode.string
+        |> Decode.andThen
+            (\kind ->
+                case kind of
+                    "opened" ->
+                        Decode.map2 DesktopOpened location (Decode.field "content" Decode.string)
+
+                    "saved" ->
+                        Decode.map2 (\path token -> DesktopSaved { path = path, token = token })
+                            (Decode.field "path" Decode.string)
+                            tokenField
+
+                    "savedAs" ->
+                        Decode.map2 DesktopSavedAs location tokenField
+
+                    "closeRequested" ->
+                        Decode.map DesktopCloseRequested (Decode.field "then" Decode.string)
+
+                    "created" ->
+                        Decode.map DesktopCreated location
+
+                    "folder" ->
+                        Decode.map2 (\folder folderName -> DesktopFolderChosen { folder = folder, folderName = folderName })
+                            (Decode.field "folder" Decode.string)
+                            (Decode.field "folderName" Decode.string)
+
+                    "error" ->
+                        Decode.map DesktopError (Decode.field "message" Decode.string)
+
+                    _ ->
+                        Decode.succeed DesktopCancelled
+            )
 
 
 
@@ -638,8 +931,27 @@ view model =
 
                 Nothing ->
                     text ""
-            , div [ class "header-item", id "fileName" ]
-                [ Html.span [ class "header-key" ] [ text "File " ], text model.fileName ]
+            , div
+                [ class "header-item"
+                , id "fileName"
+                , Html.Attributes.title
+                    (Maybe.withDefault model.fileName model.filePath
+                        ++ (if autoSaves model then
+                                " (saved automatically)"
+
+                            else
+                                ""
+                           )
+                    )
+                ]
+                [ Html.span [ class "header-key" ] [ text "File " ]
+                , text model.fileName
+                , if model.dirty then
+                    Html.span [ class "dirty", Html.Attributes.title "Unsaved changes" ] [ text " •" ]
+
+                  else
+                    text ""
+                ]
             , button
                 [ class "toolbar-button theme-toggle"
                 , Html.Events.onClick ToggleTheme
@@ -695,7 +1007,11 @@ view model =
                         "none"
                     )
                 ]
-                [ editorView model ]
+                [ -- Keyed on docVersion: a new document gets a fresh editor element.
+                  Html.Keyed.node "div"
+                    [ style "height" "100%" ]
+                    [ ( String.fromInt model.docVersion, editorView model ) ]
+                ]
             , dividerView model EditorDivider model.editorOpen
             , div
                 [ class "panel rendered-panel"

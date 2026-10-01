@@ -531,6 +531,9 @@ class CodemirrorEditor extends HTMLElement {
     handleAttributeChange(attr, value) {
         if (attr === "load" && typeof value === "string") {
             const editor = this.editor;
+            // Nothing to replace: dispatching anyway would produce no doc change,
+            // leave isProgrammaticUpdate set, and swallow the user's first edit.
+            if (editor.state.doc.toString() === value) return;
             // Replace the whole document without echoing a text-change back to Elm.
             editor.isProgrammaticUpdate = true;
             editor.dispatch({

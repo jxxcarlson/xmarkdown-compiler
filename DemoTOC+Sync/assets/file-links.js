@@ -60,6 +60,8 @@ function initFileLinks(app) {
             event.preventDefault();
 
             const name = linkPath(href);
+            // In the desktop app, links resolve against the open file's folder.
+            if (window.xmDesktop) return window.xmDesktop.openLink(name);
             const file = files.get(name);
             let content = null;
             if (file) {

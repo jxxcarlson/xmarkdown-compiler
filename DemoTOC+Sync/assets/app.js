@@ -17,13 +17,17 @@ function initializeApp() {
             window: {
                 windowWidth: window.innerWidth,
                 windowHeight: window.innerHeight
-            }
+            },
+            platform: window.__TAURI__ ? "desktop" : "web"
         }
     });
     init(app);
 
     // Follow file:// links in rendered documents (Open Folder)
     initFileLinks(app);
+
+    // Native dialogs, file I/O and auto-save when running in the Tauri app
+    initDesktop(app);
 
     // Listen for LR sync events from the editor
     document.addEventListener('lr-sync', (e) => {
