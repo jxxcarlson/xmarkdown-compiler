@@ -113,6 +113,8 @@ exportBody : String -> String
 exportBody source =
     source
         |> XMarkdown.Compiler.parseFromString
+        |> LaTeX.Block.normalizeSectionLevels
+        |> LaTeX.Block.stripSectionNumbers
         |> LaTeX.Block.exportForest
 
 

@@ -14,7 +14,7 @@ suite =
                 exportBody "# One\n\n## Two\n\n### Three\n\n#### Four"
                     |> Expect.equal "\\section{One}\n\n\\subsection{Two}\n\n\\subsubsection{Three}\n\n\\paragraph{Four}"
         , test "heading with inline markup" <|
-            \_ -> exportBody "## Intro *x*" |> Expect.equal "\\subsection{Intro \\emph{x}}"
+            \_ -> exportBody "## Intro *x*" |> Expect.equal "\\section{Intro \\emph{x}}"
         , test "paragraphs separated by a blank line, text escaped" <|
             \_ ->
                 exportBody "Hello **world**.\n\n50% off"

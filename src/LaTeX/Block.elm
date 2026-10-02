@@ -1,4 +1,4 @@
-module LaTeX.Block exposing (exportForest)
+module LaTeX.Block exposing (exportForest, normalizeSectionLevels, stripSectionNumbers)
 
 {-| XMarkdown blocks to LaTeX.
 -}
@@ -9,8 +9,81 @@ import Dict
 import Either exposing (Either(..))
 import LaTeX.Escape
 import LaTeX.Inline
+import Library.Tree
 import List.Extra
 import RoseTree.Tree as Tree exposing (Tree)
+
+
+{-| Shift heading levels so that the document's first heading is level 1:
+if it is `##` (level n = 2), every heading loses n - 1 levels. A heading
+shallower than the first is clamped to level 1.
+-}
+normalizeSectionLevels : Forest ExpressionBlock -> Forest ExpressionBlock
+normalizeSectionLevels forest =
+    let
+        level block =
+            Dict.get "level" block.properties |> Maybe.andThen String.toInt
+
+        firstLevel =
+            forest
+                |> List.concatMap Library.Tree.flatten
+                |> List.filter (\block -> block.heading == Ordinary "section")
+                |> List.filterMap level
+                |> List.head
+                |> Maybe.withDefault 1
+
+        shift block =
+            case ( block.heading, level block ) of
+                ( Ordinary "section", Just n ) ->
+                    { block | properties = Dict.insert "level" (String.fromInt (max 1 (n - (firstLevel - 1)))) block.properties }
+
+                _ ->
+                    block
+    in
+    if firstLevel <= 1 then
+        forest
+
+    else
+        List.map (Tree.mapValues shift) forest
+
+
+{-| Drop a hand-written section number ("3.", "2.1", "1.2.3.") from the
+start of each heading: LaTeX numbers sections itself. Only a first word made
+of digits and dots, with at least one of each, counts as a number.
+-}
+stripSectionNumbers : Forest ExpressionBlock -> Forest ExpressionBlock
+stripSectionNumbers forest =
+    let
+        strip block =
+            case ( block.heading, block.body ) of
+                ( Ordinary "section", Right ((Text str meta) :: rest) ) ->
+                    { block | body = Right (Text (dropNumber str) meta :: rest) }
+
+                _ ->
+                    block
+
+        dropNumber str =
+            let
+                trimmed =
+                    String.trimLeft str
+            in
+            case String.words trimmed of
+                word :: _ ->
+                    if isSectionNumber word then
+                        String.dropLeft (String.length word) trimmed |> String.trimLeft
+
+                    else
+                        str
+
+                [] ->
+                    str
+
+        isSectionNumber word =
+            String.all (\c -> Char.isDigit c || c == '.') word
+                && String.any Char.isDigit word
+                && String.contains "." word
+    in
+    List.map (Tree.mapValues strip) forest
 
 
 exportForest : Forest ExpressionBlock -> String
