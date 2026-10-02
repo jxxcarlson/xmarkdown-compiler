@@ -31,7 +31,7 @@ extracted compiler supports.
 
 ```bash
 cd DemoTOC+Sync
-./run.sh        # starts `elm-watch hot` + a static HTTP server on :8200, opens http://localhost:8200/index.html
+./run.sh        # starts `elm-watch hot` + serve.py on :8200, opens http://localhost:8200/index.html
 ```
 
 `assets/editor.js` is an ES module (it imports CodeMirror from a CDN), and
@@ -44,9 +44,22 @@ Or manually:
 
 ```bash
 npx elm-watch hot                              # writes assets/main.js with hot reload
-python3 -m http.server 8200 --directory assets # serve over HTTP (any port works)
+python3 serve.py 8200                          # serve assets/ over HTTP (any port works)
 # then open http://localhost:8200/index.html
 ```
+
+## File > Export PDF
+
+Exports the current document to LaTeX (`LaTeX.Export` in `../src/LaTeX/`) and
+downloads it as a PDF. The browser can't run pdflatex, so `serve.py` does it:
+`POST /export-pdf` downloads the document's images into a temporary folder,
+runs `pdflatex`, and returns the PDF. An image that can't be downloaded is
+replaced by a framed "image not available" note. Needs `pdflatex` on the PATH
+or in `/Library/TeX/texbin` (MacTeX), and the demo served by `serve.py`
+(`./run.sh`), not by `python3 -m http.server`. Errors appear in the header;
+the full pdflatex log goes to the browser console.
+
+Server tests: `python3 -m unittest test_serve`
 
 The generated `assets/main.js` and `elm-stuff/` are git-ignored; the committed
 `assets/index.html` is the real entry point.

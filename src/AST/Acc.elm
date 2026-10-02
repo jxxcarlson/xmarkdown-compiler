@@ -33,6 +33,7 @@ module AST.Acc exposing
 import AST.BlockUtilities
 import AST.Language exposing (Expr(..), ExpressionBlock, Heading(..))
 import AST.Settings
+import AST.TitleBlock
 import AST.Vector as Vector exposing (Vector)
 import Dict exposing (Dict)
 import Either exposing (Either(..))
@@ -295,6 +296,14 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
                     Dict.get "level" properties |> Maybe.withDefault "1"
             in
             updateWithOrdinarySectionBlock accumulator level
+
+        Ordinary "titleBlock" ->
+            -- Remember the first title block: only that one is rendered.
+            if Dict.member AST.TitleBlock.firstIdKey accumulator.keyValueDict then
+                accumulator
+
+            else
+                { accumulator | keyValueDict = Dict.insert AST.TitleBlock.firstIdKey block.meta.id accumulator.keyValueDict }
 
         Ordinary "title" ->
             -- Only reset headingIndex if it wasn't set by shiftAndSetCounter (deltaLevel == 1)

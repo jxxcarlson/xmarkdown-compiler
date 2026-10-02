@@ -668,108 +668,113 @@ getHeadingData line_ =
         ( args1, properties ) =
             KV.argsAndProperties (String.words line)
     in
-    case findSectionPrefix line of
-        Just prefix ->
-            { heading = Ordinary "section", args = [ String.length prefix |> String.fromInt ], properties = Dict.singleton "section-type" "markdown" }
-                |> Ok
+    if String.startsWith "%" line then
+        -- %title / %author / %date lines: see AST.TitleBlock
+        Ok { heading = Ordinary "titleBlock", args = [], properties = Dict.empty }
 
-        Nothing ->
-            case findTitlePrefix line of
-                Just prefix ->
-                    { heading = Ordinary "title", args = [ String.length prefix |> String.fromInt ], properties = Dict.singleton "section-type" "markdown" }
-                        |> Ok
+    else
+        case findSectionPrefix line of
+            Just prefix ->
+                { heading = Ordinary "section", args = [ String.length prefix |> String.fromInt ], properties = Dict.singleton "section-type" "markdown" }
+                    |> Ok
 
-                Nothing ->
-                    case args1 of
-                        [] ->
-                            Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
+            Nothing ->
+                case findTitlePrefix line of
+                    Just prefix ->
+                        { heading = Ordinary "title", args = [ String.length prefix |> String.fromInt ], properties = Dict.singleton "section-type" "markdown" }
+                            |> Ok
 
-                        prefix :: args ->
-                            case prefix of
-                                ">" ->
-                                    let
-                                        reducedLine =
-                                            line |> String.trim |> Tools.Utility.replaceLeadingGreaterThanSign
-                                    in
-                                    if String.isEmpty reducedLine then
-                                        Err HENoContent
+                    Nothing ->
+                        case args1 of
+                            [] ->
+                                Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
 
-                                    else
-                                        Ok <|
-                                            { heading = Ordinary "quotation"
-                                            , args = []
-                                            , properties = Dict.singleton "firstLine" reducedLine
-                                            }
+                            prefix :: args ->
+                                case prefix of
+                                    ">" ->
+                                        let
+                                            reducedLine =
+                                                line |> String.trim |> Tools.Utility.replaceLeadingGreaterThanSign
+                                        in
+                                        if String.isEmpty reducedLine then
+                                            Err HENoContent
 
-                                "|" ->
-                                    case args of
-                                        [] ->
-                                            Err <| HEMissingName
+                                        else
+                                            Ok <|
+                                                { heading = Ordinary "quotation"
+                                                , args = []
+                                                , properties = Dict.singleton "firstLine" reducedLine
+                                                }
 
-                                        name :: args2 ->
-                                            Ok <| { heading = Ordinary name, args = args2, properties = properties }
+                                    "|" ->
+                                        case args of
+                                            [] ->
+                                                Err <| HEMissingName
 
-                                "!!" ->
-                                    let
-                                        reducedLine =
-                                            String.replace "!! " "" line
-                                    in
-                                    if String.isEmpty reducedLine then
-                                        Err HENoContent
+                                            name :: args2 ->
+                                                Ok <| { heading = Ordinary name, args = args2, properties = properties }
 
-                                    else
-                                        Ok <|
-                                            { heading = Ordinary "title"
-                                            , args = []
-                                            , properties =
-                                                Dict.fromList
-                                                    [ ( "firstLine", String.replace "!! " "" line )
-                                                    , ( "section-type", "markdown" )
-                                                    ]
-                                            }
+                                    "!!" ->
+                                        let
+                                            reducedLine =
+                                                String.replace "!! " "" line
+                                        in
+                                        if String.isEmpty reducedLine then
+                                            Err HENoContent
 
-                                "-" ->
-                                    let
-                                        reducedLine =
-                                            line |> String.trim |> Tools.Utility.replaceLeadingDashSpace
-                                    in
-                                    if String.isEmpty reducedLine then
-                                        Err HENoContent
+                                        else
+                                            Ok <|
+                                                { heading = Ordinary "title"
+                                                , args = []
+                                                , properties =
+                                                    Dict.fromList
+                                                        [ ( "firstLine", String.replace "!! " "" line )
+                                                        , ( "section-type", "markdown" )
+                                                        ]
+                                                }
 
-                                    else
-                                        Ok <|
-                                            { heading = Ordinary "item"
-                                            , args = []
-                                            , properties = Dict.singleton "firstLine" reducedLine
-                                            }
+                                    "-" ->
+                                        let
+                                            reducedLine =
+                                                line |> String.trim |> Tools.Utility.replaceLeadingDashSpace
+                                        in
+                                        if String.isEmpty reducedLine then
+                                            Err HENoContent
 
-                                "." ->
-                                    numberedItem (Tools.Utility.replaceLeadingNumberedMarker line)
+                                        else
+                                            Ok <|
+                                                { heading = Ordinary "item"
+                                                , args = []
+                                                , properties = Dict.singleton "firstLine" reducedLine
+                                                }
 
-                                "$$" ->
-                                    Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
-
-                                -- LaTeX-style display math: \[ ... \]
-                                "\\[" ->
-                                    Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
-
-                                _ ->
-                                    if String.startsWith "```" prefix then
-                                        -- A fence may carry a language tag, e.g. ```elm.
-                                        -- The tag is kept as an argument so that renderers
-                                        -- can use it; it is not part of the code itself.
-                                        Ok <|
-                                            { heading = Verbatim "code"
-                                            , args = codeFenceArgs prefix
-                                            , properties = Dict.empty
-                                            }
-
-                                    else if isNumberedItemPrefix prefix then
-                                        -- Standard Markdown ordered lists: "1. alpha", "2) beta"
+                                    "." ->
                                         numberedItem (Tools.Utility.replaceLeadingNumberedMarker line)
 
-                                    else
-                                        Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
+                                    "$$" ->
+                                        Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
+
+                                    -- LaTeX-style display math: \[ ... \]
+                                    "\\[" ->
+                                        Ok <| { heading = Verbatim "math", args = [], properties = Dict.empty }
+
+                                    _ ->
+                                        if String.startsWith "```" prefix then
+                                            -- A fence may carry a language tag, e.g. ```elm.
+                                            -- The tag is kept as an argument so that renderers
+                                            -- can use it; it is not part of the code itself.
+                                            Ok <|
+                                                { heading = Verbatim "code"
+                                                , args = codeFenceArgs prefix
+                                                , properties = Dict.empty
+                                                }
+
+                                        else if isNumberedItemPrefix prefix then
+                                            -- Standard Markdown ordered lists: "1. alpha", "2) beta"
+                                            numberedItem (Tools.Utility.replaceLeadingNumberedMarker line)
+
+                                        else
+                                            Ok <| { heading = Paragraph, args = [], properties = Dict.empty }
 
 
 {-| A numbered list item carrying `reducedLine`, its text with the list marker

@@ -14,6 +14,7 @@ import Html.Events
 import Html.Keyed
 import Json.Decode as Decode
 import Json.Encode as Encode
+import LaTeX.Export
 import Ports
 import Process
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
@@ -40,6 +41,7 @@ subscriptions model =
         , Ports.folderOpened FolderOpened
         , Ports.desktopResponse (Decode.decodeValue desktopEventDecoder >> Result.withDefault DesktopCancelled >> GotDesktopEvent)
         , Ports.linkedFile LinkedFileClicked
+        , Ports.pdfExported PdfExported
         , case model.dragging of
             Just _ ->
                 Sub.batch
@@ -156,6 +158,8 @@ type Msg
     | SaveRequested
     | NewRequested
     | SaveAsRequested
+    | ExportPdfRequested
+    | PdfExported (Maybe String)
     | ToggleFileMenu
     | FileMenuChose Msg
     | EscapePressed
@@ -326,6 +330,18 @@ update msg model =
 
         FileLoaded content ->
             ( loadDocument content model, Cmd.none )
+
+        ExportPdfRequested ->
+            ( { model | notice = Just "Exporting PDF…" }
+            , Ports.exportPdf
+                { name = pdfName model.fileName
+                , tex = LaTeX.Export.exportDocument { title = "", authors = [], date = "" } model.sourceText
+                , images = LaTeX.Export.imageUrls model.sourceText
+                }
+            )
+
+        PdfExported result ->
+            ( { model | notice = result }, Cmd.none )
 
         OpenFolderRequested ->
             case model.platform of
@@ -1047,6 +1063,19 @@ view model =
 --renderPanel settings elements
 
 
+{-| "notes.md" -> "notes.pdf"
+-}
+pdfName : String -> String
+pdfName fileName =
+    (if String.endsWith ".md" fileName then
+        String.dropRight 3 fileName
+
+     else
+        fileName
+    )
+        ++ ".pdf"
+
+
 fileMenu : Model -> Html Msg
 fileMenu model =
     let
@@ -1070,6 +1099,7 @@ fileMenu model =
                     , item "Open Folder…" OpenFolderRequested
                     , item "Save" SaveRequested
                     , item "Save As…" SaveAsRequested
+                    , item "Export PDF" ExportPdfRequested
                     ]
                 ]
 

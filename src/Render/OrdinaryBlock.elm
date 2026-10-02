@@ -17,6 +17,7 @@ import Render.Blocks.Text as TextBlocks
 import Render.GHTable
 import Render.List
 import Render.Math
+import Render.TitleBlock
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
 
@@ -38,6 +39,7 @@ initRegistry =
             , ( "aligned", Render.Math.aligned )
             , ( "array", Render.Math.array )
             , ( "chem", Render.Math.chem )
+            , ( "titleBlock", Render.TitleBlock.render )
             ]
 
 

@@ -29,6 +29,9 @@ function initializeApp() {
     // Native dialogs, file I/O and auto-save when running in the Tauri app
     initDesktop(app);
 
+    // File > Export PDF, via the local server (serve.py)
+    initPdfExport(app);
+
     // Listen for LR sync events from the editor
     document.addEventListener('lr-sync', (e) => {
         console.log("lr-sync event received:", e.detail);

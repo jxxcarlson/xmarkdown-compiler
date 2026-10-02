@@ -14,6 +14,7 @@ language.
 - `AST/` — the data model + post-parse passes (Language, ASTTools, Acc, Forest,
   Vector, BlockUtilities).
 - `Render/` — AST → HTML.
+- `LaTeX/` — XMarkdown → LaTeX export (public entry: `LaTeX.Export`).
 - `XMarkdown/` — the public API + driver (API, Compiler, Types,
   Editor, Sync, Config). The driver is `XMarkdown.Compiler`.
 
@@ -28,7 +29,7 @@ text-macro system (`Macro/*`), which supported the `@[...]` syntax and
 The Elm compiler is the regression net. After every change:
 
 ```bash
-elm make src/XMarkdown/API.elm src/XMarkdown/Types.elm src/Render/Theme.elm --output=/dev/null
+elm make src/XMarkdown/API.elm src/XMarkdown/Types.elm src/Render/Theme.elm src/LaTeX/Export.elm --output=/dev/null
 npx elm-test
 ```
 
@@ -41,6 +42,7 @@ Both must pass before committing.
 - `npx elm-review --ignore-dirs src/Evergreen/` for code review.
 - Generated `main.js` files are git-ignored.
 - Public entry points: `XMarkdown.API`, `XMarkdown.Types`, `Render.Theme`,
-  `XMarkdown.Editor`, `XMarkdown.Sync` (package `exposed-modules`:
-  `XMarkdown.API`, `XMarkdown.Types`).
+  `XMarkdown.Editor`, `XMarkdown.Sync`, `LaTeX.Export` (package
+  `exposed-modules`: `XMarkdown.API`, `XMarkdown.Types`, `Render.Theme`,
+  `LaTeX.Export`).
 - When asked to "show me the code", give module name + line numbers.
