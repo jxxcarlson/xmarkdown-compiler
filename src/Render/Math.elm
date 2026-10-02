@@ -90,6 +90,20 @@ stripMathDelimiters content =
         |> String.trim
 
 
+{-| Layout of display math. The math-text element must be a block: as an
+inline element wrapped around KaTeX's block it gets an extra line box above
+and below. Its margins combine with KaTeX's 16px .katex-display margin
+(margins collapse): 16 - 12 = 4px on top, which with the 18px bottom margin of
+a paragraph above makes about 22px; and max(16, 22) = 22px below.
+-}
+displayLayout : List (Html.Attribute msg)
+displayLayout =
+    [ Html.Attributes.style "display" "block"
+    , Html.Attributes.style "margin" "-12px 0 22px 0"
+    , Html.Attributes.style "padding" "0"
+    ]
+
+
 {-| Render a math element using KaTeX via custom element
 -}
 renderMath : String -> Bool -> List (Html.Attribute MarkupMsg) -> Html MarkupMsg
@@ -145,8 +159,8 @@ displayedMath count attrs block =
         True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-         , Html.Attributes.style "padding" "8px"
          ]
+            ++ displayLayout
             ++ attrs
         )
 
@@ -166,8 +180,8 @@ equation count _ _ _ attrs block =
         True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-         , Html.Attributes.style "padding" "8px"
          ]
+            ++ displayLayout
             ++ attrs
         )
 
@@ -187,8 +201,8 @@ aligned count _ _ _ attrs block =
         True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-         , Html.Attributes.style "padding" "8px"
          ]
+            ++ displayLayout
             ++ attrs
         )
 
@@ -208,7 +222,7 @@ array count _ _ _ attrs block =
         True
         ([ Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-         , Html.Attributes.style "padding" "8px"
          ]
+            ++ displayLayout
             ++ attrs
         )
