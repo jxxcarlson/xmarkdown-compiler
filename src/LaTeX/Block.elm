@@ -182,6 +182,15 @@ exportBlock block =
             -- Becomes \\title / \\author / \\date in the preamble (LaTeX.Export).
             ""
 
+        Ordinary "hrule" ->
+            -- Text after the rule in the same block follows as a paragraph.
+            case String.trim (inlineBody block) of
+                "" ->
+                    horizontalRule
+
+                rest ->
+                    horizontalRule ++ "\n\n" ++ rest
+
         Ordinary "section" ->
             section block
 
@@ -225,6 +234,11 @@ exportBlock block =
 
         Verbatim name ->
             unsupported name block
+
+
+horizontalRule : String
+horizontalRule =
+    "\\noindent\\rule{\\linewidth}{0.4pt}"
 
 
 inlineBody : ExpressionBlock -> String

@@ -497,7 +497,13 @@ acceptBlock tag block =
 
 fixMarkdownTitleBlock : PrimitiveBlock -> PrimitiveBlock
 fixMarkdownTitleBlock block =
-    case findSectionPrefix block.firstLine of
+    case
+        if block.heading == Ordinary "hrule" then
+            Nothing
+
+        else
+            findSectionPrefix block.firstLine
+    of
         Nothing ->
             block
 
@@ -672,6 +678,10 @@ getHeadingData line_ =
         -- %title / %author / %date lines: see AST.TitleBlock
         Ok { heading = Ordinary "titleBlock", args = [], properties = Dict.empty }
 
+    else if isHorizontalRule line then
+        -- Checked before list items, so that "- - -" is a rule, not an item.
+        Ok { heading = Ordinary "hrule", args = [], properties = Dict.empty }
+
     else
         case findSectionPrefix line of
             Just prefix ->
@@ -823,6 +833,20 @@ sectionRegex : Regex.Regex
 sectionRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString "^(#+\\s*|!!\\s*)"
+
+
+{-| A Markdown horizontal rule: three or more `-`, `*` or `_`, all the same,
+optionally separated by spaces ("---", "* * *").
+-}
+isHorizontalRule : String -> Bool
+isHorizontalRule line =
+    Regex.contains horizontalRuleRegex (String.trim line)
+
+
+horizontalRuleRegex : Regex.Regex
+horizontalRuleRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "^(-[ \\t]*){3,}$|^(\\*[ \\t]*){3,}$|^(_[ \\t]*){3,}$"
 
 
 findSectionPrefix : String -> Maybe String

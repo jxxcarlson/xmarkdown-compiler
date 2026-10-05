@@ -15,6 +15,7 @@ import Render.Blocks.Container as ContainerBlocks
 import Render.Blocks.Document as DocumentBlocks
 import Render.Blocks.Text as TextBlocks
 import Render.GHTable
+import Render.HorizontalRule
 import Render.List
 import Render.Math
 import Render.TitleBlock
@@ -40,6 +41,7 @@ initRegistry =
             , ( "array", Render.Math.array )
             , ( "chem", Render.Math.chem )
             , ( "titleBlock", Render.TitleBlock.render )
+            , ( "hrule", Render.HorizontalRule.render )
             ]
 
 
