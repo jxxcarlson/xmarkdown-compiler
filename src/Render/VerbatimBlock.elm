@@ -4,6 +4,7 @@ import AST.Language exposing (ExpressionBlock, Heading(..))
 import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
+import Render.Helper
 import Render.Math
 import Render.Theme exposing (RenderSettings)
 import XMarkdown.Types exposing (MarkupMsg)
@@ -48,11 +49,12 @@ render count settings attrs block =
                                  --   Dark ->
                                  --       Html.Attributes.style "color" "pink"
                                  , Html.Attributes.style "overflow-x" "auto"
-                                 , Html.Attributes.style "font-size" (String.fromInt (Render.Theme.scaleFont settings 16) ++ "px")
+                                 , Html.Attributes.style "font-size" "0.9em"
+                                 , Render.Helper.codeFont
                                  ]
                                     ++ attrs
                                 )
-                                [ Html.code [] [ Html.text str ] ]
+                                [ Html.code [ Render.Helper.codeFont ] [ Html.text str ] ]
                             ]
 
                 _ ->

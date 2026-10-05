@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import ETeX.Transform
 import Html exposing (Html)
 import Html.Attributes
+import Render.Helper
 import Render.Theme
 import XMarkdown.Types exposing (MarkupMsg, Theme)
 
@@ -40,7 +41,7 @@ render theme depth attrs expr =
                     [ Html.text mathContent ]
 
             else if name == "code" then
-                Html.code [] [ Html.text content ]
+                Html.code [ Render.Helper.codeFont, Html.Attributes.style "font-size" "0.9em" ] [ Html.text content ]
 
             else
                 Html.span [] [ Html.text content ]
@@ -59,7 +60,7 @@ render theme depth attrs expr =
                     [ Html.text mathContent ]
 
             else if name == "code" then
-                Html.code []
+                Html.code [ Render.Helper.codeFont, Html.Attributes.style "font-size" "0.9em" ]
                     (List.map (render theme depth attrs) exprList)
 
             else if List.member name [ "b", "strong", "bold" ] then
