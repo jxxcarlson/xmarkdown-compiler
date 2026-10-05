@@ -1,8 +1,10 @@
 module Render.TitleBlock exposing (render)
 
 {-| The %title / %author / %date block (AST.TitleBlock): centered lines,
-the title at 2em and the author(s) and date at 1.5em, 1.5em apart, with 3em
-below the last line. Only the document's first title block is drawn.
+the title at 2em and the authors (joined on one line: "A and B",
+"A, B, and C") and date at 1.5em. Lines are 1.4625 body-ems apart (margins
+are in each line's own em, so they are divided by its size), with 3em below
+the last line. Only the document's first title block is drawn.
 -}
 
 import AST.Acc exposing (Accumulator)
@@ -27,9 +29,9 @@ render count acc _ _ _ block =
 
             lines =
                 List.concat
-                    [ nonEmpty "2em" info.title
-                    , List.concatMap (nonEmpty "1.5em") info.authors
-                    , nonEmpty "1.5em" info.date
+                    [ nonEmpty 2 info.title
+                    , nonEmpty 1.5 (joinAuthors info.authors)
+                    , nonEmpty 1.5 info.date
                     ]
 
             count_ =
@@ -38,13 +40,13 @@ render count acc _ _ _ block =
             line index ( size, text ) =
                 Html.div
                     [ Html.Attributes.style "text-align" "center"
-                    , Html.Attributes.style "font-size" size
+                    , Html.Attributes.style "font-size" (em size)
                     , Html.Attributes.style "margin-bottom"
                         (if index == count_ - 1 then
                             "3em"
 
                          else
-                            "1.5em"
+                            em (lineGap / size)
                         )
                     , Html.Attributes.attribute "data-title-block" "true"
                     ]
@@ -58,10 +60,40 @@ render count acc _ _ _ block =
             (List.indexedMap line lines)
 
 
-nonEmpty : String -> String -> List ( String, String )
+{-| Space between consecutive lines, in body ems.
+-}
+lineGap : Float
+lineGap =
+    1.4625
+
+
+em : Float -> String
+em x =
+    String.fromFloat x ++ "em"
+
+
+nonEmpty : Float -> String -> List ( Float, String )
 nonEmpty size text =
     if String.isEmpty text then
         []
 
     else
         [ ( size, text ) ]
+
+
+{-| "A", "A and B", "A, B, and C", ...
+-}
+joinAuthors : List String -> String
+joinAuthors authors =
+    case List.reverse authors of
+        [] ->
+            ""
+
+        [ only ] ->
+            only
+
+        [ second, first ] ->
+            first ++ " and " ++ second
+
+        last :: rest ->
+            String.join ", " (List.reverse rest) ++ ", and " ++ last

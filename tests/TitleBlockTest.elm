@@ -96,7 +96,22 @@ suite =
                 \_ ->
                     rendered example
                         |> Query.find [ Selector.style "font-size" "1.5em", Selector.containing [ Selector.text "ChatGPT" ] ]
-                        |> Query.has [ Selector.style "text-align" "center", Selector.style "margin-bottom" "1.5em" ]
+                        |> Query.has [ Selector.style "text-align" "center", Selector.style "margin-bottom" "0.975em" ]
+            , test "the title-to-author gap equals the author-to-date gap" <|
+                \_ ->
+                    rendered example
+                        |> Query.find [ Selector.style "font-size" "2em" ]
+                        |> Query.has [ Selector.style "margin-bottom" "0.73125em" ]
+            , test "two authors share one line: A and B" <|
+                \_ ->
+                    rendered "%title T\n%author John Doe\n%author Fred Poe"
+                        |> Query.find [ Selector.style "font-size" "1.5em" ]
+                        |> Query.has [ Selector.text "John Doe and Fred Poe" ]
+            , test "three authors share one line: A, B, and C" <|
+                \_ ->
+                    rendered "%title T\n%author John Doe\n%author Fred Poe\n%author Mary Smith"
+                        |> Query.find [ Selector.style "font-size" "1.5em" ]
+                        |> Query.has [ Selector.text "John Doe, Fred Poe, and Mary Smith" ]
             , test "the last line has 3em below it" <|
                 \_ ->
                     rendered example
