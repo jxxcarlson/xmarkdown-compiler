@@ -5,7 +5,10 @@
 //   images, runs pdflatex and returns the PDF, which is saved as a download.
 // - Desktop (Tauri): a native save dialog picks the PDF's location, and the
 //   Rust command export_pdf does the same work as serve.py and writes it there.
-//   The saved PDF is then shown in the app (showPdfInApp) until closed.
+//   The saved PDF is then shown in the app (showPdfInApp) until closed, below
+//   the header so the File menu stays usable: Elm is told on desktopResponse
+//   ({ kind: "pdfShown", path } / path null when closed) and offers File >
+//   Print, which desktop.js sends to the Rust command print_pdf.
 //
 // (The Netlify site has neither, and hides the menu item: see Main.Flags.)
 //
@@ -14,8 +17,11 @@
 //   pdfExported (JS -> Elm) null on success, otherwise a short error message
 //                           for the header notice (details go to the console)
 
+let pdfApp = null;
+
 function initPdfExport(app) {
     if (!app.ports.exportPdf) return;
+    pdfApp = app;
 
     app.ports.exportPdf.subscribe(async ({ name, tex, images }) => {
         if (window.__TAURI__) return exportOnDesktop(app, { name, tex, images });
@@ -95,17 +101,20 @@ async function exportOnDesktop(app, { name, tex, images }) {
     }
 }
 
-// Show a saved PDF over the whole window, in the web view's PDF viewer, with
+// Show a saved PDF over the window below the header, in the web view's PDF viewer, with
 // a bar holding its name and a Close button (Esc also closes). export_pdf has
 // added the file to the asset protocol's scope, so convertFileSrc can load it.
 function showPdfInApp(path) {
     closePdfViewer();
     const name = path.split("/").pop();
 
+    // Below the header (File menu) and under its drop-down (z-index 10/11).
+    const header = document.querySelector(".app-header");
+    const top = header ? header.getBoundingClientRect().bottom : 0;
     const overlay = document.createElement("div");
     overlay.id = "pdf-viewer";
     overlay.style.cssText =
-        "position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;background:#525659;";
+        `position:fixed;top:${top}px;left:0;right:0;bottom:0;z-index:9;display:flex;flex-direction:column;background:#525659;`;
 
     const bar = document.createElement("div");
     bar.style.cssText =
@@ -128,12 +137,19 @@ function showPdfInApp(path) {
     overlay.append(bar, frame);
     document.body.appendChild(overlay);
     document.addEventListener("keydown", closeOnEscape, true);
+    pdfShown(path);
+}
+
+function pdfShown(path) {
+    if (pdfApp && pdfApp.ports.desktopResponse) pdfApp.ports.desktopResponse.send({ kind: "pdfShown", path });
 }
 
 function closePdfViewer() {
     const overlay = document.getElementById("pdf-viewer");
-    if (overlay) overlay.remove();
+    if (!overlay) return;
+    overlay.remove();
     document.removeEventListener("keydown", closeOnEscape, true);
+    pdfShown(null);
 }
 
 function closeOnEscape(event) {

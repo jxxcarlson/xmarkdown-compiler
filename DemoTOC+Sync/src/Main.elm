@@ -51,7 +51,7 @@ subscriptions model =
 
             Nothing ->
                 Sub.none
-        , if model.fileMenuOpen || model.dialog /= Nothing then
+        , if model.fileMenuOpen || model.dialog /= Nothing || model.printStatus /= Nothing then
             Browser.Events.onKeyDown
                 (Decode.field "key" Decode.string
                     |> Decode.andThen
@@ -101,7 +101,17 @@ type alias Model =
     , docVersion : Int
     , editVersion : Int
     , pdfExport : Bool
+    , pdfShown : Maybe String
+    , printStatus : Maybe PrintStatus
     }
+
+
+{-| File > Print with no PDF shown: the PDF is generated first (desktop.js
+printDocument), with a message window while that runs or if it fails.
+-}
+type PrintStatus
+    = GeneratingPdf
+    | PrintFailed String
 
 
 {-| Web: the browser app (Open via file picker, Save downloads).
@@ -121,6 +131,9 @@ type DesktopEvent
     | DesktopCreated FileLocation
     | DesktopCloseRequested String
     | DesktopFolderChosen { folder : String, folderName : String }
+    | DesktopPdfShown (Maybe String)
+    | DesktopPdfGenerated
+    | DesktopPrintFailed String
     | DesktopError String
     | DesktopCancelled
 
@@ -160,6 +173,8 @@ type Msg
     | NewRequested
     | SaveAsRequested
     | ExportPdfRequested
+    | PrintRequested
+    | PrintMessageDismissed
     | PdfExported (Maybe String)
     | ToggleFileMenu
     | FileMenuChose Msg
@@ -261,6 +276,8 @@ init flagsValue =
       , docVersion = 0
       , editVersion = 0
       , pdfExport = flags.pdfExport
+      , pdfShown = Nothing
+      , printStatus = Nothing
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -346,6 +363,27 @@ update msg model =
                 , images = LaTeX.Export.imageUrls model.sourceText
                 }
             )
+
+        -- Print the PDF on show, or generate one from the document and print that.
+        PrintRequested ->
+            case model.pdfShown of
+                Just path ->
+                    ( model, desktopRequest "printPdf" [ ( "path", Encode.string path ) ] )
+
+                Nothing ->
+                    ( { model | printStatus = Just GeneratingPdf }
+                    , desktopRequest "printDocument"
+                        [ ( "name", Encode.string (pdfName model.fileName) )
+                        , ( "tex", Encode.string (LaTeX.Export.exportDocument { title = "", authors = [], date = "" } model.sourceText) )
+                        , ( "images"
+                          , Encode.list (\( url, localPath ) -> Encode.list Encode.string [ url, localPath ])
+                                (LaTeX.Export.imageUrls model.sourceText)
+                          )
+                        ]
+                    )
+
+        PrintMessageDismissed ->
+            ( { model | printStatus = Nothing }, Cmd.none )
 
         PdfExported result ->
             ( { model | notice = result }, Cmd.none )
@@ -436,6 +474,17 @@ update msg model =
                 DesktopFolderChosen { folder, folderName } ->
                     ( { model | folderPath = Just folder, folderName = Just folderName, notice = Nothing }, Cmd.none )
 
+                -- The exported PDF shown in the app (or closed): File > Print.
+                DesktopPdfShown path ->
+                    ( { model | pdfShown = path }, Cmd.none )
+
+                -- File > Print: the PDF is ready and the print panel opens.
+                DesktopPdfGenerated ->
+                    ( { model | printStatus = Nothing }, Cmd.none )
+
+                DesktopPrintFailed message ->
+                    ( { model | printStatus = Just (PrintFailed message) }, Cmd.none )
+
                 DesktopError message ->
                     ( { model | notice = Just message }, Cmd.none )
 
@@ -449,7 +498,7 @@ update msg model =
             update itemMsg { model | fileMenuOpen = False }
 
         EscapePressed ->
-            ( { model | fileMenuOpen = False, dialog = Nothing }, Cmd.none )
+            ( { model | fileMenuOpen = False, dialog = Nothing, printStatus = Nothing }, Cmd.none )
 
         DialogNameChanged name ->
             ( { model | dialog = Maybe.map (\d -> { d | name = name }) model.dialog }, Cmd.none )
@@ -791,6 +840,15 @@ desktopEventDecoder =
                             (Decode.field "folder" Decode.string)
                             (Decode.field "folderName" Decode.string)
 
+                    "pdfGenerated" ->
+                        Decode.succeed DesktopPdfGenerated
+
+                    "printFailed" ->
+                        Decode.map DesktopPrintFailed (Decode.field "message" Decode.string)
+
+                    "pdfShown" ->
+                        Decode.map DesktopPdfShown (Decode.field "path" (Decode.nullable Decode.string))
+
                     "error" ->
                         Decode.map DesktopError (Decode.field "message" Decode.string)
 
@@ -1064,6 +1122,12 @@ view model =
 
             Nothing ->
                 text ""
+        , case model.printStatus of
+            Just status ->
+                printStatusView status
+
+            Nothing ->
+                text ""
         ]
 
 
@@ -1141,11 +1205,37 @@ fileMenu model =
                             else
                                 []
                            )
+                        ++ (if model.platform == Desktop then
+                                [ item "Print" PrintRequested ]
+
+                            else
+                                []
+                           )
                     )
                 ]
 
           else
             text ""
+        ]
+
+
+printStatusView : PrintStatus -> Html Msg
+printStatusView status =
+    div [ class "dialog-backdrop" ]
+        [ div [ class "dialog" ]
+            (case status of
+                GeneratingPdf ->
+                    [ Html.h2 [] [ text "Print" ]
+                    , Html.p [] [ text "Generating PDF…" ]
+                    ]
+
+                PrintFailed message ->
+                    [ Html.h2 [] [ text "Print" ]
+                    , Html.p [] [ text ("The PDF could not be generated: " ++ message) ]
+                    , div [ class "dialog-buttons" ]
+                        [ button [ class "toolbar-button primary", Html.Events.onClick PrintMessageDismissed ] [ text "OK" ] ]
+                    ]
+            )
         ]
 
 

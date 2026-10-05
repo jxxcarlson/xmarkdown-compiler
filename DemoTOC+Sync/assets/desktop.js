@@ -12,6 +12,9 @@
 //   create  { folder, name }      -> created { path, name, folder, folderName }
 //   confirmDiscard { name, then } -> (asks; finishes or cancels the close)
 //   finish  { then }              -> (closes the window / quits)
+//   printPdf { path }             -> (print panel; the PDF shown by pdf-export.js)
+//   printDocument { name, tex, images } -> pdfGenerated, then the print panel
+//                                    | printFailed { message }
 //   any                           -> error   { message } | cancelled
 //
 // `token` is Elm's edit counter, echoed back so Elm knows which edit a save
@@ -22,6 +25,9 @@
 //
 // File I/O goes through the Rust commands read_file / write_file / file_exists
 // (desktop/src-tauri/src/lib.rs); dialogs through tauri-plugin-dialog.
+//
+// The path of the last file opened, saved or created is kept in localStorage
+// and reopened at startup (if it still exists).
 
 function initDesktop(app) {
     const T = window.__TAURI__;
@@ -57,8 +63,25 @@ function initDesktop(app) {
         return "/" + parts.join("/");
     }
 
+    const LAST_FILE = "xmarkdown.lastFile";
+
+    function rememberFile(path) {
+        try {
+            localStorage.setItem(LAST_FILE, path);
+        } catch (e) {}
+    }
+
+    function lastFile() {
+        try {
+            return localStorage.getItem(LAST_FILE);
+        } catch (e) {
+            return null;
+        }
+    }
+
     function reply(message) {
         if (message.folder) currentFolder = message.folder;
+        if (message.path && message.kind !== "error") rememberFile(message.path);
         app.ports.desktopResponse.send(message);
     }
 
@@ -109,6 +132,21 @@ function initDesktop(app) {
         async finish({ then }) {
             await finish(then);
         },
+        async printPdf({ path }) {
+            await invoke("print_pdf", { path });
+        },
+        // File > Print with no PDF shown: generate one in the temp folder
+        // (like Export PDF, see pdf-export.js), then print it.
+        async printDocument({ name, tex, images }) {
+            const output = (await T.path.tempDir()).replace(/\/$/, "") + "/" + name;
+            try {
+                await invoke("export_pdf", { tex, images, output });
+            } catch (e) {
+                return reply({ kind: "printFailed", message: firstLatexError(String(e)) });
+            }
+            reply({ kind: "pdfGenerated" });
+            await invoke("print_pdf", { path: output });
+        },
         saveAs,
         async create({ folder, name }) {
             const path = resolve(folder, name);
@@ -157,6 +195,17 @@ function initDesktop(app) {
     }
 
     window.xmDesktop = { openLink, currentFolder: () => currentFolder };
+
+    // Reopen the most recently used file; if it is gone, keep the default doc.
+    (async () => {
+        const path = lastFile();
+        if (!path) return;
+        try {
+            if (await invoke("file_exists", { path })) await openPath(path);
+        } catch (e) {
+            console.warn("desktop.js: could not reopen", path, e);
+        }
+    })();
 
     // http(s) links would otherwise replace the app inside its own window;
     // open them in the default browser instead.
