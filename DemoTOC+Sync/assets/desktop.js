@@ -156,7 +156,7 @@ function initDesktop(app) {
         }
     }
 
-    window.xmDesktop = { openLink };
+    window.xmDesktop = { openLink, currentFolder: () => currentFolder };
 
     // http(s) links would otherwise replace the app inside its own window;
     // open them in the default browser instead.

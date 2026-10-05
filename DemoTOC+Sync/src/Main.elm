@@ -100,6 +100,7 @@ type alias Model =
     , dirty : Bool
     , docVersion : Int
     , editVersion : Int
+    , pdfExport : Bool
     }
 
 
@@ -180,16 +181,20 @@ type Msg
     | AutoSaveDue Int
 
 
-{-| Flags are decoded by hand so that `platform` is optional: pages that
-predate the desktop app (e.g. DemoTOC+Sync's app.js) omit it.
+{-| Flags are decoded by hand so that `platform` and `pdfExport` are optional:
+pages that predate them (e.g. DemoTOC+Sync's app.js) omit them.
+
+`pdfExport`: whether File > Export PDF is offered. It needs pdflatex, via
+DemoTOC+Sync's local serve.py or the desktop app; the Netlify site has neither
+and passes false. Defaults to true.
 -}
 type alias Flags =
-    { window : { windowWidth : Int, windowHeight : Int }, platform : Platform }
+    { window : { windowWidth : Int, windowHeight : Int }, platform : Platform, pdfExport : Bool }
 
 
 flagsDecoder : Decode.Decoder Flags
 flagsDecoder =
-    Decode.map2 Flags
+    Decode.map3 Flags
         (Decode.field "window"
             (Decode.map2 (\w h -> { windowWidth = w, windowHeight = h })
                 (Decode.field "windowWidth" Decode.int)
@@ -209,6 +214,7 @@ flagsDecoder =
             , Decode.succeed Web
             ]
         )
+        (Decode.oneOf [ Decode.field "pdfExport" Decode.bool, Decode.succeed True ])
 
 
 init : Decode.Value -> ( Model, Cmd Msg )
@@ -216,7 +222,7 @@ init flagsValue =
     let
         flags =
             Decode.decodeValue flagsDecoder flagsValue
-                |> Result.withDefault { window = { windowWidth = 1200, windowHeight = 800 }, platform = Web }
+                |> Result.withDefault { window = { windowWidth = 1200, windowHeight = 800 }, platform = Web, pdfExport = True }
 
         -- set initial compiler parameters here by
         -- modifying the defaultCompilerParameters, e.g.,
@@ -254,6 +260,7 @@ init flagsValue =
       , dirty = False
       , docVersion = 0
       , editVersion = 0
+      , pdfExport = flags.pdfExport
       }
     , Ports.setEditorHighlightColor params.highlightColor
     )
@@ -1008,6 +1015,8 @@ view model =
 
                 Nothing ->
                     text ""
+            , div [ class "header-item word-count" ]
+                [ text (formatCount (wordCount model.sourceText)), Html.span [ class "header-key" ] [ text " words" ] ]
             ]
         , div [ class "panels" ]
             [ -- Hidden rather than removed when closed, so CodeMirror keeps the
@@ -1076,6 +1085,32 @@ pdfName fileName =
         ++ ".pdf"
 
 
+{-| Words in the source: whitespace-separated tokens containing a letter or
+digit, so markup like `#`, `-` and `$$` isn't counted.
+-}
+wordCount : String -> Int
+wordCount source =
+    source
+        |> String.words
+        |> List.filter (String.any Char.isAlphaNum)
+        |> List.length
+
+
+{-| 12345 -> "12,345"
+-}
+formatCount : Int -> String
+formatCount n =
+    let
+        group digits =
+            if String.length digits <= 3 then
+                [ digits ]
+
+            else
+                group (String.dropRight 3 digits) ++ [ String.right 3 digits ]
+    in
+    String.join "," (group (String.fromInt n))
+
+
 fileMenu : Model -> Html Msg
 fileMenu model =
     let
@@ -1094,13 +1129,19 @@ fileMenu model =
             div []
                 [ div [ class "menu-backdrop", Html.Events.onClick ToggleFileMenu ] []
                 , div [ class "menu-list" ]
-                    [ item "New…" NewRequested
+                    ([ item "New…" NewRequested
                     , item "Open…" OpenFileRequested
                     , item "Open Folder…" OpenFolderRequested
                     , item "Save" SaveRequested
                     , item "Save As…" SaveAsRequested
-                    , item "Export PDF" ExportPdfRequested
                     ]
+                        ++ (if model.pdfExport then
+                                [ item "Export PDF" ExportPdfRequested ]
+
+                            else
+                                []
+                           )
+                    )
                 ]
 
           else

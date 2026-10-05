@@ -64,6 +64,16 @@ html, body {
     margin-left: auto;
 }
 
+/* Pinned to the right corner; when a notice is showing, the notice takes
+   the free space and the count sits just after it. */
+.app-header .word-count {
+    margin-left: auto;
+}
+
+.app-header .notice + .word-count {
+    margin-left: 10px;
+}
+
 /* File menu */
 .menu {
     position: relative;
