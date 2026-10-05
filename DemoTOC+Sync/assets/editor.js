@@ -563,31 +563,38 @@ class CodemirrorEditor extends HTMLElement {
                 from = Math.max(0, Math.min(h.start, doc.length));
                 to = Math.max(from, Math.min(h.end, doc.length));
             }
-            editor.dispatch({
-                effects: [setSyncHighlight.of({ from, to })],
-            });
-            // Center the target line by writing the editor scroller's scrollTop
-            // directly, instead of EditorView.scrollIntoView. CM's scrollIntoView
-            // walks ancestor elements too (even overflow:hidden ones are
-            // programmatically scrollable), which dragged the whole app shell up
-            // when the target was near the end of the document. A direct
-            // scrollTop write is clamped by the browser to the scroller's own
-            // valid range: true centering everywhere, graceful clamp at the ends,
-            // and the shell never moves.
-            editor.requestMeasure({
-                read: (view) => {
-                    const block = view.lineBlockAt(from);
-                    const scroller = view.scrollDOM;
-                    return {
-                        scroller,
-                        target: block.top - (scroller.clientHeight - block.height) / 2,
-                    };
-                },
-                write: ({ scroller, target }) => {
-                    scroller.scrollTop = target; // browser clamps to [0, max]
-                },
-            });
+            this.showSourceSpan(from, to);
         }
+    }
+
+    // Highlight source characters [from, to) and scroll them into view.
+    showSourceSpan(from, to) {
+        const editor = this.editor;
+        if (!editor) return;
+        editor.dispatch({
+            effects: [setSyncHighlight.of({ from, to })],
+        });
+        // Center the target line by writing the editor scroller's scrollTop
+        // directly, instead of EditorView.scrollIntoView. CM's scrollIntoView
+        // walks ancestor elements too (even overflow:hidden ones are
+        // programmatically scrollable), which dragged the whole app shell up
+        // when the target was near the end of the document. A direct
+        // scrollTop write is clamped by the browser to the scroller's own
+        // valid range: true centering everywhere, graceful clamp at the ends,
+        // and the shell never moves.
+        editor.requestMeasure({
+            read: (view) => {
+                const block = view.lineBlockAt(from);
+                const scroller = view.scrollDOM;
+                return {
+                    scroller,
+                    target: block.top - (scroller.clientHeight - block.height) / 2,
+                };
+            },
+            write: ({ scroller, target }) => {
+                scroller.scrollTop = target; // browser clamps to [0, max]
+            },
+        });
     }
 
     attributeChangedCallback(attr, oldVal, newVal) {
@@ -598,6 +605,109 @@ class CodemirrorEditor extends HTMLElement {
         }
     }
 }
+
+// RL sync, rendered -> source. Each prose run in the rendered text is a
+// <span data-src-begin data-src-end> giving the run's absolute source offsets
+// (end inclusive), and its text matches the source character for character
+// (tests/OffsetRoundTripTest.elm). So:
+//   - a click highlights the word under the pointer;
+//   - a selection highlights the corresponding source range.
+// Clicks elsewhere (math, code, tables, ...) fall through to Elm, which
+// highlights the whole block (SendLineNumber).
+
+const WORD_CHAR = /[\p{L}\p{N}_'’-]/u;
+
+// The run span holding `node` and the run's offsets, or null.
+function runOf(node) {
+    const el = node && (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
+    const span = el && el.closest && el.closest("[data-src-begin]");
+    if (!span || span.closest("a")) return null;
+    const begin = parseInt(span.getAttribute("data-src-begin"), 10);
+    const end = parseInt(span.getAttribute("data-src-end"), 10);
+    if (isNaN(begin) || isNaN(end)) return null;
+    return { span, begin, length: end - begin + 1 };
+}
+
+// Source offset of a DOM position inside a run's text node, or null.
+function sourceOffset(node, offset) {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    const run = runOf(node);
+    if (!run) return null;
+    return run.begin + Math.min(offset, run.length);
+}
+
+// The source span [from, to) of the word at a click, or null.
+function wordAt(node, offset, doc) {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    const run = runOf(node);
+    if (!run) return null;
+    const text = node.data.slice(0, run.length); // drop the renderer's trailing " "
+    let i = Math.min(offset, text.length);
+    if (!WORD_CHAR.test(text[i] || "") && WORD_CHAR.test(text[i - 1] || "")) i -= 1;
+    if (!WORD_CHAR.test(text[i] || "")) return null;
+    let a = i;
+    let b = i + 1;
+    while (a > 0 && WORD_CHAR.test(text[a - 1])) a -= 1;
+    while (b < text.length && WORD_CHAR.test(text[b])) b += 1;
+    const word = { from: run.begin + a, to: run.begin + b };
+    // Guard against a stale render (source edited since): if the source no
+    // longer has this word there, highlight the whole run instead.
+    if (doc.sliceString(word.from, word.to) !== text.slice(a, b)) {
+        return { from: run.begin, to: run.begin + run.length };
+    }
+    return word;
+}
+
+// The source span [from, to) of a selection. An end outside any run (e.g. in
+// math) snaps to the nearest run inside the selection.
+function rangeOf(range) {
+    let from = sourceOffset(range.startContainer, range.startOffset);
+    let to = sourceOffset(range.endContainer, range.endOffset);
+    if (from === null || to === null) {
+        let root = range.commonAncestorContainer;
+        if (root.nodeType !== Node.ELEMENT_NODE) root = root.parentElement;
+        const runs = [...root.querySelectorAll("[data-src-begin]")]
+            .filter((span) => range.intersectsNode(span))
+            .map(runOf)
+            .filter(Boolean);
+        if (runs.length === 0) return null;
+        if (from === null) from = runs[0].begin;
+        if (to === null) to = runs[runs.length - 1].begin + runs[runs.length - 1].length;
+    }
+    return from < to ? { from, to } : { from: to, to: from };
+}
+
+let swallowNextClick = false;
+
+document.addEventListener("mousedown", () => {
+    swallowNextClick = false;
+});
+
+document.addEventListener("mouseup", (event) => {
+    if (event.button !== 0) return;
+    const host = document.querySelector("codemirror-editor");
+    const sel = window.getSelection();
+    if (!host || !host.editor || !sel || sel.rangeCount === 0) return;
+    if (host.contains(sel.anchorNode)) return; // a selection in the editor itself
+    const doc = host.editor.state.doc;
+    const span = sel.isCollapsed ? wordAt(sel.anchorNode, sel.anchorOffset, doc) : rangeOf(sel.getRangeAt(0));
+    if (!span) return;
+    const from = Math.max(0, Math.min(span.from, doc.length));
+    const to = Math.max(from, Math.min(span.to, doc.length));
+    host.showSourceSpan(from, to);
+    // The click that follows would make Elm highlight the whole block.
+    swallowNextClick = true;
+});
+
+window.addEventListener(
+    "click",
+    (event) => {
+        if (!swallowNextClick) return;
+        swallowNextClick = false;
+        event.stopPropagation();
+    },
+    true
+);
 
 console.log("editor.js: registering custom element");
 customElements.define("codemirror-editor", CodemirrorEditor);
