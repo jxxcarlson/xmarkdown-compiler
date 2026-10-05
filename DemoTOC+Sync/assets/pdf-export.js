@@ -5,6 +5,7 @@
 //   images, runs pdflatex and returns the PDF, which is saved as a download.
 // - Desktop (Tauri): a native save dialog picks the PDF's location, and the
 //   Rust command export_pdf does the same work as serve.py and writes it there.
+//   The saved PDF is then shown in the app (showPdfInApp) until closed.
 //
 // (The Netlify site has neither, and hides the menu item: see Main.Flags.)
 //
@@ -80,6 +81,7 @@ async function exportOnDesktop(app, { name, tex, images }) {
 
     try {
         const { imageErrors } = await T.core.invoke("export_pdf", { tex, images, output });
+        showPdfInApp(output);
         if (imageErrors.length > 0) {
             // No developer console in the desktop app: name the images here.
             app.ports.pdfExported.send(
@@ -90,6 +92,54 @@ async function exportOnDesktop(app, { name, tex, images }) {
         }
     } catch (e) {
         app.ports.pdfExported.send("PDF export failed: " + firstLatexError(String(e)));
+    }
+}
+
+// Show a saved PDF over the whole window, in the web view's PDF viewer, with
+// a bar holding its name and a Close button (Esc also closes). export_pdf has
+// added the file to the asset protocol's scope, so convertFileSrc can load it.
+function showPdfInApp(path) {
+    closePdfViewer();
+    const name = path.split("/").pop();
+
+    const overlay = document.createElement("div");
+    overlay.id = "pdf-viewer";
+    overlay.style.cssText =
+        "position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;background:#525659;";
+
+    const bar = document.createElement("div");
+    bar.style.cssText =
+        "display:flex;align-items:center;gap:12px;padding:6px 12px;background:#2b2b2b;color:#eee;" +
+        "font:13px -apple-system,system-ui,sans-serif;";
+    const title = document.createElement("span");
+    title.textContent = name;
+    title.style.cssText = "flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+    const close = document.createElement("button");
+    close.textContent = "Close";
+    close.onclick = closePdfViewer;
+    bar.append(title, close);
+
+    const frame = document.createElement("iframe");
+    frame.title = name;
+    // The query string defeats the cache when the same file is exported again.
+    frame.src = window.__TAURI__.core.convertFileSrc(path) + "?t=" + Date.now();
+    frame.style.cssText = "flex:1;width:100%;border:0;background:#525659;";
+
+    overlay.append(bar, frame);
+    document.body.appendChild(overlay);
+    document.addEventListener("keydown", closeOnEscape, true);
+}
+
+function closePdfViewer() {
+    const overlay = document.getElementById("pdf-viewer");
+    if (overlay) overlay.remove();
+    document.removeEventListener("keydown", closeOnEscape, true);
+}
+
+function closeOnEscape(event) {
+    if (event.key === "Escape") {
+        event.stopPropagation();
+        closePdfViewer();
     }
 }
 
