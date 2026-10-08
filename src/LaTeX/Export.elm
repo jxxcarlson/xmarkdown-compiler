@@ -36,7 +36,7 @@ type alias DocumentInfo =
     }
 
 
-{-| A complete .tex document, ready for pdflatex once the images listed by
+{-| A complete .tex document, ready for LuaLaTeX once the images listed by
 `imageUrls` have been downloaded.
 -}
 exportDocument : DocumentInfo -> String -> String

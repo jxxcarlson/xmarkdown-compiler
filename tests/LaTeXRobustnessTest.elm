@@ -1,6 +1,6 @@
 module LaTeXRobustnessTest exposing (suite)
 
-{-| Inputs from real documents that used to produce LaTeX pdflatex rejects
+{-| Inputs from real documents that used to produce LaTeX that LaTeX rejects
 (final review of the LaTeX export).
 -}
 
@@ -136,11 +136,9 @@ suite =
                         |> Expect.equal "Here $x \\in A \\text{ for all x in B}$."
             ]
         , describe "Unicode (I8)"
-            [ test "Greek letters in prose become math-mode symbols" <|
+            [ test "non-ASCII text passes through unchanged (LuaLaTeX reads UTF-8)" <|
                 \_ ->
-                    LaTeX.Escape.text "α and Ω"
-                        |> Expect.equal "\\ensuremath{\\alpha} and \\ensuremath{\\Omega}"
-            , test "Greek capitals that look Latin become Latin letters" <|
-                \_ -> LaTeX.Escape.text "ΑΒ" |> Expect.equal "AB"
+                    LaTeX.Escape.text "α and Ω, ≈ → ✓ 中文"
+                        |> Expect.equal "α and Ω, ≈ → ✓ 中文"
             ]
         ]

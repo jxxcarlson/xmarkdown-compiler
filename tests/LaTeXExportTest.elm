@@ -18,7 +18,19 @@ suite =
         [ test "plain document: minimal preamble, no maketitle" <|
             \_ ->
                 exportDocument noInfo "Hello."
-                    |> Expect.equal "\\documentclass[11pt]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[T1]{fontenc}\n\\usepackage{stmaryrd}\n\\setlength{\\parindent}{0pt}\n\\setlength{\\parskip}{1em}\n\n\\begin{document}\n\nHello.\n\n\\end{document}\n"
+                    |> Expect.all
+                        [ String.startsWith "\\documentclass[11pt]{article}\n\\usepackage{fontspec}\n" >> Expect.equal True
+                        , String.endsWith "\\usepackage{stmaryrd}\n\\setlength{\\parindent}{0pt}\n\\setlength{\\parskip}{1em}\n\n\\begin{document}\n\nHello.\n\n\\end{document}\n" >> Expect.equal True
+                        , String.contains "inputenc" >> Expect.equal False
+                        ]
+        , test "fonts: Latin Modern with fallback fonts for characters it lacks" <|
+            \_ ->
+                exportDocument noInfo "Hello."
+                    |> Expect.all
+                        [ String.contains "\\directlua{luaotfload.add_fallback(\"xmfallback\", {\\xmfallbacks})}" >> Expect.equal True
+                        , String.contains "\\setmainfont{Latin Modern Roman}[RawFeature={fallback=xmfallback}]" >> Expect.equal True
+                        , String.contains "\\IfFontExistsTF{FreeSerif.otf}" >> Expect.equal True
+                        ]
         , test "title block and maketitle when info is given" <|
             \_ ->
                 exportDocument { title = "Black Holes", authors = [ "A. Einstein", "K. Schwarzschild" ], date = "1916" } "Hi."
