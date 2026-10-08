@@ -40,7 +40,7 @@ port desktopResponse : (Json.Decode.Value -> msg) -> Sub msg
 
 {-| File > Export PDF: the exported LaTeX and its images, for
 assets/pdf-export.js to send to the local server (serve.py), which runs
-pdflatex and hands back the PDF as a download.
+lualatex and hands back the PDF as a download.
 -}
 port exportPdf : { name : String, tex : String, images : List ( String, String ) } -> Cmd msg
 

@@ -5,9 +5,9 @@
   files like katex.js and serves stale copies on reload after they change.)
 - POST /export-pdf: File > Export PDF. The body is JSON
   {"name": "doc.pdf", "tex": "...", "images": [[url, localPath], ...]}
-  (from LaTeX.Export). The images are downloaded next to the .tex, pdflatex
+  (from LaTeX.Export). The images are downloaded next to the .tex, lualatex
   runs in a temporary folder, and the PDF comes back. On a LaTeX error the
-  reply is 422 with {"error": <tail of the pdflatex log>}. Images that can't
+  reply is 422 with {"error": <tail of the lualatex log>}. Images that can't
   be fetched are skipped and listed in the X-Image-Errors header.
 
 Usage: python3 serve.py [port]   (default 8200; keep clear of 8000-8010)
@@ -26,7 +26,7 @@ import tempfile
 import urllib.request
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-PDFLATEX_TIMEOUT = 60
+LATEX_TIMEOUT = 60
 # Some image hosts refuse Python's default User-Agent (HTTP 406/403).
 FETCH_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh) XMarkdown-demo/1.0",
@@ -35,9 +35,9 @@ FETCH_HEADERS = {
 LOG_TAIL_LINES = 40
 
 
-def find_pdflatex():
-    return shutil.which("pdflatex") or (
-        "/Library/TeX/texbin/pdflatex" if os.path.exists("/Library/TeX/texbin/pdflatex") else None
+def find_lualatex():
+    return shutil.which("lualatex") or (
+        "/Library/TeX/texbin/lualatex" if os.path.exists("/Library/TeX/texbin/lualatex") else None
     )
 
 
@@ -54,7 +54,7 @@ def fetch_image(url, local_path, build_dir):
     except Exception as e:  # any network or HTTP failure: skip this image
         return f"{local_path}: {e}"
     # A 200 that isn't an image (a login or error page) would be a fatal
-    # "not a JPEG/PNG" error in pdflatex; treat it as a failed download.
+    # "not a JPEG/PNG" error in lualatex; treat it as a failed download.
     if not (content_type.startswith("image/") or content_type == "application/pdf"):
         return f"{local_path}: got {content_type}, not an image"
     # LaTeX.Export gives extensionless URLs an extensionless path, and
@@ -70,9 +70,9 @@ def fetch_image(url, local_path, build_dir):
 
 def build_pdf(name, tex, images):
     """Returns (pdf_bytes, None, image_errors) or (None, error_text, image_errors)."""
-    pdflatex = find_pdflatex()
-    if pdflatex is None:
-        return None, "pdflatex not found (install TeX Live / MacTeX)", []
+    lualatex = find_lualatex()
+    if lualatex is None:
+        return None, "lualatex not found (install TeX Live / MacTeX)", []
     stem = os.path.splitext(os.path.basename(name))[0] or "document"
     with tempfile.TemporaryDirectory() as build_dir:
         image_errors = []
@@ -85,13 +85,13 @@ def build_pdf(name, tex, images):
             f.write(tex)
         try:
             result = subprocess.run(
-                [pdflatex, "-interaction=nonstopmode", "-halt-on-error", stem + ".tex"],
+                [lualatex, "-interaction=nonstopmode", "-halt-on-error", stem + ".tex"],
                 cwd=build_dir,
                 capture_output=True,
-                timeout=PDFLATEX_TIMEOUT,
+                timeout=LATEX_TIMEOUT,
             )
         except subprocess.TimeoutExpired:
-            return None, f"pdflatex took longer than {PDFLATEX_TIMEOUT}s", image_errors
+            return None, f"lualatex took longer than {LATEX_TIMEOUT}s", image_errors
         pdf_path = os.path.join(build_dir, stem + ".pdf")
         if result.returncode != 0 or not os.path.exists(pdf_path):
             log = result.stdout.decode("utf-8", errors="replace").splitlines()
@@ -101,7 +101,7 @@ def build_pdf(name, tex, images):
 
 
 def replace_with_placeholder(tex, local_path):
-    """A missing image file is a fatal pdflatex error; put a framed note in
+    """A missing image file is a fatal lualatex error; put a framed note in
     its place so the rest of the document still comes out."""
     pattern = r"\\includegraphics(\[[^\]]*\])?\{" + re.escape(local_path) + r"\}"
     return re.sub(pattern, lambda _: r"\fbox{\texttt{image not available}}", tex)

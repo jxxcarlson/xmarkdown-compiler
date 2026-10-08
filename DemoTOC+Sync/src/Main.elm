@@ -199,7 +199,7 @@ type Msg
 {-| Flags are decoded by hand so that `platform` and `pdfExport` are optional:
 pages that predate them (e.g. DemoTOC+Sync's app.js) omit them.
 
-`pdfExport`: whether File > Export PDF is offered. It needs pdflatex, via
+`pdfExport`: whether File > Export PDF is offered. It needs lualatex, via
 DemoTOC+Sync's local serve.py or the desktop app; the Netlify site has neither
 and passes false. Defaults to true.
 -}

@@ -2,7 +2,7 @@
 //
 // Elm exports the document to LaTeX (LaTeX.Export) and sends it here.
 // - Browser: the local server started by run.sh (serve.py) downloads the
-//   images, runs pdflatex and returns the PDF, which is saved as a download.
+//   images, runs lualatex and returns the PDF, which is saved as a download.
 // - Desktop (Tauri): a native save dialog picks the PDF's location, and the
 //   Rust command export_pdf does the same work as serve.py and writes it there.
 //   The saved PDF is then shown in the app (showPdfInApp) until closed, below
@@ -46,7 +46,7 @@ function initPdfExport(app) {
         if (!response.ok) {
             const body = await response.json().catch(() => ({}));
             console.error("PDF export failed. LaTeX source:\n" + tex);
-            console.error("pdflatex log (tail):\n" + (body.error || response.statusText));
+            console.error("lualatex log (tail):\n" + (body.error || response.statusText));
             app.ports.pdfExported.send("PDF export failed: " + firstLatexError(body.error) + " (details in the console)");
             return;
         }
@@ -159,7 +159,7 @@ function closeOnEscape(event) {
     }
 }
 
-// The first "! ..." line of a pdflatex log, e.g. "Undefined control sequence."
+// The first "! ..." line of a lualatex log, e.g. "Undefined control sequence."
 function firstLatexError(log) {
     if (!log) return "unknown error";
     const line = log.split("\n").find((l) => l.startsWith("!"));

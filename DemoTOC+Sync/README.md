@@ -51,13 +51,17 @@ python3 serve.py 8200                          # serve assets/ over HTTP (any po
 ## File > Export PDF
 
 Exports the current document to LaTeX (`LaTeX.Export` in `../src/LaTeX/`) and
-downloads it as a PDF. The browser can't run pdflatex, so `serve.py` does it:
+downloads it as a PDF. The browser can't run lualatex, so `serve.py` does it:
 `POST /export-pdf` downloads the document's images into a temporary folder,
-runs `pdflatex`, and returns the PDF. An image that can't be downloaded is
-replaced by a framed "image not available" note. Needs `pdflatex` on the PATH
+runs `lualatex`, and returns the PDF. An image that can't be downloaded is
+replaced by a framed "image not available" note. Needs `lualatex` on the PATH
 or in `/Library/TeX/texbin` (MacTeX), and the demo served by `serve.py`
 (`./run.sh`), not by `python3 -m http.server`. Errors appear in the header;
-the full pdflatex log goes to the browser console.
+the full lualatex log goes to the browser console.
+
+Any Unicode character is accepted: LuaLaTeX reads UTF-8, and characters
+Latin Modern lacks come from fallback fonts (see `LaTeX.Preamble`); one
+that no font has is left out with a warning in the log, never an error.
 
 Server tests: `python3 -m unittest test_serve`
 
