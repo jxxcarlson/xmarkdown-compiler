@@ -34,8 +34,8 @@ suite =
                         |> Expect.equal "% ETeX error\n\\texttt{\\textbackslash{}frac\\{1\\}\\{2}"
             , test "a rejected formula that is still valid LaTeX is kept as math" <|
                 \_ ->
-                    exportBody "$$\na\\:b\n$$"
-                        |> Expect.equal "% ETeX error\n\\[\na\\:b\n\\]"
+                    exportBody "$$\na\"b\n$$"
+                        |> Expect.equal "% ETeX error\n\\[\na\"b\n\\]"
             ]
         , describe "inline math (I1, I2)"
             [ test "empty inline math is dropped, not turned into $$" <|

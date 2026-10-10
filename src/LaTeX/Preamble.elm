@@ -32,7 +32,20 @@ make body =
             [ [ "\\documentclass[11pt]{article}" ]
             , fonts
             , [ "\\usepackage{stmaryrd}" ]
-            , optional usesMath [ "\\usepackage{amsmath}", "\\usepackage{amssymb}" ]
+            , optional usesMath [ "\\usepackage{amsmath}", "\\usepackage{amssymb}", "\\usepackage{mathtools}" ]
+            , optional (List.any uses [ "\\bra", "\\ket", "\\Bra", "\\Ket", "\\Set" ]) [ "\\usepackage{braket}" ]
+            , optional (uses "\\bm") [ "\\usepackage{bm}" ]
+            , optional (uses "\\oiint") [ "\\usepackage{esint}" ]
+            , optional (uses "\\hdashline") [ "\\usepackage{arydshln}" ]
+            , List.filterMap
+                (\( name, definition ) ->
+                    if uses ("\\" ++ name) then
+                        Just definition
+
+                    else
+                        Nothing
+                )
+                katexOnly
             , optional (uses "\\ce{") [ "\\usepackage[version=4]{mhchem}" ]
             , optional (uses "\\includegraphics") [ "\\usepackage{graphicx}" ]
 
@@ -45,6 +58,71 @@ make body =
               ]
             ]
         )
+
+
+{-| Commands KaTeX has (and ETeX knows) that LaTeX and the packages above
+lack, as `\providecommand` definitions; each is emitted only when the body
+uses the command. A few (`\oiiint`, `\xtofrom`, ...) are approximations.
+-}
+katexOnly : List ( String, String )
+katexOnly =
+    List.map (\( name, letter ) -> ( name, provide name ("\\mathrm{" ++ letter ++ "}") ))
+        [ ( "Alpha", "A" ), ( "Beta", "B" ), ( "Chi", "X" ), ( "Epsilon", "E" ), ( "Eta", "H" ), ( "Iota", "I" ), ( "Kappa", "K" ), ( "Mu", "M" ), ( "Nu", "N" ), ( "Omicron", "O" ), ( "Rho", "P" ), ( "Tau", "T" ), ( "Zeta", "Z" ) ]
+        ++ List.map (\( name, body ) -> ( name, provide name body ))
+            [ ( "omicron", "o" )
+            , ( "argmax", "\\operatorname*{arg\\,max}" )
+            , ( "argmin", "\\operatorname*{arg\\,min}" )
+            , ( "plim", "\\operatorname*{plim}" )
+            , ( "cosec", "\\operatorname{cosec}" )
+            , ( "cotg", "\\operatorname{cotg}" )
+            , ( "ctg", "\\operatorname{ctg}" )
+            , ( "cth", "\\operatorname{cth}" )
+            , ( "dArr", "\\Downarrow" )
+            , ( "uArr", "\\Uparrow" )
+            , ( "varvdots", "\\vdots" )
+            , ( "oiiint", "\\iiint" )
+
+            -- colon relations, in terms of mathtools' names
+            , ( "colonequals", "\\coloneqq" )
+            , ( "colonminus", "\\coloneq" )
+            , ( "coloncolon", "\\dblcolon" )
+            , ( "coloncolonequals", "\\Coloneqq" )
+            , ( "coloncolonminus", "\\Coloneq" )
+            , ( "coloncolonapprox", "\\Colonapprox" )
+            , ( "coloncolonsim", "\\Colonsim" )
+            , ( "equalscolon", "\\eqqcolon" )
+            , ( "equalscoloncolon", "\\Eqqcolon" )
+            , ( "minuscolon", "\\eqcolon" )
+            , ( "minuscoloncolon", "\\Eqcolon" )
+            , ( "approxcoloncolon", "\\mathrel{\\approx\\dblcolon}" )
+            , ( "simcoloncolon", "\\mathrel{\\sim\\dblcolon}" )
+            ]
+        ++ List.map (\( name, symbol ) -> ( name, provide1 name ("\\overset{" ++ symbol ++ "}{#1}") ))
+            [ ( "Overrightarrow", "\\Longrightarrow" )
+            , ( "overleftharpoon", "\\leftharpoonup" )
+            , ( "overrightharpoon", "\\rightharpoonup" )
+            ]
+        ++ [ ( "utilde", provide1 "utilde" "\\underset{\\sim}{#1}" ) ]
+        ++ List.map (\( name, symbol ) -> ( name, "\\providecommand{\\" ++ name ++ "}[2][]{\\mathrel{\\overset{#2}{\\underset{#1}{" ++ symbol ++ "}}}}" ))
+            -- extensible arrows: \xname[below]{above}, at a fixed length
+            [ ( "xlongequal", "=\\joinrel=\\joinrel=" )
+            , ( "xtwoheadrightarrow", "\\twoheadrightarrow" )
+            , ( "xtwoheadleftarrow", "\\twoheadleftarrow" )
+            , ( "xrightleftarrows", "\\rightleftarrows" )
+            , ( "xtofrom", "\\rightleftarrows" )
+            , ( "xrightequilibrium", "\\rightleftharpoons" )
+            , ( "xleftequilibrium", "\\leftrightharpoons" )
+            ]
+
+
+provide : String -> String -> String
+provide name body =
+    "\\providecommand{\\" ++ name ++ "}{" ++ body ++ "}"
+
+
+provide1 : String -> String -> String
+provide1 name body =
+    "\\providecommand{\\" ++ name ++ "}[1]{" ++ body ++ "}"
 
 
 {-| Fallback fonts, in order. A font that isn't installed is skipped (a

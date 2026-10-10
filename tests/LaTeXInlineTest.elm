@@ -38,8 +38,8 @@ suite =
             \_ -> LaTeX.Inline.exportExprs [ v "math" "x^2" ] |> Expect.equal "$x^2$"
         , test "inline math the ETeX parser rejects falls back to the source" <|
             \_ ->
-                LaTeX.Inline.exportExprs [ v "math" "a\\:b" ]
-                    |> Expect.equal "% ETeX error\n$a\\:b$"
+                LaTeX.Inline.exportExprs [ v "math" "a\"b" ]
+                    |> Expect.equal "% ETeX error\n$a\"b$"
         , test "link: last word is the URL" <|
             \_ ->
                 LaTeX.Inline.exportExprs [ f "link" [ t "New York Times https://nytimes.com/a#b" ] ]

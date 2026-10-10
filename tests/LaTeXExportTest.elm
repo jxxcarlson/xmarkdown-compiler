@@ -43,6 +43,35 @@ suite =
                         [ String.contains "\\usepackage{amsmath}" >> Expect.equal True
                         , String.contains "\\usepackage{amssymb}" >> Expect.equal True
                         ]
+        , test "math pulls in mathtools (colon relations, extensible arrows)" <|
+            \_ ->
+                LaTeX.Preamble.make "$x$"
+                    |> String.contains "\\usepackage{mathtools}"
+                    |> Expect.equal True
+        , test "bra-ket, bm, esint and arydshln are loaded only when used" <|
+            \_ ->
+                Expect.all
+                    [ \_ -> LaTeX.Preamble.make "$\\bra{x}$" |> String.contains "\\usepackage{braket}" |> Expect.equal True
+                    , \_ -> LaTeX.Preamble.make "$\\bm{x}$" |> String.contains "\\usepackage{bm}" |> Expect.equal True
+                    , \_ -> LaTeX.Preamble.make "$\\oiint$" |> String.contains "\\usepackage{esint}" |> Expect.equal True
+                    , \_ -> LaTeX.Preamble.make "$\\hdashline$" |> String.contains "\\usepackage{arydshln}" |> Expect.equal True
+                    , \_ -> LaTeX.Preamble.make "$x$" |> String.contains "braket" |> Expect.equal False
+                    ]
+                    ()
+        , test "KaTeX-only commands get a definition only when used" <|
+            \_ ->
+                Expect.all
+                    [ \_ ->
+                        LaTeX.Preamble.make "$\\argmax_x f$"
+                            |> String.contains "\\providecommand{\\argmax}{\\operatorname*{arg\\,max}}"
+                            |> Expect.equal True
+                    , \_ ->
+                        LaTeX.Preamble.make "$\\Alpha$"
+                            |> String.contains "\\providecommand{\\Alpha}{\\mathrm{A}}"
+                            |> Expect.equal True
+                    , \_ -> LaTeX.Preamble.make "$x$" |> String.contains "providecommand" |> Expect.equal False
+                    ]
+                    ()
         , test "images pull in graphicx, links pull in hyperref, chem pulls in mhchem" <|
             \_ ->
                 LaTeX.Preamble.make "\\includegraphics{a} \\href{u}{t} \\ce{H2O}"

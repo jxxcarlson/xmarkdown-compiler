@@ -37,8 +37,8 @@ suite =
                     |> Expect.equal "\\[\nx^2\n\\]"
         , test "display math the ETeX parser rejects falls back to the source" <|
             \_ ->
-                exportBody "$$\na\\:b\n$$"
-                    |> Expect.equal "% ETeX error\n\\[\na\\:b\n\\]"
+                exportBody "$$\na\"b\n$$"
+                    |> Expect.equal "% ETeX error\n\\[\na\"b\n\\]"
         , test "equation block" <|
             \_ ->
                 exportBody "| equation\nx^2"
