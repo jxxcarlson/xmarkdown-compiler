@@ -1,5 +1,32 @@
 # Changelog
 
+## Desktop app: File > Normalize — 2026-10-11
+
+Changes to the demo app (DemoTOC+Sync, synced to XMarkdownNetlifyDemo). No
+compiler release.
+
+The new last item in the File menu, **Normalize**, removes hand-written
+numbers from the headings in the source and saves the file:
+
+- `# 1. Intro` → `# Intro`
+- `## 2.1 blah blah` → `## blah blah`
+- `### 2.1.3. Deep` → `### Deep`
+
+Details:
+
+- **What counts as a number:** the number must contain a dot, so
+  `# 2024 Results` is left alone.
+- **What isn't touched:** headings inside code fences, and lines that aren't
+  headings.
+- **Saving:** works like Save. A document with no file opens the save dialog;
+  the web version downloads the file.
+- **Nothing to change:** the app says "No numbered headings to normalize."
+  and doesn't save.
+- **Editor:** it reloads with the new text, so the cursor goes back to the top.
+
+Files: `DemoTOC+Sync/src/Normalize.elm` (new: the heading rewrite) and
+`DemoTOC+Sync/src/Main.elm` (the menu item and the command).
+
 ## Desktop app: keyboard shortcuts and File > New — 2026-10-11
 
 Changes to the demo app (DemoTOC+Sync, synced to XMarkdownNetlifyDemo). No

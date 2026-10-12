@@ -15,6 +15,7 @@ import Html.Keyed
 import Json.Decode as Decode
 import Json.Encode as Encode
 import LaTeX.Export
+import Normalize
 import Ports
 import Process
 import Render.Theme exposing (ThemedStyles, darkTheme, lightTheme)
@@ -215,6 +216,7 @@ type Msg
     | SaveAsRequested
     | ExportPdfRequested
     | PrintRequested
+    | NormalizeRequested
     | PrintMessageDismissed
     | PdfExported (Maybe String)
     | ToggleFileMenu
@@ -461,6 +463,21 @@ update msg model =
 
                 ( Web, _ ) ->
                     ( { model | dirty = False }, saveFile model )
+
+        -- Strip section numbers from the headings in the source, then save.
+        NormalizeRequested ->
+            let
+                normalized =
+                    Normalize.headings model.sourceText
+            in
+            if normalized == model.sourceText then
+                ( { model | notice = Just "No numbered headings to normalize." }, Cmd.none )
+
+            else
+                update SaveRequested
+                    (loadDocument normalized model
+                        |> (\m -> { m | dirty = True, editVersion = m.editVersion + 1 })
+                    )
 
         -- Desktop: the native save dialog picks the new file's name and folder.
         NewRequested ->
@@ -1271,6 +1288,7 @@ fileMenu model =
                             else
                                 []
                            )
+                        ++ [ item "Normalize" NormalizeRequested ]
                     )
                 ]
 
