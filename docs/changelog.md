@@ -1,5 +1,40 @@
 # Changelog
 
+## Desktop app: File > Make header — 2026-10-11
+
+The new last item in the File menu, **Make header**, puts a standard header at
+the top of the document, followed by a blank line:
+
+```
+%title
+%author
+%date October 11, 2026
+%type
+%subject
+%source notes.md
+```
+
+- **Date:** today's local date, from `Date.today` (`justinmimbs/date`, already
+  a dependency of the demo).
+- **Source:** the document's file name.
+- **Already has a header:** if the first non-blank line is a `%key` line, the
+  app says "The document already has a header." and changes nothing.
+- **Saving:** it counts as an edit, so a desktop document that already has a
+  file is auto-saved; otherwise use Save.
+- **Editor:** it reloads with the new text, so the cursor goes back to the top.
+
+Files: `DemoTOC+Sync/src/Main.elm` (`header`, `hasHeader`, the menu item and
+the command).
+
+## Desktop app: ⌘O for Open — 2026-10-11
+
+⌘O runs File > Open, and the menu shows "⌘O" next to "Open…". Like ⌘N, it is
+desktop only. It is ignored while a dialog or the print message is showing,
+and the webview is kept from acting on it too.
+
+Files: `DemoTOC+Sync/src/Main.elm` (`keyDecoder`, `fileMenu`),
+`DemoTOC+Sync/assets/desktop.js`; in XMarkdownNetlifyDemo, `docs/desktop.md`.
+
 ## Desktop app: Normalize spaces out display math — 2026-10-11
 
 File > Normalize now also puts a blank line before and after display math

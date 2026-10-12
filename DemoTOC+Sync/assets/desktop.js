@@ -210,10 +210,10 @@ function initDesktop(app) {
         }
     })();
 
-    // Keyboard shortcuts ⌘N, ⌘P and ⌘E are handled by Elm (Main.keyDecoder);
+    // Keyboard shortcuts ⌘N, ⌘O, ⌘P and ⌘E are handled by Elm (Main.keyDecoder);
     // keep the webview from also acting on them (⌘P would print the page).
     document.addEventListener("keydown", (event) => {
-        if (event.metaKey && !event.shiftKey && !event.altKey && !event.ctrlKey && ["n", "p", "e"].includes(event.key.toLowerCase())) {
+        if (event.metaKey && !event.shiftKey && !event.altKey && !event.ctrlKey && ["n", "o", "p", "e"].includes(event.key.toLowerCase())) {
             event.preventDefault();
         }
     });

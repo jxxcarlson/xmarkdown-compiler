@@ -4,6 +4,7 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Color
+import Date exposing (Date)
 import Data.XMarkdown
 import File exposing (File)
 import File.Download
@@ -99,6 +100,9 @@ keyDecoder model =
 
                         ( "n", Desktop ) ->
                             Decode.succeed (FileMenuChose NewRequested)
+
+                        ( "o", Desktop ) ->
+                            Decode.succeed (FileMenuChose OpenFileRequested)
 
                         ( "p", Desktop ) ->
                             Decode.succeed (FileMenuChose PrintRequested)
@@ -217,6 +221,8 @@ type Msg
     | ExportPdfRequested
     | PrintRequested
     | NormalizeRequested
+    | MakeHeaderRequested
+    | GotHeaderDate Date
     | PrintMessageDismissed
     | PdfExported (Maybe String)
     | ToggleFileMenu
@@ -478,6 +484,22 @@ update msg model =
                     (loadDocument normalized model
                         |> (\m -> { m | dirty = True, editVersion = m.editVersion + 1 })
                     )
+
+        -- Prepend a %title ... %source header, dated today (see GotHeaderDate).
+        MakeHeaderRequested ->
+            if hasHeader model.sourceText then
+                ( { model | notice = Just "The document already has a header." }, Cmd.none )
+
+            else
+                ( model, Task.perform GotHeaderDate Date.today )
+
+        GotHeaderDate date ->
+            let
+                headed =
+                    loadDocument (header date model.fileName ++ model.sourceText) model
+                        |> (\m -> { m | dirty = True, editVersion = m.editVersion + 1 })
+            in
+            ( headed, scheduleAutoSave headed )
 
         -- Desktop: the native save dialog picks the new file's name and folder.
         NewRequested ->
@@ -771,6 +793,34 @@ loadDocument content model =
         , notice = Nothing
         , dirty = False
     }
+
+
+{-| The standard header, followed by a blank line.
+-}
+header : Date -> String -> String
+header date fileName =
+    String.join "\n"
+        [ "%title "
+        , "%author "
+        , "%date " ++ Date.format "MMMM d, y" date
+        , "%type "
+        , "%subject "
+        , "%source " ++ fileName
+        , ""
+        , ""
+        ]
+
+
+{-| Whether the document already starts with a %key line (a title block).
+-}
+hasHeader : String -> Bool
+hasHeader source =
+    case source |> String.lines |> List.map String.trim |> List.filter ((/=) "") of
+        first :: _ ->
+            String.startsWith "%" first && not (String.startsWith "% " first)
+
+        [] ->
+            False
 
 
 {-| An empty document named `name`, with the editor open for typing.
@@ -1271,7 +1321,7 @@ fileMenu model =
                 [ div [ class "menu-backdrop", Html.Events.onClick ToggleFileMenu ] []
                 , div [ class "menu-list" ]
                     ([ itemWithShortcut "New…" (desktopShortcut "⌘N") NewRequested
-                    , item "Open…" OpenFileRequested
+                    , itemWithShortcut "Open…" (desktopShortcut "⌘O") OpenFileRequested
                     , item "Open Folder…" OpenFolderRequested
                     , item "Save" SaveRequested
                     , item "Save As…" SaveAsRequested
@@ -1288,7 +1338,9 @@ fileMenu model =
                             else
                                 []
                            )
-                        ++ [ item "Normalize" NormalizeRequested ]
+                        ++ [ item "Normalize" NormalizeRequested
+                           , item "Make header" MakeHeaderRequested
+                           ]
                     )
                 ]
 
