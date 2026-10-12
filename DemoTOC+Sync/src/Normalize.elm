@@ -1,46 +1,110 @@
-module Normalize exposing (headings)
+module Normalize exposing (normalize)
 
-{-| File > Normalize: remove hand-written section numbers from headings, so
-`# 1. Intro` becomes `# Intro` and `## 2.1 Results` becomes `## Results`.
+{-| File > Normalize: tidy up the source text.
 
-A number must contain a dot (`1.`, `2.1`, `2.1.`), so a heading like
-`# 2024 Results` is left alone. Lines inside code fences are not touched.
+  - Hand-written section numbers are removed from headings, so `# 1. Intro`
+    becomes `# Intro` and `## 2.1 Results` becomes `## Results`. A number
+    must contain a dot (`1.`, `2.1`, `2.1.`), so a heading like
+    `# 2024 Results` is left alone.
+  - Display math written with `\[ ... \]` gets a blank line before and after
+    it.
+
+Lines inside code fences are not touched, and neither are lines inside display
+math.
+
 -}
 
 import Regex exposing (Regex)
 
 
-headings : String -> String
-headings source =
+type alias State =
+    { inFence : Bool
+    , inMath : Bool
+
+    -- the previous line closed display math
+    , mathJustEnded : Bool
+    , lines : List String -- reversed
+    }
+
+
+normalize : String -> String
+normalize source =
     source
         |> String.lines
-        |> List.foldl step ( False, [] )
-        |> Tuple.second
+        |> List.foldl step { inFence = False, inMath = False, mathJustEnded = False, lines = [] }
+        |> .lines
         |> List.reverse
         |> String.join "\n"
 
 
-{-| The Bool is whether we are inside a code fence.
--}
-step : String -> ( Bool, List String ) -> ( Bool, List String )
-step line ( inFence, acc ) =
-    if isFence line then
-        ( not inFence, line :: acc )
+step : String -> State -> State
+step line state =
+    let
+        trimmed =
+            String.trim line
 
-    else if inFence then
-        ( inFence, line :: acc )
+        -- a blank line after display math, unless this line is already blank
+        st =
+            if state.mathJustEnded && trimmed /= "" then
+                { state | mathJustEnded = False, lines = "" :: state.lines }
+
+            else
+                { state | mathJustEnded = False }
+    in
+    if st.inFence then
+        { st | inFence = not (isFence trimmed), lines = line :: st.lines }
+
+    else if st.inMath then
+        { st | inMath = not (closesMath trimmed), mathJustEnded = closesMath trimmed, lines = line :: st.lines }
+
+    else if isFence trimmed then
+        { st | inFence = True, lines = line :: st.lines }
+
+    else if String.startsWith "\\[" trimmed then
+        let
+            closed =
+                closesMath (String.dropLeft 2 trimmed)
+        in
+        { st
+            | inMath = not closed
+            , mathJustEnded = closed
+            , lines = line :: blankBefore st.lines
+        }
 
     else
-        ( inFence, Regex.replace numberedHeading (\m -> String.concat (List.map (Maybe.withDefault "") m.submatches)) line :: acc )
+        { st | lines = stripNumber line :: st.lines }
+
+
+{-| A blank line before display math, unless it starts the document or
+follows a blank line.
+-}
+blankBefore : List String -> List String
+blankBefore lines =
+    case lines of
+        previous :: _ ->
+            if String.trim previous == "" then
+                lines
+
+            else
+                "" :: lines
+
+        [] ->
+            lines
+
+
+closesMath : String -> Bool
+closesMath trimmed =
+    String.endsWith "\\]" trimmed
 
 
 isFence : String -> Bool
-isFence line =
-    let
-        trimmed =
-            String.trimLeft line
-    in
+isFence trimmed =
     String.startsWith "```" trimmed || String.startsWith "~~~" trimmed
+
+
+stripNumber : String -> String
+stripNumber line =
+    Regex.replace numberedHeading (\m -> String.concat (List.map (Maybe.withDefault "") m.submatches)) line
 
 
 {-| `#`s and the space after them, then a number such as `1.` or `2.1`, then

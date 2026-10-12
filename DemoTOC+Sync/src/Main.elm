@@ -464,14 +464,14 @@ update msg model =
                 ( Web, _ ) ->
                     ( { model | dirty = False }, saveFile model )
 
-        -- Strip section numbers from the headings in the source, then save.
+        -- Tidy the source (see Normalize), then save.
         NormalizeRequested ->
             let
                 normalized =
-                    Normalize.headings model.sourceText
+                    Normalize.normalize model.sourceText
             in
             if normalized == model.sourceText then
-                ( { model | notice = Just "No numbered headings to normalize." }, Cmd.none )
+                ( { model | notice = Just "Nothing to normalize." }, Cmd.none )
 
             else
                 update SaveRequested

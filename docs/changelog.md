@@ -1,5 +1,19 @@
 # Changelog
 
+## Desktop app: Normalize spaces out display math — 2026-10-11
+
+File > Normalize now also puts a blank line before and after display math
+written as `\[ ... \]`, whether it takes several lines or one. No blank line
+is added at the start or end of the document, or where there already is one.
+
+- **Inside math:** lines between `\[` and `\]` are not changed, so a line
+  starting with `#` there isn't treated as a heading.
+- **Code fences:** a `\[` inside a code fence is left alone.
+- **Message:** when there's nothing to change, it now says "Nothing to
+  normalize."
+- **Code:** `DemoTOC+Sync/src/Normalize.elm` (`Normalize.headings` is now
+  `Normalize.normalize`).
+
 ## Desktop app: File > Normalize — 2026-10-11
 
 Changes to the demo app (DemoTOC+Sync, synced to XMarkdownNetlifyDemo). No
