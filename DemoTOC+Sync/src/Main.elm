@@ -51,22 +51,63 @@ subscriptions model =
 
             Nothing ->
                 Sub.none
-        , if model.fileMenuOpen || model.dialog /= Nothing || model.printStatus /= Nothing then
-            Browser.Events.onKeyDown
-                (Decode.field "key" Decode.string
-                    |> Decode.andThen
-                        (\key ->
-                            if key == "Escape" then
-                                Decode.succeed EscapePressed
-
-                            else
-                                Decode.fail "not Escape"
-                        )
-                )
-
-          else
-            Sub.none
+        , Browser.Events.onKeyDown (keyDecoder model)
         ]
+
+
+{-| Escape closes the File menu, a dialog or the print message. Keyboard
+shortcuts (shown next to their menu items): ⌘N New and ⌘P Print (desktop
+only: a browser keeps ⌘N for itself), ⌘E Open/Close Editor. Shortcuts are
+ignored while a dialog or the print message is up, and when the key is held
+down. desktop.js stops the webview's own handling of these keys.
+-}
+keyDecoder : Model -> Decode.Decoder Msg
+keyDecoder model =
+    Decode.map4
+        (\key command otherModifier repeat ->
+            { key = key, command = command, otherModifier = otherModifier, repeat = repeat }
+        )
+        (Decode.field "key" Decode.string)
+        (Decode.field "metaKey" Decode.bool)
+        (Decode.map3 (\shift alt ctrl -> shift || alt || ctrl)
+            (Decode.field "shiftKey" Decode.bool)
+            (Decode.field "altKey" Decode.bool)
+            (Decode.field "ctrlKey" Decode.bool)
+        )
+        (Decode.field "repeat" Decode.bool)
+        |> Decode.andThen
+            (\event ->
+                let
+                    somethingOpen =
+                        model.fileMenuOpen || model.dialog /= Nothing || model.printStatus /= Nothing
+
+                    shortcutsAllowed =
+                        event.command
+                            && not event.otherModifier
+                            && not event.repeat
+                            && model.dialog == Nothing
+                            && model.printStatus == Nothing
+                in
+                if event.key == "Escape" && somethingOpen then
+                    Decode.succeed EscapePressed
+
+                else if shortcutsAllowed then
+                    case ( String.toLower event.key, model.platform ) of
+                        ( "e", _ ) ->
+                            Decode.succeed (FileMenuChose ToggleEditor)
+
+                        ( "n", Desktop ) ->
+                            Decode.succeed (FileMenuChose NewRequested)
+
+                        ( "p", Desktop ) ->
+                            Decode.succeed (FileMenuChose PrintRequested)
+
+                        _ ->
+                            Decode.fail "not a shortcut"
+
+                else
+                    Decode.fail "not a shortcut"
+            )
 
 
 type alias Model =
@@ -421,8 +462,19 @@ update msg model =
                 ( Web, _ ) ->
                     ( { model | dirty = False }, saveFile model )
 
+        -- Desktop: the native save dialog picks the new file's name and folder.
         NewRequested ->
-            openDialog NewFileDialog "untitled.md" model
+            case model.platform of
+                Desktop ->
+                    ( model
+                    , desktopRequest "new"
+                        [ ( "folder", model.folderPath |> Maybe.map Encode.string |> Maybe.withDefault Encode.null )
+                        , ( "name", Encode.string "untitled.md" )
+                        ]
+                    )
+
+                Web ->
+                    openDialog NewFileDialog "untitled.md" model
 
         SaveAsRequested ->
             case model.platform of
@@ -517,18 +569,12 @@ update msg model =
                         ( model, Cmd.none )
 
                     else
-                        case ( purpose, model.platform, model.folderPath ) of
-                            -- On the desktop, New creates the file in the current
-                            -- folder; the document is cleared when that succeeds.
-                            ( NewFileDialog, Desktop, Just folder ) ->
-                                ( { model | dialog = Nothing }
-                                , desktopRequest "create" [ ( "folder", Encode.string folder ), ( "name", Encode.string fileName ) ]
-                                )
-
-                            ( NewFileDialog, _, _ ) ->
+                        -- (Web only: the desktop uses native dialogs.)
+                        case purpose of
+                            NewFileDialog ->
                                 ( newDocument fileName { model | dialog = Nothing, filePath = Nothing }, autoSave model )
 
-                            ( SaveAsDialog, _, _ ) ->
+                            SaveAsDialog ->
                                 let
                                     renamed =
                                         { model | fileName = fileName, dialog = Nothing, dirty = False }
@@ -995,7 +1041,7 @@ view model =
     div [ class "app", Html.Attributes.classList [ ( "dragging", model.dragging /= Nothing ) ] ]
         [ div [ class "app-header" ]
             [ div [ class "app-label" ] [ text "XMarkdown" ]
-            , button [ class "toolbar-button", Html.Events.onClick ToggleEditor ]
+            , button [ class "toolbar-button", Html.Attributes.title "⌘E", Html.Events.onClick ToggleEditor ]
                 [ text
                     (if model.editorOpen then
                         "Close Editor"
@@ -1179,7 +1225,21 @@ fileMenu : Model -> Html Msg
 fileMenu model =
     let
         item label msg =
-            button [ class "menu-item", Html.Events.onClick (FileMenuChose msg) ] [ text label ]
+            itemWithShortcut label "" msg
+
+        -- The shortcut is shown on the right (see keyDecoder).
+        itemWithShortcut label shortcut msg =
+            button [ class "menu-item", Html.Events.onClick (FileMenuChose msg) ]
+                [ Html.span [] [ text label ]
+                , Html.span [ class "menu-shortcut" ] [ text shortcut ]
+                ]
+
+        desktopShortcut shortcut =
+            if model.platform == Desktop then
+                shortcut
+
+            else
+                ""
     in
     div [ class "menu" ]
         [ button
@@ -1193,7 +1253,7 @@ fileMenu model =
             div []
                 [ div [ class "menu-backdrop", Html.Events.onClick ToggleFileMenu ] []
                 , div [ class "menu-list" ]
-                    ([ item "New…" NewRequested
+                    ([ itemWithShortcut "New…" (desktopShortcut "⌘N") NewRequested
                     , item "Open…" OpenFileRequested
                     , item "Open Folder…" OpenFolderRequested
                     , item "Save" SaveRequested
@@ -1206,7 +1266,7 @@ fileMenu model =
                                 []
                            )
                         ++ (if model.platform == Desktop then
-                                [ item "Print" PrintRequested ]
+                                [ itemWithShortcut "Print" "⌘P" PrintRequested ]
 
                             else
                                 []

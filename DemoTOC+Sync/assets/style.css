@@ -116,6 +116,17 @@ html, body {
     cursor: pointer;
 }
 
+/* Label on the left, keyboard shortcut (if any) on the right */
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.menu-shortcut {
+    color: #888;
+}
+
 .menu-item:hover {
     background: #e3ebfb;
 }

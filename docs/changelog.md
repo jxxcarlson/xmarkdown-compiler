@@ -1,5 +1,55 @@
 # Changelog
 
+## Desktop app: keyboard shortcuts and File > New — 2026-10-11
+
+Changes to the demo app (DemoTOC+Sync, synced to XMarkdownNetlifyDemo). No
+compiler release.
+
+### Keyboard shortcuts
+
+| Key | Does | Shown |
+|---|---|---|
+| ⌘N | File > New | next to "New…" in the File menu (desktop only) |
+| ⌘P | File > Print | next to "Print" |
+| ⌘E | Open/Close Editor | when you hover over the editor button |
+
+- **Save As** has no shortcut. ⌘S still triggers left-to-right sync in the
+  editor.
+- **When shortcuts are ignored:** while a dialog or the print message is
+  showing, and when the key is held down.
+- **The web version** only gets ⌘E. Browsers don't let a page take over ⌘N,
+  and Print is desktop-only.
+
+### File > New
+
+On the desktop, New opens the macOS save dialog, starting at `untitled.md` in
+the current folder. The empty file is created wherever you save it, and the
+dialog asks before replacing an existing file. This replaces the old name
+prompt, which always created the file in the current folder.
+
+### Checked
+
+In headless Chrome, with a fake of the Tauri file and dialog functions:
+
+- ⌘E works on web and desktop, including with the cursor in the editor.
+- ⌘N goes through the save dialog, creates the file and loads it.
+- ⌘P generates the PDF and then prints.
+- The menu labels appear only where they should, and Escape still closes the
+  menu.
+
+Not covered by that check: whether the real app's own menu or webview catches
+⌘N or ⌘P first.
+
+### Files
+
+- `DemoTOC+Sync/src/Main.elm`: shortcuts (`keyDecoder`), menu labels and the
+  new New flow.
+- `DemoTOC+Sync/assets/desktop.js`: the `new` request (save dialog; replaces
+  `create`), and stopping the webview's own ⌘N/⌘P/⌘E.
+- `DemoTOC+Sync/assets/style.css`: the shortcut labels.
+- XMarkdownNetlifyDemo: the synced copies, plus `docs/desktop.md` updated for
+  New and the shortcuts.
+
 ## xmarkdown-compiler 2.1.5 — 2026-10-10
 
 Requires `jxxcarlson/etex` 1.0.8. The ETeX releases below are what make math

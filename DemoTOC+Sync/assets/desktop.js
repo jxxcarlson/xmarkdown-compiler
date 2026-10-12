@@ -9,7 +9,8 @@
 //   openFolder                    -> folder  { folder, folderName }
 //   save    { path, content, token, then? } -> saved { path, ..., token }
 //   saveAs  { folder, name, content, token } -> savedAs { path, ..., token }
-//   create  { folder, name }      -> created { path, name, folder, folderName }
+//   new     { folder, name }      -> created { path, name, folder, folderName }
+//                                    (save dialog; the new file is empty)
 //   confirmDiscard { name, then } -> (asks; finishes or cancels the close)
 //   finish  { then }              -> (closes the window / quits)
 //   printPdf { path }             -> (print panel; the PDF shown by pdf-export.js)
@@ -148,14 +149,16 @@ function initDesktop(app) {
             await invoke("print_pdf", { path: output });
         },
         saveAs,
-        async create({ folder, name }) {
-            const path = resolve(folder, name);
-            const where = locate(path);
-            if (await invoke("file_exists", { path })) {
-                return reply({ kind: "error", message: `${where.name} already exists in ${where.folderName}.` });
-            }
+        // File > New: the save dialog picks the name and folder (it asks
+        // before replacing an existing file).
+        async new({ folder, name }) {
+            const path = await T.dialog.save({
+                defaultPath: folder ? folder + "/" + name : name,
+                filters: MARKDOWN,
+            });
+            if (!path) return reply({ kind: "cancelled" });
             await invoke("write_file", { path, contents: "" });
-            reply({ kind: "created", ...where });
+            reply({ kind: "created", ...locate(path) });
         },
     };
 
@@ -206,6 +209,14 @@ function initDesktop(app) {
             console.warn("desktop.js: could not reopen", path, e);
         }
     })();
+
+    // Keyboard shortcuts ⌘N, ⌘P and ⌘E are handled by Elm (Main.keyDecoder);
+    // keep the webview from also acting on them (⌘P would print the page).
+    document.addEventListener("keydown", (event) => {
+        if (event.metaKey && !event.shiftKey && !event.altKey && !event.ctrlKey && ["n", "p", "e"].includes(event.key.toLowerCase())) {
+            event.preventDefault();
+        }
+    });
 
     // http(s) links would otherwise replace the app inside its own window;
     // open them in the default browser instead.
