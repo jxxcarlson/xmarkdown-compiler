@@ -50,6 +50,10 @@ type alias State =
     , blocksCommitted : Int
     , label : String
     , error : Maybe HeadingError
+
+    -- The name of the open `/begin NAME` block, if any. Until its `/end NAME`
+    -- line, every line belongs to that block, blank lines included.
+    , delimited : Maybe String
     }
 
 
@@ -180,6 +184,7 @@ init initialId outerCount lines =
     , blocksCommitted = 0
     , label = "0, START"
     , error = Nothing
+    , delimited = Nothing
     }
 
 
@@ -249,7 +254,45 @@ nextStep state =
     case List.head state.lines of
         Nothing ->
             -- finish up: no more lines to process
-            case state.currentBlock of
+            case ( state.delimited, state.currentBlock ) of
+                ( Just _, Just block ) ->
+                    -- A /begin block with no /end runs to the end of the
+                    -- document. Its last line is the virtual blank line added
+                    -- by parse, which is not part of the source.
+                    Done (List.reverse (closeDelimited state { block | body = List.drop 1 block.body } |> .blocks))
+
+                _ ->
+                    finish state
+
+        Just rawLine ->
+            let
+                newPosition =
+                    state.position + String.length rawLine + 1
+
+                currentLine : Line
+                currentLine =
+                    Line.classify state.position (state.lineNumber + 1) rawLine
+            in
+            case state.delimited of
+                Just name ->
+                    let
+                        added =
+                            addCurrentLine2 { state | position = newPosition, label = "6, DELIMITED" } currentLine
+                    in
+                    case ( isEndLine name currentLine.content, added.currentBlock ) of
+                        ( True, Just block ) ->
+                            Loop (closeDelimited added block)
+
+                        _ ->
+                            Loop added
+
+                Nothing ->
+                    nextUndelimitedStep state newPosition currentLine
+
+
+finish : State -> Step State (List PrimitiveBlock)
+finish state =
+    case state.currentBlock of
                 Nothing ->
                     Done (List.reverse state.blocks)
 
@@ -267,15 +310,9 @@ nextStep state =
                     in
                     Done blocks
 
-        Just rawLine ->
-            let
-                newPosition =
-                    state.position + String.length rawLine + 1
 
-                currentLine : Line
-                currentLine =
-                    Line.classify state.position (state.lineNumber + 1) rawLine
-            in
+nextUndelimitedStep : State -> Int -> Line -> Step State (List PrimitiveBlock)
+nextUndelimitedStep state newPosition currentLine =
             case ( state.inBlock, Line.isEmpty currentLine, Line.isNonEmptyBlank currentLine ) of
                 -- (in block, current line is empty, current line is blank but not empty)
                 -- not in a block, pass over empty line
@@ -340,6 +377,71 @@ nextStep state =
                 -- current line is empty
                 ( True, True, _ ) ->
                     Loop (commitBlock { state | position = newPosition, label = "5, COMMIT" } currentLine)
+
+
+{-| Whether `content` is the `/end NAME` line closing the block `name`.
+-}
+isEndLine : String -> String -> Bool
+isEndLine name content =
+    String.words content == [ "/end", name ]
+
+
+{-| Commit a `/begin NAME ... /end NAME` block. `block.body` holds its lines in
+reverse order, the `/begin` line last. The committed body is the lines between
+`/begin` and `/end`, in source order and with their indentation, blank lines
+included; meta.sourceText is the whole block as typed, both delimiter lines
+included.
+-}
+closeDelimited : State -> PrimitiveBlock -> State
+closeDelimited state block =
+    let
+        -- every line after the /begin line, in source order
+        rest =
+            List.reverse block.body |> List.drop 1
+
+        inner =
+            case List.Extra.last rest of
+                Just last ->
+                    if isEndLine (AST.Language.getNameFromHeading block.heading |> Maybe.withDefault "") last then
+                        AST.BlockUtilities.dropLast rest
+
+                    else
+                        rest
+
+                Nothing ->
+                    rest
+
+        id =
+            String.fromInt state.lineNumber ++ "-" ++ String.fromInt state.blocksCommitted
+
+        oldMeta =
+            block.meta
+
+        committed =
+            { block
+                | body = inner
+                , properties =
+                    block.properties
+                        |> Dict.insert "outerId" id
+                        -- Inline offsets in the body are relative to the line
+                        -- after /begin; Pipeline adds this to make them
+                        -- relative to the block.
+                        |> Dict.insert "markerOffset" (String.fromInt (String.length block.firstLine + 1))
+                , meta =
+                    { oldMeta
+                        | id = id
+                        , sourceText = String.join "\n" (block.firstLine :: rest)
+                        , numberOfLines = 1 + List.length rest
+                    }
+            }
+    in
+    { state
+        | blocks = committed :: state.blocks
+        , blocksCommitted = state.blocksCommitted + 1
+        , inBlock = False
+        , currentBlock = Nothing
+        , delimited = Nothing
+    }
 
 
 advance : Int -> State -> State
@@ -650,6 +752,12 @@ createBlock state currentLine =
                 , inBlock = True
                 , currentBlock = Just newBlock
                 , blocks = blocks
+                , delimited =
+                    if Dict.member "delimited" newBlock.properties then
+                        AST.Language.getNameFromHeading newBlock.heading
+
+                    else
+                        Nothing
             }
 
 
@@ -674,7 +782,17 @@ getHeadingData line_ =
         ( args1, properties ) =
             KV.argsAndProperties (String.words line)
     in
-    if String.startsWith "%" line then
+    if String.startsWith "/begin" line then
+        -- /begin NAME ... /end NAME: a block named NAME whose lines run to the
+        -- matching /end line, blank lines included (see nextStep)
+        case args1 of
+            "/begin" :: name :: args ->
+                Ok { heading = Ordinary name, args = args, properties = Dict.insert "delimited" "true" properties }
+
+            _ ->
+                Err HEMissingName
+
+    else if String.startsWith "%" line then
         -- %title / %author / %date lines: see AST.TitleBlock
         Ok { heading = Ordinary "titleBlock", args = [], properties = Dict.empty }
 

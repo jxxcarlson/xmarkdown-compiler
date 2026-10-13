@@ -7,7 +7,7 @@ module Render.Blocks.Text exposing (registerRenderers)
 -}
 
 import AST.Acc exposing (Accumulator)
-import AST.Language exposing (ExpressionBlock)
+import AST.Language exposing (Expr(..), ExpressionBlock)
 import Either exposing (Either(..))
 import Html exposing (Html)
 import Html.Attributes
@@ -23,6 +23,7 @@ registerRenderers : BlockRegistry -> BlockRegistry
 registerRenderers registry =
     Render.BlockRegistry.registerBatch
         [ ( "quotation", quotation )
+        , ( "verse", verse )
         ]
         registry
 
@@ -62,3 +63,39 @@ quotation count _ depth settings _ block =
             ]
             content
         ]
+
+
+{-| Render a verse block (`/begin verse ... /end verse`): one line per source
+line, indented by the line's leading spaces; a blank line stays blank.
+-}
+verse : Int -> Accumulator -> Int -> RenderSettings -> List (Html.Attribute MarkupMsg) -> ExpressionBlock -> Html MarkupMsg
+verse count _ depth settings _ block =
+    let
+        line expr =
+            case expr of
+                ExprList indent exprs _ ->
+                    Html.div
+                        [ Html.Attributes.style "padding-left" (String.fromInt indent ++ "ch")
+                        , Html.Attributes.style "min-height" "1.4em"
+                        ]
+                        (List.map (Render.Expression.render settings.theme depth []) exprs)
+
+                _ ->
+                    Render.Expression.render settings.theme depth [] expr
+
+        lines =
+            case block.body of
+                Right exprs ->
+                    List.map line exprs
+
+                Left text ->
+                    [ Html.text text ]
+    in
+    Html.div
+        [ Html.Attributes.id ("e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count)
+        , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
+        , Html.Attributes.style "margin-left" (String.fromInt settings.leftIndentation ++ "px")
+        , Html.Attributes.style "line-height" "1.4"
+        , Html.Attributes.style "margin-bottom" "18px"
+        ]
+        lines

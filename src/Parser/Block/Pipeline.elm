@@ -73,6 +73,11 @@ toExpressionBlock_ parse primitiveBlock =
                 Ordinary "quotation" ->
                     Right (parseQuotationLines parse primitiveBlock.meta.sourceText)
 
+                -- Verse: one ExprList per source line, carrying the line's
+                -- indentation; a blank line is an empty ExprList.
+                Ordinary "verse" ->
+                    Right (parseVerseLines parse (markerOffset primitiveBlock) primitiveBlock.body)
+
                 Ordinary _ ->
                     let
                         -- Set by PrimitiveBlock.fixMarkdownTitleBlock when it strips
@@ -80,21 +85,58 @@ toExpressionBlock_ parse primitiveBlock =
                         -- stripped text start at 0 relative to it, and boostBlock
                         -- only adds the block's own position, so the stripped
                         -- marker's length has to be added back here.
-                        markerOffset =
-                            Dict.get "markerOffset" primitiveBlock.properties
-                                |> Maybe.andThen String.toInt
-                                |> Maybe.withDefault 0
+                        offset =
+                            markerOffset primitiveBlock
                     in
                     Right
                         (String.join "\n" primitiveBlock.body
                             |> parse
-                            |> List.map (AST.Language.shiftExpressionPositions markerOffset)
+                            |> List.map (AST.Language.shiftExpressionPositions offset)
                         )
 
                 Verbatim _ ->
                     Left <| String.join "\n" primitiveBlock.body
         , meta = primitiveBlock.meta
         }
+
+
+markerOffset : PrimitiveBlock -> Int
+markerOffset primitiveBlock =
+    Dict.get "markerOffset" primitiveBlock.properties
+        |> Maybe.andThen String.toInt
+        |> Maybe.withDefault 0
+
+
+{-| Parse the lines of a verse block (`/begin verse ... /end verse`). Each line
+is parsed on its own, with its leading spaces removed and recorded as the
+ExprList's indentation: the inline parser does not keep runs of spaces. Its
+expressions are shifted to their position in the block (`start` is the offset
+of the first line), as in parseListItems.
+
+As with quotations, inline markup cannot span a line break.
+
+-}
+parseVerseLines : (String -> List Expression) -> Int -> List String -> List Expression
+parseVerseLines parse start lines =
+    let
+        folder : String -> ( Int, List Expression ) -> ( Int, List Expression )
+        folder line ( offset, acc ) =
+            let
+                trimmed =
+                    String.trimLeft line
+
+                indent =
+                    String.length line - String.length trimmed
+
+                exprs =
+                    parse trimmed |> List.map (AST.Language.shiftExpressionPositions (offset + indent))
+            in
+            ( offset + String.length line + 1, ExprList indent exprs AST.Language.emptyExprMeta :: acc )
+    in
+    lines
+        |> List.foldl folder ( start, [] )
+        |> Tuple.second
+        |> List.reverse
 
 
 {-| Parse the items of a list block. Each item is parsed from its own

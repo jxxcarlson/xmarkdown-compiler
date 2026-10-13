@@ -197,6 +197,9 @@ exportBlock block =
         Ordinary "quotation" ->
             environment "quote" (quotation block)
 
+        Ordinary "verse" ->
+            environment "verse" (verse block)
+
         Ordinary "table" ->
             table block
 
@@ -400,6 +403,75 @@ table block =
                         )
                     ++ "\n\\end{tabular}"
                 )
+
+
+{-| The body of a verse environment. Lines end with `\\` except before a
+blank line; a blank line starts a new stanza, and each further blank line
+adds a line of space. Leading spaces become an `\hspace*` of half an em each.
+Blank lines at the start and end are dropped.
+-}
+verse : ExpressionBlock -> String
+verse block =
+    let
+        toLine expr =
+            case expr of
+                ExprList indent exprs _ ->
+                    case String.trim (LaTeX.Inline.exportExprs exprs) of
+                        "" ->
+                            Nothing
+
+                        text ->
+                            Just ( indent, text )
+
+                _ ->
+                    Just ( 0, LaTeX.Inline.exportExprs [ expr ] )
+
+        lines =
+            case block.body of
+                Right exprs ->
+                    List.map toLine exprs
+                        |> List.Extra.dropWhile ((==) Nothing)
+                        |> List.Extra.dropWhileRight ((==) Nothing)
+
+                Left str ->
+                    [ Just ( 0, LaTeX.Escape.text str ) ]
+
+        indentation indent =
+            if indent > 0 then
+                "\\hspace*{" ++ String.fromFloat (toFloat indent / 2) ++ "em}"
+
+            else
+                ""
+
+        render line next =
+            case ( line, next ) of
+                ( Just ( indent, text ), Just (Just _) ) ->
+                    indentation indent ++ text ++ " \\\\"
+
+                ( Just ( indent, text ), _ ) ->
+                    indentation indent ++ text
+
+                -- a blank line after a line of text: the stanza break
+                ( Nothing, _ ) ->
+                    ""
+
+        withNext =
+            List.map2 Tuple.pair lines (List.map Just (List.drop 1 lines) ++ [ Nothing ])
+
+        -- a blank line that follows another blank line adds space
+        rendered =
+            List.map2
+                (\( line, next ) previous ->
+                    if line == Nothing && previous == Just Nothing then
+                        "\\vspace{\\baselineskip}\n"
+
+                    else
+                        render line next
+                )
+                withNext
+                (Nothing :: List.map Just lines)
+    in
+    String.join "\n" rendered
 
 
 {-| A compact list is one block whose body is one ExprList per item, carrying

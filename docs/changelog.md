@@ -1,5 +1,63 @@
 # Changelog
 
+## xmarkdown-compiler: `/begin NAME ... /end NAME` blocks and verse — 2026-10-13 (not yet released)
+
+### `/begin NAME ... /end NAME`
+
+A line `/begin NAME` opens a block named NAME. Every line up to the matching
+`/end NAME` line belongs to it, blank lines included. Both delimiter lines
+must stand alone on their lines.
+
+- **Before the block:** `/begin` must start a block, i.e. come at the start of
+  the document or after a blank line.
+- **After the block:** the line after `/end NAME` starts a new block; no blank
+  line is needed.
+- **No `/end`:** the block runs to the end of the document.
+- **Wrong name:** `/end poem` doesn't close `/begin verse`; it's an ordinary
+  line of the verse.
+- **No name:** `/begin` on its own is an error.
+- **Other names:** any name works (`/begin theorem`). Names without a renderer
+  of their own use the generic block renderer.
+
+### Verse
+
+```
+/begin verse
+Roses are *red*,
+    violets are **blue**.
+
+Sugar is sweet
+/end verse
+```
+
+- **Lines:** each source line is a line of the poem. Leading spaces indent it
+  (one space = 1ch in HTML, half an em in LaTeX).
+- **Blank lines:** kept, however many there are.
+- **Markup:** italic, bold and the rest of the inline markup work, but cannot
+  run across a line break, as in quotations.
+- **LaTeX:** a `verse` environment. A blank line starts a new stanza, and each
+  further blank line adds a line of space.
+- **Editor sync:** source positions inside the verse are exact, so clicking
+  rendered text finds it in the source.
+
+### How it works
+
+- **Block chunking** (`Parser.Block.PrimitiveBlock`): a `/begin` line opens a
+  block, and until `/end` every line is added to it instead of the usual
+  blank-line-ends-block rule. The block's source text covers both delimiter
+  lines.
+- **Inline parsing** (`Parser.Block.Pipeline.parseVerseLines`): one
+  `ExprList indent exprs` per line. The leading spaces are removed before
+  parsing because the inline parser doesn't keep runs of spaces.
+- **HTML:** `Render.Blocks.Text.verse`.
+- **LaTeX:** `LaTeX.Block.verse`.
+
+### Checked
+
+- **Tests:** 12 new, in `tests/VerseTest.elm`; 237 passing in all.
+- **LaTeX:** an exported verse compiles under LuaLaTeX with no errors.
+- **Browser:** DemoTOC+Sync shows the rendering correctly in headless Chrome.
+
 ## Desktop app: File > Make header — 2026-10-11
 
 The new last item in the File menu, **Make header**, puts a standard header at
