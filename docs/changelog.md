@@ -1,6 +1,6 @@
 # Changelog
 
-## xmarkdown-compiler: `/begin NAME ... /end NAME` blocks and verse — 2026-10-13 (not yet released)
+## xmarkdown-compiler 2.1.6: `/begin NAME ... /end NAME` blocks and verse — 2026-10-13
 
 ### `/begin NAME ... /end NAME`
 
