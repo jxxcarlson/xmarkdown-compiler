@@ -42,6 +42,18 @@ function initDesktop(app) {
     const T = window.__TAURI__;
     if (!T) return;
 
+    // Keep the last 20 uncaught errors (including Elm's) in localStorage as
+    // xmarkdown.errorLog, to diagnose the page freezing.
+    function logError(message, stack) {
+        try {
+            const log = JSON.parse(localStorage.getItem("xmarkdown.errorLog") || "[]");
+            log.push({ time: new Date().toISOString(), message: String(message), stack: String(stack || "") });
+            localStorage.setItem("xmarkdown.errorLog", JSON.stringify(log.slice(-20)));
+        } catch (e) {}
+    }
+    window.addEventListener("error", (event) => logError(event.message, event.error && event.error.stack));
+    window.addEventListener("unhandledrejection", (event) => logError(event.reason, event.reason && event.reason.stack));
+
     const invoke = T.core.invoke;
     const MARKDOWN = [{ name: "Markdown", extensions: ["md", "markdown", "txt"] }];
 

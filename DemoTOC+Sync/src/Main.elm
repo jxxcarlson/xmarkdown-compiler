@@ -57,7 +57,8 @@ subscriptions model =
         ]
 
 
-{-| Escape closes the open menu, a dialog or the print message. Keyboard
+{-| Escape closes the open menu, a dialog or the print message, and removes
+the highlight from the rendered text (see EscapePressed). Keyboard
 shortcuts (shown next to their menu items): ⌘N New and ⌘P Print (desktop
 only: a browser keeps ⌘N for itself), ⌘E Open/Close Editor. Shortcuts are
 ignored while a dialog or the print message is up, and when the key is held
@@ -80,9 +81,6 @@ keyDecoder model =
         |> Decode.andThen
             (\event ->
                 let
-                    somethingOpen =
-                        model.openMenu /= Nothing || model.dialog /= Nothing || model.printStatus /= Nothing
-
                     shortcutsAllowed =
                         event.command
                             && not event.otherModifier
@@ -90,7 +88,7 @@ keyDecoder model =
                             && model.dialog == Nothing
                             && model.printStatus == Nothing
                 in
-                if event.key == "Escape" && somethingOpen then
+                if event.key == "Escape" then
                     Decode.succeed EscapePressed
 
                 else if shortcutsAllowed then
@@ -622,8 +620,12 @@ update msg model =
         OpenRecentRequested path ->
             ( model, desktopRequest "openRecent" [ ( "path", Encode.string path ) ] )
 
+        -- Also un-highlight the rendered text: the block selected by a click
+        -- (selectId) and the one found by a left-to-right sync (its CSS rule).
         EscapePressed ->
-            ( { model | openMenu = Nothing, dialog = Nothing, printStatus = Nothing }, Cmd.none )
+            ( { model | openMenu = Nothing, dialog = Nothing, printStatus = Nothing, selectId = "@InitID" }
+            , Ports.injectHighlightCSS ""
+            )
 
         DialogNameChanged name ->
             ( { model | dialog = Maybe.map (\d -> { d | name = name }) model.dialog }, Cmd.none )
@@ -1424,7 +1426,7 @@ recentMenu model =
                 , Html.Attributes.title path
                 , Html.Events.onClick (MenuChose (OpenRecentRequested path))
                 ]
-                [ Html.span [ class "recent-name" ] [ text (smartEllipsis 24 (Maybe.withDefault name title)) ]
+                [ Html.span [ class "recent-name" ] [ text (smartEllipsis 34 (Maybe.withDefault name title)) ]
                 , Html.span [ class "menu-shortcut recent-folder" ] [ text folder ]
                 ]
     in

@@ -685,6 +685,10 @@ document.addEventListener("mousedown", () => {
 
 document.addEventListener("mouseup", (event) => {
     if (event.button !== 0) return;
+    // Only a click or selection in the rendered text. Elsewhere (e.g. a
+    // toolbar button) the selection is still the last one made in the
+    // rendered text, and acting on it would swallow the button's click.
+    if (!(event.target instanceof Element) || !event.target.closest(".rendered-panel")) return;
     const host = document.querySelector("codemirror-editor");
     const sel = window.getSelection();
     if (!host || !host.editor || !sel || sel.rangeCount === 0) return;

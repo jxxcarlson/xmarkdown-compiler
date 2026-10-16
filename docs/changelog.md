@@ -1,5 +1,29 @@
 # Changelog
 
+## Demo app: buttons stopped responding after clicking the rendered text — 2026-10-16
+
+After clicking a word in the rendered text, every later click (toolbar
+buttons, menus, the rendered text) did nothing until the selection moved.
+`editor.js`'s mouseup handler maps a click on a word to its source and then
+swallows the following click, so Elm doesn't also highlight the whole block;
+but it looked only at the document selection, not where the mouse was. A
+button click leaves the selection on the last word, so each click was taken
+for a click on that word and swallowed. The handler now acts only on a mouseup
+inside `.rendered-panel`.
+
+## Demo app: wider Recent menu — 2026-10-16
+
+The Recent menu is 40% wider (357px instead of 255px), and titles and file
+names are shortened at 34 characters instead of 24, so more of a long title
+shows.
+
+## Demo app: Escape removes the highlight — 2026-10-16
+
+Escape now also un-highlights the rendered text, whether the highlight came
+from clicking it (`selectId`) or from a left-to-right sync (the injected CSS
+rule). Before, Escape did anything only while a menu, dialog or the print
+message was open.
+
 ## Demo app: Normalize strips escaped section numbers — 2026-10-16
 
 File > Normalize now also removes section numbers whose dot is escaped, as

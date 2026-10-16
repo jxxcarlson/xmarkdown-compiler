@@ -127,9 +127,9 @@ html, body {
     color: #888;
 }
 
-/* Recent menu: 50% wider than the File menu, one line per file */
+/* Recent menu: about twice as wide as the File menu, one line per file */
 .recent-list {
-    width: 255px;
+    width: 357px;
 }
 
 .recent-list .menu-item {
