@@ -1,5 +1,51 @@
 # Changelog
 
+## Demo app: Normalize strips escaped section numbers — 2026-10-16
+
+File > Normalize now also removes section numbers whose dot is escaped, as
+Markdown exporters write them: `# 3\. MORE TEXT` and `## 7\. MORE TEXT`
+become `# MORE TEXT` and `## MORE TEXT` (`Normalize.numberedHeading`).
+
+## Desktop app: Recent menu — 2026-10-16
+
+A **Recent ▾** menu next to File lists the last 10 documents opened or
+created, most recent first; choosing one opens it. Each item shows the
+document's title (its `%title` line), or its file name if it has none, and its
+folder, on one line, with the full path as the tooltip. The menu is 50% wider
+than File (255px); a long title or name is shortened in the middle, keeping
+its end and extension (`smartEllipsis`, 24 characters), and a long folder
+name at its end. A file that has since been moved or deleted is reported and
+dropped from the list.
+
+- **Page** (`DemoTOC+Sync/assets/desktop.js`): the list lives in localStorage
+  (`xmarkdown.recentFiles`, as `[{ path, title? }]`; the older
+  `xmarkdown.lastFile` seeds it) and is sent to Elm as `recent { files }`. A
+  file counts when it becomes the current document (`opened`, `created`,
+  `savedAs`), not on `saved`, which can be the auto-save of the document just
+  left; a save only updates its title. New op `openRecent { path }`. Startup
+  reopens the top of the list.
+- **Elm** (`DemoTOC+Sync/src/Main.elm`): `fileMenuOpen : Bool` became
+  `openMenu : Maybe Menu` (`FileMenu | RecentMenu`); new `recentMenu` view and
+  `smartEllipsis`.
+
+## Desktop app: open .md files from the Finder — 2026-10-16
+
+XMarkdown is registered as an editor for Markdown files (`.md`, `.markdown`),
+so it appears under Open With, can be made the default app, and opens the file
+it is given: both when that starts the app and when it is already running.
+Before, a file passed this way was ignored and the last file was reopened.
+
+- **Config:** `bundle.fileAssociations` in `desktop/src-tauri/tauri.conf.json`
+  (XMarkdownNetlifyDemo), using macOS's own Markdown type,
+  `net.daringfireball.markdown`.
+- **Rust** (`desktop/src-tauri/src/lib.rs`): handles `RunEvent::Opened`. A
+  file that arrives before the page has loaded is kept until the page asks for
+  it (`take_opened_file`); later ones are sent as the `xm-open` event.
+- **Page** (`DemoTOC+Sync/assets/desktop.js`): at startup, opens that file
+  instead of the last one, and listens for `xm-open`.
+- **Checked:** with `open -a`, which hands over a file as the Finder does, both
+  with the app running and from a cold start.
+
 ## xmarkdown-compiler 2.1.6: `/begin NAME ... /end NAME` blocks and verse — 2026-10-13
 
 ### `/begin NAME ... /end NAME`

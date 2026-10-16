@@ -57,7 +57,7 @@ subscriptions model =
         ]
 
 
-{-| Escape closes the File menu, a dialog or the print message. Keyboard
+{-| Escape closes the open menu, a dialog or the print message. Keyboard
 shortcuts (shown next to their menu items): ⌘N New and ⌘P Print (desktop
 only: a browser keeps ⌘N for itself), ⌘E Open/Close Editor. Shortcuts are
 ignored while a dialog or the print message is up, and when the key is held
@@ -81,7 +81,7 @@ keyDecoder model =
             (\event ->
                 let
                     somethingOpen =
-                        model.fileMenuOpen || model.dialog /= Nothing || model.printStatus /= Nothing
+                        model.openMenu /= Nothing || model.dialog /= Nothing || model.printStatus /= Nothing
 
                     shortcutsAllowed =
                         event.command
@@ -96,16 +96,16 @@ keyDecoder model =
                 else if shortcutsAllowed then
                     case ( String.toLower event.key, model.platform ) of
                         ( "e", _ ) ->
-                            Decode.succeed (FileMenuChose ToggleEditor)
+                            Decode.succeed (MenuChose ToggleEditor)
 
                         ( "n", Desktop ) ->
-                            Decode.succeed (FileMenuChose NewRequested)
+                            Decode.succeed (MenuChose NewRequested)
 
                         ( "o", Desktop ) ->
-                            Decode.succeed (FileMenuChose OpenFileRequested)
+                            Decode.succeed (MenuChose OpenFileRequested)
 
                         ( "p", Desktop ) ->
-                            Decode.succeed (FileMenuChose PrintRequested)
+                            Decode.succeed (MenuChose PrintRequested)
 
                         _ ->
                             Decode.fail "not a shortcut"
@@ -138,7 +138,8 @@ type alias Model =
     , dragging : Maybe Divider
     , folderName : Maybe String
     , notice : Maybe String
-    , fileMenuOpen : Bool
+    , openMenu : Maybe Menu
+    , recentFiles : List RecentFile
     , dialog : Maybe FileNameDialog
     , platform : Platform
     , filePath : Maybe String
@@ -160,6 +161,19 @@ type PrintStatus
     | PrintFailed String
 
 
+{-| The menus in the header: File, and Recent (desktop only).
+-}
+type Menu
+    = FileMenu
+    | RecentMenu
+
+
+{-| A file in the Recent menu; `title` is from its `%title` line, if any.
+-}
+type alias RecentFile =
+    { path : String, title : Maybe String }
+
+
 {-| Web: the browser app (Open via file picker, Save downloads).
 Desktop: the Tauri app (assets/desktop.js does native dialogs and file I/O).
 -}
@@ -177,6 +191,7 @@ type DesktopEvent
     | DesktopCreated FileLocation
     | DesktopCloseRequested String
     | DesktopFolderChosen { folder : String, folderName : String }
+    | DesktopRecentFiles (List RecentFile)
     | DesktopPdfShown (Maybe String)
     | DesktopPdfGenerated
     | DesktopPrintFailed String
@@ -225,8 +240,9 @@ type Msg
     | GotHeaderDate Date
     | PrintMessageDismissed
     | PdfExported (Maybe String)
-    | ToggleFileMenu
-    | FileMenuChose Msg
+    | ToggleMenu Menu
+    | MenuChose Msg
+    | OpenRecentRequested String
     | EscapePressed
     | DialogNameChanged String
     | DialogConfirmed
@@ -316,7 +332,8 @@ init flagsValue =
       , dragging = Nothing
       , folderName = Nothing
       , notice = Nothing
-      , fileMenuOpen = False
+      , openMenu = Nothing
+      , recentFiles = []
       , dialog = Nothing
       , platform = flags.platform
       , filePath = Nothing
@@ -565,6 +582,10 @@ update msg model =
                 DesktopFolderChosen { folder, folderName } ->
                     ( { model | folderPath = Just folder, folderName = Just folderName, notice = Nothing }, Cmd.none )
 
+                -- The recently opened files, most recent first (Recent menu).
+                DesktopRecentFiles files ->
+                    ( { model | recentFiles = files }, Cmd.none )
+
                 -- The exported PDF shown in the app (or closed): File > Print.
                 DesktopPdfShown path ->
                     ( { model | pdfShown = path }, Cmd.none )
@@ -582,14 +603,27 @@ update msg model =
                 DesktopCancelled ->
                     ( model, Cmd.none )
 
-        ToggleFileMenu ->
-            ( { model | fileMenuOpen = not model.fileMenuOpen }, Cmd.none )
+        ToggleMenu menu ->
+            ( { model
+                | openMenu =
+                    if model.openMenu == Just menu then
+                        Nothing
 
-        FileMenuChose itemMsg ->
-            update itemMsg { model | fileMenuOpen = False }
+                    else
+                        Just menu
+              }
+            , Cmd.none
+            )
+
+        MenuChose itemMsg ->
+            update itemMsg { model | openMenu = Nothing }
+
+        -- Recent > a file (desktop only).
+        OpenRecentRequested path ->
+            ( model, desktopRequest "openRecent" [ ( "path", Encode.string path ) ] )
 
         EscapePressed ->
-            ( { model | fileMenuOpen = False, dialog = Nothing, printStatus = Nothing }, Cmd.none )
+            ( { model | openMenu = Nothing, dialog = Nothing, printStatus = Nothing }, Cmd.none )
 
         DialogNameChanged name ->
             ( { model | dialog = Maybe.map (\d -> { d | name = name }) model.dialog }, Cmd.none )
@@ -953,6 +987,17 @@ desktopEventDecoder =
                             (Decode.field "folder" Decode.string)
                             (Decode.field "folderName" Decode.string)
 
+                    "recent" ->
+                        Decode.map DesktopRecentFiles
+                            (Decode.field "files"
+                                (Decode.list
+                                    (Decode.map2 RecentFile
+                                        (Decode.field "path" Decode.string)
+                                        (Decode.maybe (Decode.field "title" Decode.string))
+                                    )
+                                )
+                            )
+
                     "pdfGenerated" ->
                         Decode.succeed DesktopPdfGenerated
 
@@ -1118,6 +1163,11 @@ view model =
                     )
                 ]
             , fileMenu model
+            , if model.platform == Desktop then
+                recentMenu model
+
+              else
+                text ""
             , case model.folderName of
                 Just name ->
                     div [ class "header-item", Html.Attributes.title "file:// links are opened from this folder" ]
@@ -1296,7 +1346,7 @@ fileMenu model =
 
         -- The shortcut is shown on the right (see keyDecoder).
         itemWithShortcut label shortcut msg =
-            button [ class "menu-item", Html.Events.onClick (FileMenuChose msg) ]
+            button [ class "menu-item", Html.Events.onClick (MenuChose msg) ]
                 [ Html.span [] [ text label ]
                 , Html.span [ class "menu-shortcut" ] [ text shortcut ]
                 ]
@@ -1311,14 +1361,14 @@ fileMenu model =
     div [ class "menu" ]
         [ button
             [ class "toolbar-button"
-            , Html.Attributes.classList [ ( "open", model.fileMenuOpen ) ]
-            , Html.Events.onClick ToggleFileMenu
+            , Html.Attributes.classList [ ( "open", model.openMenu == Just FileMenu ) ]
+            , Html.Events.onClick (ToggleMenu FileMenu)
             ]
             [ text "File ▾" ]
-        , if model.fileMenuOpen then
+        , if model.openMenu == Just FileMenu then
             -- The backdrop catches clicks outside the menu and closes it.
             div []
-                [ div [ class "menu-backdrop", Html.Events.onClick ToggleFileMenu ] []
+                [ div [ class "menu-backdrop", Html.Events.onClick (ToggleMenu FileMenu) ] []
                 , div [ class "menu-list" ]
                     ([ itemWithShortcut "New…" (desktopShortcut "⌘N") NewRequested
                     , itemWithShortcut "Open…" (desktopShortcut "⌘O") OpenFileRequested
@@ -1347,6 +1397,91 @@ fileMenu model =
           else
             text ""
         ]
+
+
+{-| Desktop only: the last files opened, most recent first. Each item shows
+the document's title (its `%title` line), or else its file name, and its
+folder, on one line; a long title or name is shortened in the middle (see
+smartEllipsis), a long folder name at its end (style.css). The full path is
+the tooltip.
+-}
+recentMenu : Model -> Html Msg
+recentMenu model =
+    let
+        item { path, title } =
+            let
+                parts =
+                    String.split "/" path |> List.filter (not << String.isEmpty) |> List.reverse
+
+                name =
+                    List.head parts |> Maybe.withDefault path
+
+                folder =
+                    List.drop 1 parts |> List.head |> Maybe.withDefault "/"
+            in
+            button
+                [ class "menu-item"
+                , Html.Attributes.title path
+                , Html.Events.onClick (MenuChose (OpenRecentRequested path))
+                ]
+                [ Html.span [ class "recent-name" ] [ text (smartEllipsis 24 (Maybe.withDefault name title)) ]
+                , Html.span [ class "menu-shortcut recent-folder" ] [ text folder ]
+                ]
+    in
+    div [ class "menu" ]
+        [ button
+            [ class "toolbar-button"
+            , Html.Attributes.classList [ ( "open", model.openMenu == Just RecentMenu ) ]
+            , Html.Events.onClick (ToggleMenu RecentMenu)
+            ]
+            [ text "Recent ▾" ]
+        , if model.openMenu == Just RecentMenu then
+            div []
+                [ div [ class "menu-backdrop", Html.Events.onClick (ToggleMenu RecentMenu) ] []
+                , div [ class "menu-list recent-list" ]
+                    (if List.isEmpty model.recentFiles then
+                        [ Html.div [ class "menu-empty" ] [ text "No recent files" ] ]
+
+                     else
+                        List.map item model.recentFiles
+                    )
+                ]
+
+          else
+            text ""
+        ]
+
+
+{-| Shorten a file name to at most `maxLength` characters by cutting from the
+middle, keeping its start, its end and its extension:
+"stacked_high_over_summer_wheat.md" -> "stacked_hi…mmer_wheat.md" (24).
+-}
+smartEllipsis : Int -> String -> String
+smartEllipsis maxLength name =
+    if String.length name <= maxLength then
+        name
+
+    else
+        let
+            ( stem, extension ) =
+                case String.indexes "." name |> List.reverse |> List.head of
+                    Just i ->
+                        if i > 0 && String.length name - i <= 6 then
+                            ( String.left i name, String.dropLeft i name )
+
+                        else
+                            ( name, "" )
+
+                    Nothing ->
+                        ( name, "" )
+
+            room =
+                max 2 (maxLength - 1 - String.length extension)
+
+            front =
+                (room + 1) // 2
+        in
+        String.left front stem ++ "…" ++ String.right (room - front) stem ++ extension
 
 
 printStatusView : PrintStatus -> Html Msg

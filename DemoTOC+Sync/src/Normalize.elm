@@ -5,7 +5,8 @@ module Normalize exposing (normalize)
   - Hand-written section numbers are removed from headings, so `# 1. Intro`
     becomes `# Intro` and `## 2.1 Results` becomes `## Results`. A number
     must contain a dot (`1.`, `2.1`, `2.1.`), so a heading like
-    `# 2024 Results` is left alone.
+    `# 2024 Results` is left alone. The dot may be escaped, as in
+    `# 3\. Intro`.
   - Display math written with `\[ ... \]` gets a blank line before and after
     it.
 
@@ -107,10 +108,11 @@ stripNumber line =
     Regex.replace numberedHeading (\m -> String.concat (List.map (Maybe.withDefault "") m.submatches)) line
 
 
-{-| `#`s and the space after them, then a number such as `1.` or `2.1`, then
-the spaces after the number. Only the first group is kept.
+{-| `#`s and the space after them, then a number such as `1.`, `2.1` or
+`3\.` (an escaped dot), then the spaces after the number. Only the first
+group is kept.
 -}
 numberedHeading : Regex
 numberedHeading =
-    Regex.fromString "^(#{1,6} +)(?:\\d+\\.)+\\d*(?: +|$)"
+    Regex.fromString "^(#{1,6} +)(?:\\d+\\\\?\\.)+\\d*(?: +|$)"
         |> Maybe.withDefault Regex.never

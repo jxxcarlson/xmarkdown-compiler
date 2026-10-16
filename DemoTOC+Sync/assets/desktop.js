@@ -13,6 +13,7 @@
 //                                    (save dialog; the new file is empty)
 //   confirmDiscard { name, then } -> (asks; finishes or cancels the close)
 //   finish  { then }              -> (closes the window / quits)
+//   openRecent { path }           -> opened (or error, and the path is dropped)
 //   printPdf { path }             -> (print panel; the PDF shown by pdf-export.js)
 //   printDocument { name, tex, images } -> pdfGenerated, then the print panel
 //                                    | printFailed { message }
@@ -27,8 +28,15 @@
 // File I/O goes through the Rust commands read_file / write_file / file_exists
 // (desktop/src-tauri/src/lib.rs); dialogs through tauri-plugin-dialog.
 //
-// The path of the last file opened, saved or created is kept in localStorage
-// and reopened at startup (if it still exists).
+// A Markdown file opened from the Finder is opened here: at startup the page
+// asks Rust for it (take_opened_file), and while running Rust sends it as
+// "xm-open". Otherwise the most recent file is reopened at startup (if it
+// still exists).
+//
+// The last 10 files opened or created (most recent first) are kept in
+// localStorage and sent to Elm as recent { files: [{ path, title? }] } for the
+// Recent menu: at startup and whenever the list changes. `title` is the
+// document's %title line, read when the file is opened or saved.
 
 function initDesktop(app) {
     const T = window.__TAURI__;
@@ -64,26 +72,62 @@ function initDesktop(app) {
         return "/" + parts.join("/");
     }
 
+    const RECENT_FILES = "xmarkdown.recentFiles";
+    // Before the Recent menu only the last file was kept, under this key.
     const LAST_FILE = "xmarkdown.lastFile";
+    const MAX_RECENT = 10;
 
-    function rememberFile(path) {
+    // [{ path, title? }]. Entries saved before titles were kept are bare paths.
+    function recentFiles() {
         try {
-            localStorage.setItem(LAST_FILE, path);
-        } catch (e) {}
-    }
-
-    function lastFile() {
-        try {
-            return localStorage.getItem(LAST_FILE);
+            const files = JSON.parse(localStorage.getItem(RECENT_FILES));
+            if (Array.isArray(files)) return files.map((f) => (typeof f === "string" ? { path: f } : f));
+            const last = localStorage.getItem(LAST_FILE);
+            return last ? [{ path: last }] : [];
         } catch (e) {
-            return null;
+            return [];
         }
     }
 
-    function reply(message) {
+    // "%title The Poem" -> "The Poem"; undefined when missing or empty.
+    function titleOf(content) {
+        const match = /^%title[ \t]+(.*\S)/m.exec(content || "");
+        return match ? match[1].trim() : undefined;
+    }
+
+    function setRecentFiles(files) {
+        try {
+            localStorage.setItem(RECENT_FILES, JSON.stringify(files));
+        } catch (e) {}
+        app.ports.desktopResponse.send({ kind: "recent", files });
+    }
+
+    // Move `path` to the top of the list.
+    function rememberFile(path, content) {
+        const others = recentFiles().filter((f) => f.path !== path);
+        setRecentFiles([{ path, title: titleOf(content) }, ...others].slice(0, MAX_RECENT));
+    }
+
+    // A save: keep the title up to date, without moving the file in the list.
+    function retitleFile(path, content) {
+        const files = recentFiles();
+        const file = files.find((f) => f.path === path);
+        const title = titleOf(content);
+        if (!file || file.title === title) return;
+        file.title = title;
+        setRecentFiles(files);
+    }
+
+    function forgetFile(path) {
+        setRecentFiles(recentFiles().filter((f) => f.path !== path));
+    }
+
+    // Only a document becoming the current one counts as recent: a "saved" can
+    // be the auto-save of the document just left.
+    function reply(message, content = message.content) {
         if (message.folder) currentFolder = message.folder;
-        if (message.path && message.kind !== "error") rememberFile(message.path);
         app.ports.desktopResponse.send(message);
+        if (["opened", "created", "savedAs"].includes(message.kind)) rememberFile(message.path, content);
     }
 
     async function openPath(path) {
@@ -98,7 +142,7 @@ function initDesktop(app) {
         });
         if (!path) return reply({ kind: "cancelled" });
         await invoke("write_file", { path, contents: content });
-        reply({ kind: "savedAs", ...locate(path), token });
+        reply({ kind: "savedAs", ...locate(path), token }, content);
     }
 
     // Let Rust close the window / quit, once Elm has saved or the user agreed.
@@ -119,6 +163,7 @@ function initDesktop(app) {
         },
         async save({ path, content, token, then }) {
             await invoke("write_file", { path, contents: content });
+            retitleFile(path, content);
             reply({ kind: "saved", ...locate(path), token });
             if (then) await finish(then);
         },
@@ -132,6 +177,13 @@ function initDesktop(app) {
         },
         async finish({ then }) {
             await finish(then);
+        },
+        async openRecent({ path }) {
+            if (!(await invoke("file_exists", { path }))) {
+                forgetFile(path);
+                return reply({ kind: "error", message: `${locate(path).name} is no longer in ${locate(path).folder}.` });
+            }
+            await openPath(path);
         },
         async printPdf({ path }) {
             await invoke("print_pdf", { path });
@@ -199,9 +251,23 @@ function initDesktop(app) {
 
     window.xmDesktop = { openLink, currentFolder: () => currentFolder };
 
-    // Reopen the most recently used file; if it is gone, keep the default doc.
+    // A file opened from the Finder while the app is running.
+    async function openFromFinder(path) {
+        try {
+            await openPath(path);
+        } catch (e) {
+            reply({ kind: "error", message: String(e) });
+        }
+    }
+
+    // Open the file the app was launched with from the Finder; otherwise
+    // reopen the most recently used file. If that is gone, keep the default doc.
     (async () => {
-        const path = lastFile();
+        setRecentFiles(recentFiles());
+        await T.event.listen("xm-open", (event) => openFromFinder(event.payload));
+        const opened = await invoke("take_opened_file");
+        if (opened) return openFromFinder(opened);
+        const path = recentFiles()[0]?.path;
         if (!path) return;
         try {
             if (await invoke("file_exists", { path })) await openPath(path);

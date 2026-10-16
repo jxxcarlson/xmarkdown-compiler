@@ -127,6 +127,35 @@ html, body {
     color: #888;
 }
 
+/* Recent menu: 50% wider than the File menu, one line per file */
+.recent-list {
+    width: 255px;
+}
+
+.recent-list .menu-item {
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.recent-name,
+.recent-folder {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* The folder gives way before the file name does */
+.recent-folder {
+    flex-shrink: 10;
+}
+
+/* Recent menu: shown when no file has been opened yet */
+.menu-empty {
+    font-size: 13px;
+    color: #888;
+    padding: 6px 14px;
+}
+
 .menu-item:hover {
     background: #e3ebfb;
 }
