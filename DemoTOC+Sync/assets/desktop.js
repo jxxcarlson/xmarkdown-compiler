@@ -213,6 +213,16 @@ function initDesktop(app) {
             await invoke("print_pdf", { path: output });
         },
         saveAs,
+        // File > Export HTML: the page HTML.Export made, saved where the user picks.
+        async exportHtml({ folder, name, content }) {
+            const path = await T.dialog.save({
+                defaultPath: folder ? folder + "/" + name : name,
+                filters: [{ name: "Web page", extensions: ["html"] }],
+            });
+            if (!path) return reply({ kind: "cancelled" });
+            await invoke("write_file", { path, contents: content });
+            reply({ kind: "htmlExported", ...locate(path) });
+        },
         // File > New: the save dialog picks the name and folder (it asks
         // before replacing an existing file).
         async new({ folder, name }) {

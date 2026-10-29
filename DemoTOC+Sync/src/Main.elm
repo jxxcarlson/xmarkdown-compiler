@@ -4,11 +4,12 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Color
-import Date exposing (Date)
 import Data.XMarkdown
+import Date exposing (Date)
 import File exposing (File)
 import File.Download
 import File.Select
+import HTML.Export
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, placeholder, style, value)
 import Html.Events
@@ -85,8 +86,10 @@ keyDecoder model =
                         event.command
                             && not event.otherModifier
                             && not event.repeat
-                            && model.dialog == Nothing
-                            && model.printStatus == Nothing
+                            && model.dialog
+                            == Nothing
+                            && model.printStatus
+                            == Nothing
                 in
                 if event.key == "Escape" then
                     Decode.succeed EscapePressed
@@ -192,6 +195,7 @@ type DesktopEvent
     | DesktopRecentFiles (List RecentFile)
     | DesktopPdfShown (Maybe String)
     | DesktopPdfGenerated
+    | DesktopHtmlExported String
     | DesktopPrintFailed String
     | DesktopError String
     | DesktopCancelled
@@ -232,6 +236,7 @@ type Msg
     | NewRequested
     | SaveAsRequested
     | ExportPdfRequested
+    | ExportHtmlRequested
     | PrintRequested
     | NormalizeRequested
     | MakeHeaderRequested
@@ -265,6 +270,7 @@ pages that predate them (e.g. DemoTOC+Sync's app.js) omit them.
 `pdfExport`: whether File > Export PDF is offered. It needs lualatex, via
 DemoTOC+Sync's local serve.py or the desktop app; the Netlify site has neither
 and passes false. Defaults to true.
+
 -}
 type alias Flags =
     { window : { windowWidth : Int, windowHeight : Int }, platform : Platform, pdfExport : Bool }
@@ -427,6 +433,22 @@ update msg model =
                 , images = LaTeX.Export.imageUrls model.sourceText
                 }
             )
+
+        -- A standalone web page (HTML.Export); section numbers follow the
+        -- "Section numbering" button.
+        ExportHtmlRequested ->
+            case model.platform of
+                Desktop ->
+                    ( model
+                    , desktopRequest "exportHtml"
+                        [ ( "folder", model.folderPath |> Maybe.map Encode.string |> Maybe.withDefault Encode.null )
+                        , ( "name", Encode.string (htmlName model.fileName) )
+                        , ( "content", Encode.string (exportedHtml model) )
+                        ]
+                    )
+
+                Web ->
+                    ( model, File.Download.string (htmlName model.fileName) "text/html" (exportedHtml model) )
 
         -- Print the PDF on show, or generate one from the document and print that.
         PrintRequested ->
@@ -591,6 +613,9 @@ update msg model =
                 -- File > Print: the PDF is ready and the print panel opens.
                 DesktopPdfGenerated ->
                     ( { model | printStatus = Nothing }, Cmd.none )
+
+                DesktopHtmlExported name ->
+                    ( { model | notice = Just ("Exported " ++ name ++ ".") }, Cmd.none )
 
                 DesktopPrintFailed message ->
                     ( { model | printStatus = Just (PrintFailed message) }, Cmd.none )
@@ -791,7 +816,6 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
-
 
 
 {-| Browsers can't write to disk directly: saving downloads the document
@@ -1005,6 +1029,9 @@ desktopEventDecoder =
 
                     "printFailed" ->
                         Decode.map DesktopPrintFailed (Decode.field "message" Decode.string)
+
+                    "htmlExported" ->
+                        Decode.map DesktopHtmlExported (Decode.field "name" Decode.string)
 
                     "pdfShown" ->
                         Decode.map DesktopPdfShown (Decode.field "path" (Decode.nullable Decode.string))
@@ -1304,14 +1331,38 @@ view model =
 {-| "notes.md" -> "notes.pdf"
 -}
 pdfName : String -> String
-pdfName fileName =
+pdfName =
+    exportName ".pdf"
+
+
+htmlName : String -> String
+htmlName =
+    exportName ".html"
+
+
+{-| The document's file name with `.md` replaced by `extension`.
+-}
+exportName : String -> String -> String
+exportName extension fileName =
     (if String.endsWith ".md" fileName then
         String.dropRight 3 fileName
 
      else
         fileName
     )
-        ++ ".pdf"
+        ++ extension
+
+
+exportedHtml : Model -> String
+exportedHtml model =
+    HTML.Export.toTextHtml HTML.Export.WithTOC
+        (if model.compilerParameters.numberToLevel > 0 then
+            HTML.Export.WithSectionNumbers
+
+         else
+            HTML.Export.WithoutSectionNumbers
+        )
+        (XMarkdown.API.parse model.sourceText)
 
 
 {-| Words in the source: whitespace-separated tokens containing a letter or
@@ -1373,17 +1424,18 @@ fileMenu model =
                 [ div [ class "menu-backdrop", Html.Events.onClick (ToggleMenu FileMenu) ] []
                 , div [ class "menu-list" ]
                     ([ itemWithShortcut "New…" (desktopShortcut "⌘N") NewRequested
-                    , itemWithShortcut "Open…" (desktopShortcut "⌘O") OpenFileRequested
-                    , item "Open Folder…" OpenFolderRequested
-                    , item "Save" SaveRequested
-                    , item "Save As…" SaveAsRequested
-                    ]
+                     , itemWithShortcut "Open…" (desktopShortcut "⌘O") OpenFileRequested
+                     , item "Open Folder…" OpenFolderRequested
+                     , item "Save" SaveRequested
+                     , item "Save As…" SaveAsRequested
+                     ]
                         ++ (if model.pdfExport then
                                 [ item "Export PDF" ExportPdfRequested ]
 
                             else
                                 []
                            )
+                        ++ [ item "Export HTML" ExportHtmlRequested ]
                         ++ (if model.platform == Desktop then
                                 [ itemWithShortcut "Print" "⌘P" PrintRequested ]
 
@@ -1456,7 +1508,7 @@ recentMenu model =
 
 {-| Shorten a file name to at most `maxLength` characters by cutting from the
 middle, keeping its start, its end and its extension:
-"stacked_high_over_summer_wheat.md" -> "stacked_hi…mmer_wheat.md" (24).
+"stacked\_high\_over\_summer\_wheat.md" -> "stacked\_hi…mmer\_wheat.md" (24).
 -}
 smartEllipsis : Int -> String -> String
 smartEllipsis maxLength name =

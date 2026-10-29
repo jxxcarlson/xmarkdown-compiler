@@ -72,7 +72,8 @@ function initKatex() {
         const rendered = window.katex.renderToString(content, {
           throwOnError: false,
           displayMode: displayMode,
-          trust: true // Allows mhchem to be used
+          // \href etc. only to web pages, never javascript: (mhchem needs no trust)
+          trust: (context) => ["http", "https", "_relative"].includes(context.protocol)
         });
 
         this.shadowRoot.innerHTML = rendered;
