@@ -1,5 +1,11 @@
 # Changelog
 
+## xmarkdown-compiler 2.2.2: wrapped table-of-contents entries — 2026-10-29
+
+In an exported page, a table-of-contents entry that wraps continues at the
+inset of the next level (a hanging indent), so wrapped lines no longer start
+back at the left edge.
+
 ## xmarkdown-compiler 2.2.1: table of contents in a column — 2026-10-29
 
 With `WithTOC`, the exported page puts the table of contents in a column to

@@ -150,4 +150,11 @@ suite =
             \_ ->
                 page WithTOC WithoutSectionNumbers "# A"
                     |> Expect.all [ contains "position: sticky", contains "@media (max-width: 900px)" ]
+        , test "a wrapped TOC entry is inset as far as the next level" <|
+            \_ ->
+                page WithTOC WithoutSectionNumbers "# A"
+                    |> Expect.all
+                        [ contains ".xm-toc ul { list-style: none; padding-left: 0; margin: 0.2rem 0; }"
+                        , contains ".xm-toc li { padding-left: 1.25rem; text-indent: -1.25rem; }"
+                        ]
         ]
