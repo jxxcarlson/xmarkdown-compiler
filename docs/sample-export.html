@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample Document</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/mhchem.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".xm-math").forEach(function (el) {
+    katex.render(el.textContent, el, { displayMode: el.dataset.display === "true", throwOnError: false, trust: function (context) { return ["http", "https", "_relative"].includes(context.protocol); } });
+  });
+});
+</script>
+<style id="xm-default-style">
+body { margin: 0; padding: 2rem 1rem; background: #fff; color: #222; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.55; }
+.xm-document { max-width: 42rem; margin: 0 auto; }
+.xm-title-block { margin-bottom: 2rem; }
+.xm-title { margin-bottom: 0.25rem; }
+.xm-authors, .xm-date { margin: 0.25rem 0; color: #555; }
+.xm-toc { margin-bottom: 2rem; }
+.xm-toc ul { list-style: none; padding-left: 1.25rem; margin: 0.2rem 0; }
+.xm-toc > ul { padding-left: 0; }
+.xm-toc a { text-decoration: none; }
+.xm-section-number { margin-right: 0.25em; }
+.xm-quotation { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid #ccc; color: #444; }
+.xm-verse { margin: 1rem 0 1rem 1.5rem; }
+.xm-verse-line { white-space: pre-wrap; }
+.xm-verse-blank { height: 1em; }
+.xm-figure { margin: 1.5rem 0; text-align: center; }
+.xm-figure img, img.xm-image { max-width: 100%; height: auto; }
+.xm-figure figcaption { font-size: 0.9em; color: #555; }
+.xm-table { border-collapse: collapse; margin: 1rem 0; }
+.xm-table th, .xm-table td { border: 1px solid #ccc; padding: 0.3rem 0.6rem; }
+.xm-code { background: #f5f5f5; padding: 0.75rem; overflow-x: auto; font-size: 0.85em; }
+code { font-family: Menlo, Consolas, monospace; }
+div.xm-math { overflow-x: auto; }
+.xm-block { margin: 1rem 0; }
+.xm-unsupported { color: #888; }
+hr.xm-hrule { border: none; border-top: 1px solid #ccc; margin: 2rem 0; }
+</style>
+</head>
+<body>
+<article class="xm-document">
+<nav class="xm-toc"><ul><li><a href="#sample-document"><span class="xm-section-number">1</span> Sample Document</a></li><li><a href="#math"><span class="xm-section-number">2</span> Math</a></li><li><a href="#images"><span class="xm-section-number">3</span> Images</a></li><li><a href="#itemized-lists"><span class="xm-section-number">4</span> Itemized Lists</a><ul><li><a href="#ordinary"><span class="xm-section-number">4.1</span> Ordinary</a></li><li><a href="#numbered"><span class="xm-section-number">4.2</span> Numbered</a></li></ul></li><li><a href="#compact-lists"><span class="xm-section-number">5</span> Compact Lists</a><ul><li><a href="#ordinary-2"><span class="xm-section-number">5.1</span> Ordinary</a></li><li><a href="#numbered-2"><span class="xm-section-number">5.2</span> Numbered</a></li></ul></li><li><a href="#indentation"><span class="xm-section-number">6</span> Indentation</a></li><li><a href="#real-time-rendering"><span class="xm-section-number">7</span> Real-time Rendering</a></li><li><a href="#synchronization"><span class="xm-section-number">8</span> Synchronization</a></li><li><a href="#section-numbering"><span class="xm-section-number">9</span> Section Numbering</a></li><li><a href="#table-of-contents"><span class="xm-section-number">10</span> Table of Contents</a></li><li><a href="#blocks-and-indentation"><span class="xm-section-number">11</span> Blocks and Indentation</a></li></ul></nav>
+<h2 class="xm-section" data-level="1" id="sample-document"><span class="xm-section-number">1</span> Sample Document</h2>
+<p class="xm-paragraph">XMarkdown is a version of Markdown which handles mathematical text.   This and other features are described below. See also <a href="https://xmarkdowndemo.netlify.app/">this online version</a>.</p>
+<p class="xm-paragraph">To understand how any piece of rendered text is constructed, click on it to see the corresponding source text.</p>
+<p class="xm-paragraph">Feel free to add to or edit this text. Your changes will not be saved. Refresh your browser to return to the original text.</p>
+<h2 class="xm-section" data-level="1" id="math"><span class="xm-section-number">2</span> Math</h2>
+<p class="xm-paragraph">XMarkdown handles both inline and displayed mathematical text, e.g., <span class="xm-math" data-display="false">a^2 + b^2 = c^2</span>
+and</p>
+<div class="xm-math" data-display="true">\cos{x} = \sum_{n=0}^\infty (-1)^n \frac{x^{2n}}{(2n)!}</div>
+<p class="xm-paragraph">Here is the source text: <code>$a^2 + b^2 = c^2$</code> for inline formulas and</p>
+<pre class="xm-code"><code>$$
+cos(x) = sum_{n=0}^infty (-1)^n frac(x^{2n},(2n)!)
+$$</code></pre>
+<p class="xm-paragraph">for displayed formulas. The source text looks like TeX but without most of the backslashes and curly braces that are customary.   This is <a href="https://package.elm-lang.org/packages/jxxcarlson/etex/latest/">ETeX</a>, an Elm package which implements this simplified syntax.   You may also use regular TeX:</p>
+<pre class="xm-code"><code>$$
+\cos{x} = \sum_{n=0}^\infty(-1)^n \frac{x^{2n}}{(2n)!}
+$$</code></pre>
+<p class="xm-paragraph">In ETeX curly braces are used for grouping.</p>
+<h2 class="xm-section" data-level="1" id="images"><span class="xm-section-number">3</span> Images</h2>
+<figure class="xm-figure"><img class="xm-image" src="https://fathersonbirding.com/wp-content/uploads/2020/01/European-Robin-Amsterdam-2019_12_282743-1536x1238.jpg" alt="European Robin — click to open in new tab" width="400"><figcaption>European Robin — click to open in new tab</figcaption></figure>
+<p class="xm-paragraph">The syntax for images is</p>
+<pre class="xm-code"><code>[CAPTION width:WIDTH_IN_PIXELS](URL)</code></pre>
+<p class="xm-paragraph">The phrase <code>width:WIDTH_IN_PIXELS</code> is optional.</p>
+<h2 class="xm-section" data-level="1" id="itemized-lists"><span class="xm-section-number">4</span> Itemized Lists</h2>
+<h3 class="xm-section" data-level="2" id="ordinary"><span class="xm-section-number">4.1</span> Ordinary</h3>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah </p>
+<ul class="xm-list"><li>Fruits<ul class="xm-list"><li>Oranges</li><li>Apples<ul class="xm-list"><li>Green</li><li>Red<ul class="xm-list"><li>Yada</li><li>Mada</li></ul></li></ul></li></ul></li></ul>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah </p>
+<h3 class="xm-section" data-level="2" id="numbered"><span class="xm-section-number">4.2</span> Numbered</h3>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah blah </p>
+<ol class="xm-list"><li>Vegetables<ol class="xm-list"><li>Green Beans</li><li>Brocolli<ol class="xm-list"><li>US</li><li>Mexican</li></ol></li></ol></li></ol>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah </p>
+<h2 class="xm-section" data-level="1" id="compact-lists"><span class="xm-section-number">5</span> Compact Lists</h2>
+<h3 class="xm-section" data-level="2" id="ordinary-2"><span class="xm-section-number">5.1</span> Ordinary</h3>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah </p>
+<ul class="xm-list"><li>Apples<ul class="xm-list"><li>YOLO <span class="xm-math" data-display="false">= y^2</span><ul class="xm-list"><li>MOV <span class="xm-math" data-display="false">c^2</span></li><li>Green</li><li>Red</li></ul></li></ul></li></ul>
+<ul class="xm-list"><li>Yada</li><li>Mada</li></ul>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah </p>
+<h3 class="xm-section" data-level="2" id="numbered-2"><span class="xm-section-number">5.2</span> Numbered</h3>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah </p>
+<ol class="xm-list"><li>Apples</li><li>Oranges</li><li>Pears<ol class="xm-list"><li>Red</li><li>Green</li></ol></li></ol>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah </p>
+<ol class="xm-list"><li>Vegetables<ol class="xm-list"><li>Green Beans</li><li>Brocolli<ol class="xm-list"><li>US</li><li>Mexican</li></ol></li></ol></li></ol>
+<p class="xm-paragraph">blah blah blah blah blah blah blah blah blah </p>
+<h2 class="xm-section" data-level="1" id="indentation"><span class="xm-section-number">6</span> Indentation</h2>
+<p class="xm-paragraph">Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges </p>
+<p class="xm-paragraph">          Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges </p>
+<p class="xm-paragraph">                                    Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges Oranges
+   
+# Tables</p>
+<p class="xm-paragraph">XMarkdown provides for Github-style tables.   These tables may contain mathematical text.</p>
+<p class="xm-paragraph"><strong>Ages, Occupations, and Favorite Formulas</strong></p>
+<table class="xm-table"><thead><tr><th style="text-align:left">Name</th><th style="text-align:right">Age</th><th style="text-align:left">Occupation</th><th style="text-align:right">F.F.</th></tr></thead><tbody><tr><td style="text-align:left">Alice</td><td style="text-align:right">28</td><td style="text-align:left"><em>Engineer</em></td><td style="text-align:right"><span class="xm-math" data-display="false">n!</span></td></tr><tr><td style="text-align:left">Bob</td><td style="text-align:right">34</td><td style="text-align:left"><em>Musician</em></td><td style="text-align:right"><span class="xm-math" data-display="false">3:2</span></td></tr><tr><td style="text-align:left">Carol</td><td style="text-align:right">41</td><td style="text-align:left"><em>Mathematician</em></td><td style="text-align:right"><span class="xm-math" data-display="false">\sqrt{2 + \sqrt5}</span></td></tr></tbody></table>
+<h2 class="xm-section" data-level="1" id="real-time-rendering"><span class="xm-section-number">7</span> Real-time Rendering</h2>
+<p class="xm-paragraph">XMarkdown provides for real-time rendering: the rendered text is updated as you type. Try it with this document. (Your edits will not be saved: refresh the browswer to return to the original.)</p>
+<h2 class="xm-section" data-level="1" id="synchronization"><span class="xm-section-number">8</span> Synchronization</h2>
+<p class="xm-paragraph">XMarkdown can synchronize source and rendered text:</p>
+<ul class="xm-list"><li>Click on a piece of rendered text. The corresponding piece of source text will be highlighted and scrolled into view.</li><li>Select a piece of of rendered text and type cmd-S. (S for sync). The block of rendered text will be highlighted and scrolled into view.</li></ul>
+<h2 class="xm-section" data-level="1" id="section-numbering"><span class="xm-section-number">9</span> Section Numbering</h2>
+<p class="xm-paragraph">The default is for sections not to be numbered. To automatically number sections, press the button &quot;Section numbering: No&quot;.   To return to the default press the same button, which now reads &quot;Section numbering: Yes&quot;</p>
+<h2 class="xm-section" data-level="1" id="table-of-contents"><span class="xm-section-number">10</span> Table of Contents</h2>
+<p class="xm-paragraph">XMarkdown provides for an optional real-time active table of contents.   If you create, edit, or remove sections, these changes will be reflected immediately in the table of contents.   Click on an entry in the table of contents and the corresponding source and rendered text will be scrolled into view.</p>
+<p class="xm-paragraph">Also note the search and replace features of the editor. Type cmd-F to bring up the editor, ESC to dismiss it.</p>
+<p class="xm-paragraph"><em>You can edit whatever you like in this document.   Your edits will not be saved.</em></p>
+<h2 class="xm-section" data-level="1" id="blocks-and-indentation"><span class="xm-section-number">11</span> Blocks and Indentation</h2>
+<p class="xm-paragraph">Source text in XMarkdown is divided into blocks.   Here is an example</p>
+<pre class="xm-code"><code>  # Introduction
+  
+  Cells are the fundamental units of life.
+  Every living organism, ..
+  
+  # The Discovery of Cells
+  
+  ## Robert Hooke and the First Observation
+  
+  In 1665, the English scientist Robert Hooke
+  examined a thin slice of cork with one of the first
+  compound microscopes ...
+  
+  ## Antoine van Leeuwenhoek
+  
+  A few years later, the Dutch scientist
+  Antoine van Leeuwenhoek built microscopes
+  of much higher quality ...</code></pre>
+<p class="xm-paragraph">   </p>
+</article>
+</body>
+</html>

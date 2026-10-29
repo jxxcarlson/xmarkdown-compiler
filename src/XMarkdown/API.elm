@@ -1,6 +1,7 @@
 module XMarkdown.API exposing
     ( compileOutput, compileString, compileStringWithTitle, defaultCompilerParameters
     , viewEditor, viewBodyOnly, viewTOC, BlockMatch, fromMsgToSyncHighlight, renderedTextId, searchBlocksContainingText
+    , AST, parse
     )
 
 {-| XMarkdown.API provides the core compilation interface for converting XMarkdown
@@ -60,6 +61,20 @@ See below for more information on compiler parameters. The DemoTOC and DemoTOC+S
 
 @docs viewEditor, viewBodyOnly, viewTOC, BlockMatch, fromMsgToSyncHighlight, renderedTextId, searchBlocksContainingText
 
+
+# Parsing
+
+For exporters that take a parsed document. An "Export HTML" button, for
+example, does
+
+    source
+        |> XMarkdown.API.parse
+        |> HTML.Export.toTextHtml HTML.Export.WithTOC HTML.Export.WithSectionNumbers
+
+and saves the resulting string.
+
+@docs AST, parse
+
         -- Render the document body
         body =
             XMarkdown.API.viewBodyOnly 600 output
@@ -72,6 +87,7 @@ See below for more information on compiler parameters. The DemoTOC and DemoTOC+S
 
 import Html exposing (Html)
 import Html.Attributes
+import XMarkdown.AST
 import XMarkdown.Compiler
 import XMarkdown.Editor
 import XMarkdown.Sync
@@ -94,6 +110,20 @@ compileOutput =
 compileString : XMarkdown.Types.CompilerParameters -> String -> List (Html MarkupMsg)
 compileString params str =
     XMarkdown.Compiler.compile params str |> XMarkdown.Compiler.view params.docWidth
+
+
+{-| A parsed XMarkdown document. It is opaque: make one with `parse` and pass
+it to an exporter.
+-}
+type alias AST =
+    XMarkdown.AST.AST
+
+
+{-| Parse XMarkdown source text.
+-}
+parse : String -> AST
+parse source =
+    XMarkdown.AST.AST (XMarkdown.Compiler.parseFromString source)
 
 
 {-| defaultCompilerParameters =

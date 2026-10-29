@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased (2.2.0): export a standalone HTML page — 2026-10-29
+
+New `HTML.Export.toTextHtml : TOC -> SectionNumbers -> AST -> String` turns a
+parsed document into a complete web page (`<!doctype html>` … `</html>`) that
+any browser displays. Math is typeset by KaTeX 0.16.9 (with mhchem) from the
+jsDelivr CDN. `type TOC = WithTOC | WithoutTOC` adds a table of contents;
+`type SectionNumbers = WithSectionNumbers | WithoutSectionNumbers` numbers the
+headings. Apps get the `AST` from the new `XMarkdown.API.parse : String -> AST`
+(opaque). The page uses plain semantic HTML with `xm-*` classes and a small
+default stylesheet (`<style id="xm-default-style">`), so it can be restyled.
+As in the LaTeX export, a document starting at `##` is renumbered from 1 and
+hand-typed heading numbers are dropped. No equation or figure numbers.
+Design: `docs/superpowers/specs/2026-10-29-html-export-design.md`.
+
 ## Demo app: buttons stopped responding after clicking the rendered text — 2026-10-16
 
 After clicking a word in the rendered text, every later click (toolbar

@@ -1,4 +1,4 @@
-module LaTeX.Block exposing (exportForest, normalizeSectionLevels, stripSectionNumbers)
+module LaTeX.Block exposing (exportForest, mathSource, normalizeSectionLevels, stripSectionNumbers)
 
 {-| XMarkdown blocks to LaTeX.
 -}
