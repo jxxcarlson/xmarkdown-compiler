@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (2.2.0): export a standalone HTML page — 2026-10-29
+## xmarkdown-compiler 2.2.0: export a standalone HTML page — 2026-10-29
 
 New `HTML.Export.toTextHtml : TOC -> SectionNumbers -> AST -> String` turns a
 parsed document into a complete web page (`<!doctype html>` … `</html>`) that
