@@ -1,5 +1,13 @@
 # Changelog
 
+## xmarkdown-compiler (not yet released): table of contents in a column — 2026-10-29
+
+With `WithTOC`, the exported page puts the table of contents in a column to
+the right of the text (`<div class="xm-layout">` holding the `<article>` and
+the `<nav class="xm-toc">`). The column stays in view while scrolling, with its
+own scrollbar if it is taller than the window. Below 900px wide it goes above
+the text instead. `WithoutTOC` pages are unchanged.
+
 ## xmarkdown-compiler 2.2.0: export a standalone HTML page — 2026-10-29
 
 New `HTML.Export.toTextHtml : TOC -> SectionNumbers -> AST -> String` turns a

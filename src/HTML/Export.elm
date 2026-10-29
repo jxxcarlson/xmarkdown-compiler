@@ -76,17 +76,37 @@ toTextHtml toc numbers ast =
     , "</style>"
     , "</head>"
     , "<body>"
-    , "<article class=\"xm-document\">"
-    , header titleBlock
-    , tableOfContents toc forest
-    , HTML.Block.forest forest
-    , "</article>"
+    , body toc titleBlock forest
     , "</body>"
     , "</html>"
     ]
         |> List.filter (not << String.isEmpty)
         |> String.join "\n"
         |> (\html -> html ++ "\n")
+
+
+{-| The document, and with `WithTOC` the table of contents in a column to its
+right (`xm-layout`; on narrow screens it goes above the text, see
+`HTML.Style`).
+-}
+body : TOC -> Maybe AST.TitleBlock.TitleBlock -> Forest ExpressionBlock -> String
+body toc titleBlock forest =
+    let
+        article =
+            [ "<article class=\"xm-document\">"
+            , header titleBlock
+            , HTML.Block.forest forest
+            , "</article>"
+            ]
+                |> List.filter (not << String.isEmpty)
+                |> String.join "\n"
+    in
+    case tableOfContents toc forest of
+        "" ->
+            article
+
+        nav ->
+            String.join "\n" [ "<div class=\"xm-layout\">", article, nav, "</div>" ]
 
 
 {-| Fix up heading levels and hand-typed numbers (as the LaTeX exporter

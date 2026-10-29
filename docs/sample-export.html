@@ -20,7 +20,10 @@ body { margin: 0; padding: 2rem 1rem; background: #fff; color: #222; font-family
 .xm-title-block { margin-bottom: 2rem; }
 .xm-title { margin-bottom: 0.25rem; }
 .xm-authors, .xm-date { margin: 0.25rem 0; color: #555; }
-.xm-toc { margin-bottom: 2rem; }
+.xm-layout { display: grid; grid-template-columns: minmax(0, 42rem) 16rem; gap: 3rem; justify-content: center; align-items: start; }
+.xm-layout .xm-document { margin: 0; }
+.xm-toc { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; font-size: 0.9em; }
+@media (max-width: 900px) { .xm-layout { display: flex; flex-direction: column; gap: 0; } .xm-toc { order: -1; position: static; max-height: none; margin-bottom: 2rem; } }
 .xm-toc ul { list-style: none; padding-left: 1.25rem; margin: 0.2rem 0; }
 .xm-toc > ul { padding-left: 0; }
 .xm-toc a { text-decoration: none; }
@@ -43,8 +46,8 @@ hr.xm-hrule { border: none; border-top: 1px solid #ccc; margin: 2rem 0; }
 </style>
 </head>
 <body>
+<div class="xm-layout">
 <article class="xm-document">
-<nav class="xm-toc"><ul><li><a href="#sample-document"><span class="xm-section-number">1</span> Sample Document</a></li><li><a href="#math"><span class="xm-section-number">2</span> Math</a></li><li><a href="#images"><span class="xm-section-number">3</span> Images</a></li><li><a href="#itemized-lists"><span class="xm-section-number">4</span> Itemized Lists</a><ul><li><a href="#ordinary"><span class="xm-section-number">4.1</span> Ordinary</a></li><li><a href="#numbered"><span class="xm-section-number">4.2</span> Numbered</a></li></ul></li><li><a href="#compact-lists"><span class="xm-section-number">5</span> Compact Lists</a><ul><li><a href="#ordinary-2"><span class="xm-section-number">5.1</span> Ordinary</a></li><li><a href="#numbered-2"><span class="xm-section-number">5.2</span> Numbered</a></li></ul></li><li><a href="#indentation"><span class="xm-section-number">6</span> Indentation</a></li><li><a href="#real-time-rendering"><span class="xm-section-number">7</span> Real-time Rendering</a></li><li><a href="#synchronization"><span class="xm-section-number">8</span> Synchronization</a></li><li><a href="#section-numbering"><span class="xm-section-number">9</span> Section Numbering</a></li><li><a href="#table-of-contents"><span class="xm-section-number">10</span> Table of Contents</a></li><li><a href="#blocks-and-indentation"><span class="xm-section-number">11</span> Blocks and Indentation</a></li></ul></nav>
 <h2 class="xm-section" data-level="1" id="sample-document"><span class="xm-section-number">1</span> Sample Document</h2>
 <p class="xm-paragraph">XMarkdown is a version of Markdown which handles mathematical text.   This and other features are described below. See also <a href="https://xmarkdowndemo.netlify.app/">this online version</a>.</p>
 <p class="xm-paragraph">To understand how any piece of rendered text is constructed, click on it to see the corresponding source text.</p>
@@ -130,5 +133,7 @@ $$</code></pre>
   of much higher quality ...</code></pre>
 <p class="xm-paragraph">   </p>
 </article>
+<nav class="xm-toc"><ul><li><a href="#sample-document"><span class="xm-section-number">1</span> Sample Document</a></li><li><a href="#math"><span class="xm-section-number">2</span> Math</a></li><li><a href="#images"><span class="xm-section-number">3</span> Images</a></li><li><a href="#itemized-lists"><span class="xm-section-number">4</span> Itemized Lists</a><ul><li><a href="#ordinary"><span class="xm-section-number">4.1</span> Ordinary</a></li><li><a href="#numbered"><span class="xm-section-number">4.2</span> Numbered</a></li></ul></li><li><a href="#compact-lists"><span class="xm-section-number">5</span> Compact Lists</a><ul><li><a href="#ordinary-2"><span class="xm-section-number">5.1</span> Ordinary</a></li><li><a href="#numbered-2"><span class="xm-section-number">5.2</span> Numbered</a></li></ul></li><li><a href="#indentation"><span class="xm-section-number">6</span> Indentation</a></li><li><a href="#real-time-rendering"><span class="xm-section-number">7</span> Real-time Rendering</a></li><li><a href="#synchronization"><span class="xm-section-number">8</span> Synchronization</a></li><li><a href="#section-numbering"><span class="xm-section-number">9</span> Section Numbering</a></li><li><a href="#table-of-contents"><span class="xm-section-number">10</span> Table of Contents</a></li><li><a href="#blocks-and-indentation"><span class="xm-section-number">11</span> Blocks and Indentation</a></li></ul></nav>
+</div>
 </body>
 </html>

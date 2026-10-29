@@ -132,4 +132,22 @@ suite =
             \_ ->
                 page WithoutTOC WithoutSectionNumbers "Hi."
                     |> Expect.all [ lacks "trust: true", contains "[\"http\", \"https\", \"_relative\"].includes(context.protocol)" ]
+        , test "WithTOC puts the article and the TOC side by side in xm-layout" <|
+            \_ ->
+                page WithTOC WithoutSectionNumbers "# A\n\nx"
+                    |> Expect.all
+                        [ contains "<div class=\"xm-layout\">\n<article class=\"xm-document\">"
+                        , contains "</article>\n<nav class=\"xm-toc\">"
+                        , contains "</nav>\n</div>\n</body>"
+                        ]
+        , test "WithTOC keeps the title block at the top of the text column" <|
+            \_ ->
+                page WithTOC WithoutSectionNumbers "%title T\n\n# A"
+                    |> contains "<article class=\"xm-document\">\n<header class=\"xm-title-block\">"
+        , test "WithoutTOC has no layout wrapper" <|
+            \_ -> page WithoutTOC WithoutSectionNumbers "# A" |> lacks "<div class=\"xm-layout\""
+        , test "the TOC column stays in view, and goes above the text on narrow screens" <|
+            \_ ->
+                page WithTOC WithoutSectionNumbers "# A"
+                    |> Expect.all [ contains "position: sticky", contains "@media (max-width: 900px)" ]
         ]
