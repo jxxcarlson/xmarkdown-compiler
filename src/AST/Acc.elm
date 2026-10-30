@@ -76,7 +76,17 @@ init =
 
 transformAccumulate : List (Tree ExpressionBlock) -> ( Accumulator, List (Tree ExpressionBlock) )
 transformAccumulate forest =
-    List.foldl (\tree ( acc_, ast_ ) -> transformAccumulateTree tree acc_ |> mapper ast_) ( init, [] ) forest
+    let
+        -- Only a title block at the very start is rendered.
+        init_ =
+            case AST.TitleBlock.initial forest of
+                Just block ->
+                    { init | keyValueDict = Dict.insert AST.TitleBlock.firstIdKey block.meta.id init.keyValueDict }
+
+                Nothing ->
+                    init
+    in
+    List.foldl (\tree ( acc_, ast_ ) -> transformAccumulateTree tree acc_ |> mapper ast_) ( init_, [] ) forest
         |> (\( acc_, ast_ ) -> ( acc_, List.reverse ast_ ))
 
 
@@ -298,12 +308,8 @@ updateAccumulator ({ heading, args, properties } as block) accumulator =
             updateWithOrdinarySectionBlock accumulator level
 
         Ordinary "titleBlock" ->
-            -- Remember the first title block: only that one is rendered.
-            if Dict.member AST.TitleBlock.firstIdKey accumulator.keyValueDict then
-                accumulator
-
-            else
-                { accumulator | keyValueDict = Dict.insert AST.TitleBlock.firstIdKey block.meta.id accumulator.keyValueDict }
+            -- The rendered title block is chosen up front in transformAccumulate.
+            accumulator
 
         Ordinary "title" ->
             -- Only reset headingIndex if it wasn't set by shiftAndSetCounter (deltaLevel == 1)

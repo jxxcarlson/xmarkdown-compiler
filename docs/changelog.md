@@ -1,5 +1,22 @@
 # Changelog
 
+## xmarkdown-compiler 2.2.5: title block only at the start — 2026-10-30
+
+A `%title` / `%author` / `%date` block now counts only when it is the
+document's first block (blank lines before it are fine). A `%` block anywhere
+else renders nothing and exports nothing, like the other `%` lines. Before,
+the first title block in the document counted wherever it appeared. The rule
+lives in the new `AST.TitleBlock.initial`, which both the renderer (through
+`AST.Acc.transformAccumulate`) and the HTML and LaTeX exports use. Details:
+`docs/title-block.md`.
+
+## xmarkdown-compiler 2.2.4: content fits narrow containers — 2026-10-30
+
+Paragraphs and list items had a fixed pixel `width` (`scale * windowWidth`),
+so in a container narrower than that the text was cut off at the right edge.
+They now use `max-width`: the same layout in wide containers, and text that
+wraps in narrow ones.
+
 ## xmarkdown-compiler 2.2.3: unclosed * and ** — 2026-10-29
 
 While the closing marker has not been typed yet, `*blah blah` shows the text

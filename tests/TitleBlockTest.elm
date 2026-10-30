@@ -85,9 +85,25 @@ suite =
                     titleBlock "%title First\n\nText\n\n%title Second"
                         |> Maybe.map .title
                         |> Expect.equal (Just "First")
+            , test "a title block that is not at the start does not count" <|
+                \_ ->
+                    titleBlock "# Intro\n\nText\n\n%title Late\n%author A"
+                        |> Expect.equal Nothing
+            , test "blank lines before the title block are allowed" <|
+                \_ ->
+                    titleBlock "\n\n%title T\n%date D"
+                        |> Expect.equal (Just { title = "T", authors = [], date = "D" })
             ]
         , describe "HTML"
-            [ test "title is centered at 2em" <|
+            [ test "a title block that is not at the start renders nothing" <|
+                \_ ->
+                    rendered "Text first.\n\n%title Late\n%author Someone"
+                        |> Expect.all
+                            [ Query.hasNot [ Selector.text "Late" ]
+                            , Query.hasNot [ Selector.text "Someone" ]
+                            , Query.has [ Selector.text "Text first." ]
+                            ]
+            , test "title is centered at 2em" <|
                 \_ ->
                     rendered example
                         |> Query.find [ Selector.containing [ Selector.text "Consistency and Models" ], Selector.style "font-size" "2em" ]
@@ -150,6 +166,11 @@ suite =
                             [ String.contains "\\title{Override}" >> Expect.equal True
                             , String.contains "\\author{ChatGPT}" >> Expect.equal True
                             ]
+            , test "a title block that is not at the start is not exported" <|
+                \_ ->
+                    exportDocument noInfo "# Intro\n\n%title Late"
+                        |> String.contains "\\title{Late}"
+                        |> Expect.equal False
             , test "special characters in the title are escaped" <|
                 \_ ->
                     exportDocument noInfo "%title R&D at 100%"

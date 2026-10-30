@@ -31,10 +31,11 @@ Status: implemented (2026-10-01, branch latex-export)
 |---|---|
 | Other `%` lines in the block (e.g. `%titel`, `% note to self`) | Hidden: treated as comments, not rendered, not exported |
 | Multiple authors | Repeat `%author`, one author per line. HTML shows each on its own centered line; LaTeX gets `\author{A \and B}` |
+| Where the block may appear (2026-10-30) | Only at the start of the document (blank lines before it are fine). A `%` block anywhere else renders nothing and exports nothing |
 
 ## Design
 
-**Syntax.** A block (lines with no blank line between them) whose first line starts with `%` is a title block. Its `%title`, `%author` (may repeat) and `%date` lines set the fields. Any other `%` line in it is a hidden comment. Only the first title block in a document counts. A later one renders nothing and exports nothing.
+**Syntax.** A block (lines with no blank line between them) whose first line starts with `%` is a title block. Its `%title`, `%author` (may repeat) and `%date` lines set the fields. Any other `%` line in it is a hidden comment. A title block counts only when it is the document's first block (blank lines before it are fine). One anywhere else renders nothing and exports nothing.
 
 **Parser** (`Parser/Block/PrimitiveBlock.elm`, `getHeadingData`). A first line starting with `%` gives a new `Ordinary "titleBlock"` block. The existing `!!` → `"title"` block is not reused: it feeds a different header path (`Compiler.header`), which the demo doesn't use.
 
@@ -44,9 +45,9 @@ A new shared module, `AST.TitleBlock`, reads the fields from the block's source 
 fromForest : Forest ExpressionBlock -> Maybe { title : String, authors : List String, date : String }
 ```
 
-Both the renderer and the exporter use it, so they can't disagree.
+Both the renderer and the exporter use it, so they can't disagree. `AST.TitleBlock.initial` picks the document's first block if it is a title block; `fromForest` and the accumulator (`AST.Acc.transformAccumulate`, which records the id the renderer draws) both go through it.
 
-**HTML** (`Render/`). The block renders where it appears, normally at the top:
+**HTML** (`Render/`). The block renders at the top of the document:
 
 - the title centered at 2em;
 - each author and the date centered at 1.5em;

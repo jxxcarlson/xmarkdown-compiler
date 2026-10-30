@@ -1,4 +1,4 @@
-module AST.TitleBlock exposing (TitleBlock, firstIdKey, fromBlock, fromForest, isTitleBlock)
+module AST.TitleBlock exposing (TitleBlock, firstIdKey, fromBlock, fromForest, initial, isTitleBlock)
 
 {-| The title block at the top of a document:
 
@@ -7,13 +7,14 @@ module AST.TitleBlock exposing (TitleBlock, firstIdKey, fromBlock, fromForest, i
     %date October 1, 2026
 
 `%author` may repeat, one author per line. Any other `%` line in the block
-is a comment. Only the first title block in a document counts.
+is a comment. A title block counts only when it is the document's first
+block (blank lines before it are fine); one anywhere else produces no output.
 
 -}
 
 import AST.Forest exposing (Forest)
 import AST.Language exposing (ExpressionBlock, Heading(..))
-import Library.Tree
+import RoseTree.Tree
 
 
 type alias TitleBlock =
@@ -28,15 +29,28 @@ isTitleBlock block =
     block.heading == Ordinary "titleBlock"
 
 
-{-| The fields of the document's first title block, if it has one.
+{-| The document's first block, if it is a title block.
+-}
+initial : Forest ExpressionBlock -> Maybe ExpressionBlock
+initial forest =
+    forest
+        |> List.head
+        |> Maybe.map RoseTree.Tree.value
+        |> Maybe.andThen
+            (\block ->
+                if isTitleBlock block then
+                    Just block
+
+                else
+                    Nothing
+            )
+
+
+{-| The fields of the document's title block, if it starts with one.
 -}
 fromForest : Forest ExpressionBlock -> Maybe TitleBlock
-fromForest forest =
-    forest
-        |> List.concatMap Library.Tree.flatten
-        |> List.filter isTitleBlock
-        |> List.head
-        |> Maybe.map fromBlock
+fromForest =
+    initial >> Maybe.map fromBlock
 
 
 {-| Read from the block's source lines: the parsed body is not used, since
