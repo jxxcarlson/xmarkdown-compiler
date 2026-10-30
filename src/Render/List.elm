@@ -127,7 +127,7 @@ item count _ depth settings attr block =
     Html.li
         ([ Html.Attributes.style "margin-left" (String.fromInt settings.leftIndentation ++ "px")
          , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
-         , Html.Attributes.style "width" (String.fromInt (settings.width - depth) ++ "px")
+         , Html.Attributes.style "max-width" (String.fromInt (settings.width - depth) ++ "px")
          , Html.Attributes.style "list-style" "none"
          , Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
@@ -185,7 +185,7 @@ numbered count acc depth settings attr block =
     Html.li
         ([ Html.Attributes.style "margin-left" (String.fromInt settings.leftIndentation ++ "px")
          , Html.Attributes.style "margin-bottom" (String.fromInt settings.listSpacing ++ "px")
-         , Html.Attributes.style "width" (String.fromInt (settings.width - (6 + indentation)) ++ "px")
+         , Html.Attributes.style "max-width" (String.fromInt (settings.width - (6 + indentation)) ++ "px")
          , Html.Attributes.style "list-style" "none"
          , Html.Attributes.id blockId
          , Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)

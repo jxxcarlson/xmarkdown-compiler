@@ -33,7 +33,7 @@ renderParagraphBody count depth settings attrs block =
             Html.p
                 (Html.Attributes.id ("e-" ++ String.fromInt block.meta.lineNumber ++ "." ++ String.fromInt count)
                     :: Html.Attributes.attribute "data-line-number" (String.fromInt block.meta.lineNumber)
-                    :: Html.Attributes.style "width" (String.fromInt settings.width ++ "px")
+                    :: Html.Attributes.style "max-width" (String.fromInt settings.width ++ "px")
                     :: Html.Attributes.style "margin" "0"
                     :: Html.Attributes.style "margin-bottom" "18px"
                     :: Html.Attributes.style "line-height" "1.4"
