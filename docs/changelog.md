@@ -1,5 +1,13 @@
 # Changelog
 
+## xmarkdown-compiler 2.2.3: unclosed * and ** — 2026-10-29
+
+While the closing marker has not been typed yet, `*blah blah` shows the text
+in italic followed by a red `*`, and `**blah blah` shows it in bold followed by
+a red `**`. Before, nothing was shown until the closing marker was typed. The
+parser's error marks (`Fun "red"`, also used for an unclosed `$` or backtick)
+are now red in the live view and in exported HTML (`xm-error`).
+
 ## xmarkdown-compiler 2.2.2: wrapped table-of-contents entries — 2026-10-29
 
 In an exported page, a table-of-contents entry that wraps continues at the

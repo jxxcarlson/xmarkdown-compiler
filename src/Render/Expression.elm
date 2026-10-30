@@ -71,6 +71,11 @@ render theme depth attrs expr =
                 Html.em []
                     (List.map (render theme depth attrs) exprList)
 
+            else if name == "red" then
+                -- the parser's error marks, e.g. an unclosed * or $
+                Html.span [ Html.Attributes.style "color" "rgb(179, 0, 0)" ]
+                    (List.map (render theme depth attrs) exprList)
+
             else if name == "a" || name == "link" then
                 let
                     -- Link text and URL are concatenated in the expression: "text url"

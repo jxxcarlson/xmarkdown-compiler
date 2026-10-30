@@ -51,6 +51,10 @@ fun name args =
     else if name == "image" || name == "img" then
         image (LaTeX.Inline.plainText args)
 
+    else if name == "red" then
+        -- the parser's error marks, e.g. an unclosed * or $
+        "<span class=\"xm-error\">" ++ exprs args ++ "</span>"
+
     else
         unsupported name (exprs args)
 

@@ -359,7 +359,7 @@ handleParens state =
 
 handleItalicSymbol : List Symbol -> State -> State
 handleItalicSymbol symbols state =
-    if List.head symbols == Just SItalic && List.Extra.last symbols == Just SItalic then
+    if List.length symbols > 1 && List.head symbols == Just SItalic && List.Extra.last symbols == Just SItalic then
         let
             meta =
                 stackSpan state
@@ -379,7 +379,7 @@ handleItalicSymbol symbols state =
 
 handleBoldSymbol : List Symbol -> State -> State
 handleBoldSymbol symbols state =
-    if List.head symbols == Just SBold && List.Extra.last symbols == Just SBold then
+    if List.length symbols > 1 && List.head symbols == Just SBold && List.Extra.last symbols == Just SBold then
         let
             meta =
                 stackSpan state
@@ -552,7 +552,7 @@ recoverFromError state =
                 { state
                     | stack = []
                     , committed =
-                        Fun "pink" [ Text "* " dummyLocWithId ] dummyLocWithId
+                        errorMessage "* "
                             :: Fun "italic" [ Text str dummyLocWithId ] dummyLocWithId
                             :: state.committed
                     , tokenIndex = meta2.index + 1
@@ -597,7 +597,7 @@ recoverFromError state =
                 { state
                     | stack = []
                     , committed =
-                        Fun "pink" [ Text "* " dummyLocWithId ] dummyLocWithId
+                        errorMessage "* "
                             :: Fun "italic" [ Text str dummyLocWithId ] dummyLocWithId
                             :: state.committed
                     , tokenIndex = meta2.index + 1

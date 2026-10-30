@@ -68,5 +68,6 @@ defaultCss =
         , "div.xm-math { overflow-x: auto; }"
         , ".xm-block { margin: 1rem 0; }"
         , ".xm-unsupported { color: #888; }"
+        , ".xm-error { color: #b30000; }"
         , "hr.xm-hrule { border: none; border-top: 1px solid #ccc; margin: 2rem 0; }"
         ]
