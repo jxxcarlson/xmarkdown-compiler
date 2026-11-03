@@ -10,7 +10,7 @@ module Parser.Inline.Token exposing
     )
 
 import List.Extra
-import Parser.Advanced as Parser exposing (DeadEnd, Parser)
+import Parser.Advanced as Parser exposing ((|.), (|=), DeadEnd, Parser)
 import Parser.Inline.Meta exposing (Meta)
 import Parser.Inline.ParserTools as PT exposing (Problem)
 import Tools.Loop exposing (Step(..), loop)
@@ -596,6 +596,7 @@ tokenParser_ start index =
         [ imageParser start index
         , mathTokenLeftParser start index
         , mathTokenRightParser start index
+        , escapeParser start index
         , textParser start index
         , leftBracketParser start index
         , rightBracketParser start index
@@ -682,6 +683,25 @@ italicParser : Int -> Int -> TokenParser
 italicParser start index =
     PT.text (\c -> c == '*') (\_ -> False)
         |> Parser.map (\_ -> Italic { begin = start, end = start, index = index, id = makeId start index })
+
+
+{-| A CommonMark backslash escape: a backslash followed by an ASCII
+punctuation character stands for that character, as in `\&`, `\_` or `\*`.
+It becomes a text token of one character spanning two source characters;
+nextStep merges it with the text around it, so `t.co\&sz=32` in a link url
+is a single `S` token. `\(` is not an escape: it opens inline math, and
+mathTokenLeftParser runs first.
+-}
+escapeParser : Int -> Int -> TokenParser
+escapeParser start index =
+    Parser.succeed (\c -> S c { begin = start, end = start + 1, index = index, id = makeId start index })
+        |. Parser.symbol (Parser.Token "\\" (PT.ExpectingSymbol "\\"))
+        |= Parser.getChompedString (Parser.chompIf isEscapable PT.ExpectingPrefix)
+
+
+isEscapable : Char -> Bool
+isEscapable c =
+    c /= '(' && String.contains (String.fromChar c) "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
 
 textParser start index =
