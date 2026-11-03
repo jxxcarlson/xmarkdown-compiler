@@ -511,7 +511,7 @@ update msg model =
         NormalizeRequested ->
             let
                 normalized =
-                    Normalize.normalize model.sourceText
+                    model.sourceText |> Normalize.preprocess |> Normalize.normalize
             in
             if normalized == model.sourceText then
                 ( { model | notice = Just "Nothing to normalize." }, Cmd.none )

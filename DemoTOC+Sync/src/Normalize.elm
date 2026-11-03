@@ -1,4 +1,4 @@
-module Normalize exposing (normalize)
+module Normalize exposing (normalize, preprocess)
 
 {-| File > Normalize: tidy up the source text.
 
@@ -26,6 +26,156 @@ type alias State =
     , mathJustEnded : Bool
     , lines : List String -- reversed
     }
+
+
+{-| This is fix text produced by openAI
+
+  - Display math written with doubled backslashes, as in
+
+        \\[ \max_\pi \mathbb{E}_\pi[r], \\]
+
+    becomes
+
+        \[
+        \max_\pi \mathbb{E}_\pi[r],
+        \]
+
+    The opening `\\[` must start a line and the closing `\\]` must end one
+    (they may be on the same line or on different lines), so a LaTeX line
+    break with spacing such as `a \\[2pt] b` is left alone.
+
+  - Inside display math (`\[ ... \]`, `$$ ... $$`, and the `\\[ ... \\]`
+    form above), the Markdown escape `\_` becomes `_`, so `\max\_\pi` is a
+    subscript rather than a literal underscore.
+
+  - Lines holding only spaces become empty lines. The parser does not treat
+    a whitespace-only line as blank, so without this a display-math block
+    after such a line is glued onto the preceding paragraph.
+
+Lines inside code fences are not touched.
+
+-}
+preprocess : String -> String
+preprocess source =
+    source
+        |> String.lines
+        |> List.foldl preprocessStep { inFence = False, mathCloser = Nothing, lines = [] }
+        |> .lines
+        |> List.reverse
+        |> String.join "\n"
+
+
+type alias PreprocessState =
+    { inFence : Bool
+
+    -- inside display math: the delimiter that closes it
+    , mathCloser : Maybe String
+    , lines : List String -- reversed
+    }
+
+
+preprocessStep : String -> PreprocessState -> PreprocessState
+preprocessStep line state =
+    let
+        trimmed =
+            String.trim line
+
+        indent =
+            String.left (String.length line - String.length (String.trimLeft line)) line
+
+        -- emit lines (given in order) with the original indentation;
+        -- empty content lines are dropped
+        emit : List String -> List String -> List String
+        emit new acc =
+            List.foldl
+                (\l a ->
+                    if String.trim l == "" then
+                        a
+
+                    else
+                        (indent ++ unescapeMath (String.trim l)) :: a
+                )
+                acc
+                new
+
+        push l =
+            { state | lines = l :: state.lines }
+    in
+    if state.inFence then
+        { state | inFence = not (isFence trimmed), lines = line :: state.lines }
+
+    else
+        case state.mathCloser of
+            Just closer ->
+                if not (String.endsWith closer trimmed) then
+                    push (unescapeMath line)
+
+                else if closer == openAIClose then
+                    { state
+                        | mathCloser = Nothing
+                        , lines = emit [ String.dropRight 3 trimmed, "\\]" ] state.lines
+                    }
+
+                else
+                    { state | mathCloser = Nothing, lines = unescapeMath line :: state.lines }
+
+            Nothing ->
+                if trimmed == "" then
+                    push ""
+
+                else if isFence trimmed then
+                    { state | inFence = True, lines = line :: state.lines }
+
+                else if String.startsWith openAIOpen trimmed then
+                    let
+                        rest =
+                            String.dropLeft 3 trimmed
+                    in
+                    if String.endsWith openAIClose rest then
+                        { state | lines = emit [ "\\[", String.dropRight 3 rest, "\\]" ] state.lines }
+
+                    else
+                        { state | mathCloser = Just openAIClose, lines = emit [ "\\[", rest ] state.lines }
+
+                else if String.startsWith "\\[" trimmed then
+                    openMath "\\]" (String.dropLeft 2 trimmed) line state
+
+                else if String.startsWith "$$" trimmed then
+                    openMath "$$" (String.dropLeft 2 trimmed) line state
+
+                else
+                    push line
+
+
+{-| A line opening display math that is already in the right form; `rest` is
+what follows the opening delimiter.
+-}
+openMath : String -> String -> String -> PreprocessState -> PreprocessState
+openMath closer rest line state =
+    { state
+        | mathCloser =
+            if String.endsWith closer rest then
+                Nothing
+
+            else
+                Just closer
+        , lines = unescapeMath line :: state.lines
+    }
+
+
+openAIOpen : String
+openAIOpen =
+    "\\\\["
+
+
+openAIClose : String
+openAIClose =
+    "\\\\]"
+
+
+unescapeMath : String -> String
+unescapeMath =
+    String.replace "\\_" "_"
 
 
 normalize : String -> String
